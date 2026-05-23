@@ -1,0 +1,100 @@
+<div class="docs-page">
+<h1>Providers</h1>
+<p class="docs-page-description">Configure AI providers, failover behavior, and understand inference pricing in Raptor.</p>
+<h1 id="ai-providers">AI Providers</h1>
+
+<p>Raptor acts as a governance layer between your application and AI providers. It does not host models. You supply provider API keys, and Raptor routes inference requests through its governance engine before forwarding them to the provider.</p>
+
+<h2 id="supported-providers">Supported Providers</h2>
+
+<p>| Provider | Environment Variable | Models |<br>|---|---|---|<br>| Anthropic | <code>ANTHROPIC_API_KEY</code> | Claude 4 Opus, Claude 4 Sonnet, Claude 3.5 family |<br>| OpenAI | <code>OPENAI_API_KEY</code> | GPT-4o, GPT-4o-mini, o1, o3 family |<br>| Google | <code>GEMINI_API_KEY</code> | Gemini 2.5 Pro, Gemini 2.5 Flash family |<br>| Together AI | <code>TOGETHER_API_KEY</code> | Llama, Mixtral, open-weight models |</p>
+
+<p><strong>At least one provider key is required.</strong> Set the corresponding environment variable and Raptor detects the provider at startup.</p>
+
+<h2 id="configuration">Configuration</h2>
+
+<p>Add provider keys to your <code>.env</code> file:</p>
+
+<pre><code class="language-bash"># Set one or more
+ANTHROPIC_API_KEY=sk-ant-...
+OPENAI_API_KEY=sk-...
+GEMINI_API_KEY=AIza...
+TOGETHER_API_KEY=...</code></pre>
+
+<p>Restart the control-panel after changing provider keys:</p>
+
+<pre><code class="language-bash">docker compose restart control-panel</code></pre>
+
+<h2 id="verifying-provider-status">Verifying Provider Status</h2>
+
+<p>Check which providers are active and healthy:</p>
+
+<pre><code class="language-bash">curl http://localhost:4000/api/runtime/config</code></pre>
+
+<p>The response includes the list of configured providers and their status. Use this endpoint for monitoring dashboards and alerting.</p>
+
+<h2 id="multi-provider-failover">Multi-Provider Failover</h2>
+
+<p>When multiple providers are configured, Raptor provides automatic failover:</p>
+
+<ol>
+<li><strong>Primary routing:</strong> Requests specify a model (e.g., <code>claude-sonnet-4-20250514</code>). Raptor routes to the corresponding provider.</li>
+<li><strong>Provider failure:</strong> If the primary provider returns a 5xx error or times out, Raptor can fall back to an equivalent model on another configured provider.</li>
+<li><strong>Health tracking:</strong> Provider health is tracked at the connection level. Unhealthy providers are deprioritized until they recover.</li>
+</ol>
+
+<p>Failover is transparent to the calling application. The governance decision records which provider ultimately served the request.</p>
+
+<h2 id="provider-health-monitoring">Provider Health Monitoring</h2>
+
+<p>Monitor provider health through the dependency health endpoint:</p>
+
+<pre><code class="language-bash">curl http://localhost:4000/api/health/dependencies</code></pre>
+
+<p>This reports the status of each configured provider alongside database connectivity and other dependencies. Wire this into your monitoring system to detect provider outages before they impact users.</p>
+
+<h2 id="pricing">Pricing</h2>
+
+<h3 id="inference-pass-through">Inference Pass-Through</h3>
+
+<p>When Raptor manages provider keys (operator-supplied keys), inference is billed at pass-through pricing:</p>
+
+<p><strong>Provider cost + 10% governance fee</strong></p>
+
+<p>The provider cost is the standard rate from the provider (Anthropic, OpenAI, etc.) for the model and token volume used. The 10% governance fee covers the governance engine, audit trail, and platform infrastructure.</p>
+
+<h3 id="byop-bring-your-own-provider">BYOP (Bring Your Own Provider)</h3>
+
+<p>Customers can use their own provider API keys instead of operator-managed keys. In the BYOP model:</p>
+
+<ul>
+<li>The customer pays the provider directly at their negotiated rate</li>
+<li>Raptor charges a flat <strong>$0.012 governance fee per request</strong></li>
+<li>No percentage markup on inference cost</li>
+</ul>
+
+<p>BYOP is ideal for customers with:</p>
+
+<ul>
+<li>Negotiated enterprise pricing with providers</li>
+<li>High-volume workloads where the flat fee is more economical</li>
+<li>Compliance requirements that mandate direct provider relationships</li>
+</ul>
+
+<h3 id="pricing-summary">Pricing Summary</h3>
+
+<p>| Model | Provider Cost | Raptor Fee |<br>|---|---|---|<br>| Operator-managed keys | Pass-through | +10% of provider cost |<br>| BYOP (customer keys) | Paid directly by customer | $0.012 per request |</p>
+
+<h2 id="provider-policies">Provider Policies</h2>
+
+<p>Raptor's governance engine can enforce provider-level policies:</p>
+
+<ul>
+<li><strong>Allowed providers:</strong> Restrict which providers a tenant can use</li>
+<li><strong>Model restrictions:</strong> Limit which models are available</li>
+<li><strong>Rate limits:</strong> Per-provider rate limiting at the tenant level</li>
+<li><strong>Cost caps:</strong> Maximum spend per provider per billing period</li>
+</ul>
+
+<p>Provider policies are configured through the Control Panel UI or the governance API. Policy changes are recorded in the immutable audit trail.</p>
+</div>

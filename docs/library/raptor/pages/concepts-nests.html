@@ -1,0 +1,72 @@
+<div class="docs-page">
+<h1>Nests</h1>
+<p class="docs-page-description">The primary object in Raptor — a governed conversation session holding memory, governance, provenance, and execution state.</p>
+<h1 id="nests">Nests</h1>
+
+<p>A nest is a governed conversation session. It is the primary object in Raptor — not a feature inside a larger container, but the unit around which everything else is organized.</p>
+
+<p>Every nest holds:</p>
+
+<ul>
+<li><strong>Chat history</strong> — the full conversation between user and AI</li>
+<li><strong>Actions and proposals</strong> — proposed actions, confirmation state, execution results</li>
+<li><strong>Execution events</strong> — the hash-chained audit trail for this session</li>
+<li><strong>Artifacts</strong> — files, documents, and generated outputs</li>
+<li><strong>Governance events</strong> — policy evaluations, authorization decisions, trust assignments</li>
+<li><strong>Memory</strong> — context that persists across turns within the session</li>
+</ul>
+
+<h2 id="creating-a-nest">Creating a nest</h2>
+
+<p>A new nest starts with a clean governance state: no prior context, no inherited trust claims, fresh policy evaluation. The tenant's active governance policy applies from the first turn.</p>
+
+<pre><code>POST /api/nests
+{
+  "title": "Q2 deployment review",
+  "metadata": { "team": "platform", "priority": "high" }
+}</code></pre>
+
+<p>Nests can be created through the API or through the Control Panel interface. Every nest is tenant-scoped — it belongs to exactly one organization and is subject to that organization's RLS policies.</p>
+
+<h2 id="nest-lifecycle">Nest lifecycle</h2>
+
+<p>Nests move through three states:</p>
+
+<p>| State | Meaning |<br>|-------|---------|<br>| <strong>Active</strong> | Open for conversation, actions, and governance operations |<br>| <strong>Archived</strong> | Read-only. Full audit trail preserved. No new operations. |<br>| <strong>Forked</strong> | A new nest created from an existing one, continuing from a specific intent |</p>
+
+<h3 id="archiving">Archiving</h3>
+
+<p>Archived nests retain their complete hash chain, governance history, and artifacts. Archiving is a governance event recorded in the audit trail. Archived nests can be read and exported but not modified.</p>
+
+<h3 id="forking">Forking</h3>
+
+<p>Forking creates a new nest that inherits context from the source nest. The fork point is recorded as a governance event in both the source and the new nest. The new nest starts its own hash chain — it references the source but does not extend it.</p>
+
+<p>Use forking when a conversation branches: the original thread is complete, but a new line of inquiry continues from the same context.</p>
+
+<h2 id="nest-level-surfaces">Nest-level surfaces</h2>
+
+<p>Each nest exposes four surfaces that make governance visible to the operator:</p>
+
+<h3 id="actions">Actions</h3>
+
+<p>All proposed and executed actions within the nest. Each action shows its current state (proposed, confirmed, executed, rejected), the AI's reasoning, and the execution result if applicable.</p>
+
+<h3 id="files">Files</h3>
+
+<p>Artifacts and documents attached to the nest. Each file carries provenance — who created it, when, and which execution event produced it.</p>
+
+<h3 id="governance">Governance</h3>
+
+<p>The governance audit trail for this nest: policy evaluations, authorization events, trust boundary assignments, confidence assessments. This is where operators see every governance decision the system made.</p>
+
+<h3 id="verification">Verification</h3>
+
+<p>Hash chain integrity for the nest. Verify that no events have been modified, inspect claim freshness across the conversation, and export the full audit trail for external review.</p>
+
+<h2 id="why-nests-are-the-primary-object">Why nests are the primary object</h2>
+
+<p>In most AI products, the conversation is a feature inside a project or a workspace. In Raptor, the nest is the workspace. Governance, provenance, and execution state are properties of the conversation, not of an external container.</p>
+
+<p>This means every conversation is independently auditable, independently governed, and independently verifiable. There is no ambient state that leaks between nests. Each nest is a self-contained governance boundary.</p>
+</div>

@@ -1,0 +1,191 @@
+<div class="docs-page">
+<h1>Database</h1>
+<p class="docs-page-description">PostgreSQL setup, schema migrations, backup/restore, and data retention for self-hosted Raptor.</p>
+<h1 id="database">Database</h1>
+
+<p>Raptor uses PostgreSQL 16+ as its sole data store. In a containerized closed environment, any PostgreSQL 16+ database can be designated via the <code>DATABASE_URL</code> environment variable. The Docker Compose bundle includes a PostgreSQL 16 Alpine container, but you can point Raptor at any compatible instance: managed (Neon, RDS, Cloud SQL, Supabase), self-hosted, or local.</p>
+
+<h2 id="connection">Connection</h2>
+
+<p>Set the <code>DATABASE_URL</code> environment variable to a standard PostgreSQL connection string:</p>
+
+<pre><code>DATABASE_URL=postgresql://user:password@host:5432/raptor?sslmode=require</code></pre>
+
+<p>For the bundled Docker Compose setup, this is configured automatically using the <code>POSTGRES_PASSWORD</code> variable.</p>
+
+<h3 id="connection-pooling">Connection Pooling</h3>
+
+<p>For production deployments with multiple control-panel instances or high concurrency, place a connection pooler (PgBouncer, Supavisor, or your managed provider's built-in pooler) between Raptor and PostgreSQL. Raptor uses standard <code>database/sql</code> connection pooling internally, but an external pooler helps when:</p>
+
+<ul>
+<li>Running multiple control-panel replicas</li>
+<li>Database connections are limited (managed tiers)</li>
+<li>You need connection-level observability</li>
+</ul>
+
+<p>When using an external pooler, ensure it operates in <strong>transaction mode</strong> (not session mode) for compatibility with Raptor's query patterns.</p>
+
+<h2 id="schema-migrations">Schema Migrations</h2>
+
+<p>Migrations run automatically on startup. The Docker Compose bundle includes a dedicated <code>migrate</code> container (using <a href="https://github.com/golang-migrate/migrate">golang-migrate</a>) that:</p>
+
+<ol>
+<li>Waits for PostgreSQL to pass its health check</li>
+<li>Applies all pending migrations from the <code>/migrations</code> directory</li>
+<li>Exits successfully</li>
+<li>Only then does the <code>control-panel</code> container start</li>
+</ol>
+
+<p>Migration files are numbered sequentially (<code>001_enums.up.sql</code>, <code>002_tables.up.sql</code>, etc.) and are idempotent. The migration tool tracks applied versions in a <code>schema_migrations</code> table.</p>
+
+<h3 id="running-migrations-manually">Running Migrations Manually</h3>
+
+<p>If you run Raptor outside Docker Compose, apply migrations before starting the binary:</p>
+
+<pre><code class="language-bash"># Using golang-migrate CLI
+migrate -path ./migrations \
+  -database "postgresql://raptor:password@localhost:5432/raptor?sslmode=disable" \
+  up
+
+<h1 id="or-start-the-migrate-container-standalone">Or start the migrate container standalone</h1>
+docker run --rm \
+  -v $(pwd)/migrations:/migrations \
+  migrate/migrate:v4.17.0 \
+  -path=/migrations \
+  -database "postgresql://raptor:password@host:5432/raptor?sslmode=disable" \
+  up</code></pre>
+
+<h3 id="migration-safety">Migration Safety</h3>
+
+<ul>
+<li>Migrations are forward-only in production. Down migrations exist for development but should not be used against production data.</li>
+<li>Each migration is tested against the full sequence from empty schema to HEAD.</li>
+<li>The <code>control-panel</code> binary will not start until the migrate container exits successfully (in Docker Compose).</li>
+</ul>
+
+<h2 id="data-model">Data Model</h2>
+
+<p>Raptor's schema divides into two categories with fundamentally different retention characteristics.</p>
+
+<h3 id="immutable-tables">Immutable Tables</h3>
+
+<p>Eleven tables are protected by database-level triggers that prevent <code>UPDATE</code> and <code>DELETE</code> operations. These are governance evidence: once a record is written, it cannot be altered or removed. There is no expiration. Records are kept indefinitely.</p>
+
+<p>Immutable tables include:</p>
+
+<ul>
+<li><code>execution_events</code> — every inference execution event</li>
+<li><code>governance_decisions</code> — every governance decision and its rationale</li>
+<li><code>release_deployments</code> — deployment provenance records</li>
+<li><code>build_attestations</code> — signed build attestation evidence</li>
+<li><code>transparency_log</code> — append-only transparency log entries</li>
+<li><code>authorization_events</code> — authorization audit trail</li>
+<li><code>witness_attestations</code> — witness attestation records</li>
+<li><code>artifact_audit_log</code> — artifact lifecycle audit records</li>
+</ul>
+
+<p>The immutability triggers raise exceptions at the database level, making them independent of application code:</p>
+
+<pre><code class="language-sql">-- Example: execution_events cannot be updated or deleted
+CREATE TRIGGER enforce_event_immutability_update
+    BEFORE UPDATE ON execution_events
+    FOR EACH ROW
+    EXECUTE FUNCTION prevent_event_mutation();</code></pre>
+
+<h3 id="mutable-tables">Mutable Tables</h3>
+
+<p>All other tables (sessions, cached responses, tenant configuration, etc.) follow standard lifecycle patterns. Retention for mutable data is configurable per tenant.</p>
+
+<h2 id="data-retention">Data Retention</h2>
+
+<h3 id="immutable-records">Immutable Records</h3>
+
+<p>Immutable audit tables have <strong>no expiration</strong>. Records are kept indefinitely. This is by design: governance evidence must be available for the lifetime of the system. Plan storage capacity accordingly.</p>
+
+<h3 id="mutable-records-default-retention">Mutable Records — Default Retention</h3>
+
+<p>| Data Category | Default Retention | Configurable |<br>|---|---|---|<br>| Audit logs | 7 years (2555 days) | Yes |<br>| Execution events | 365 days | Yes |<br>| Session data | 90 days | Yes |<br>| Cached responses | 30 days | Yes |</p>
+
+<h3 id="configurable-retention">Configurable Retention</h3>
+
+<p>Mutable table retention is configurable per tenant. Available retention periods:</p>
+
+<ul>
+<li>30 days</li>
+<li>90 days</li>
+<li>1 year</li>
+<li>2 years</li>
+<li>3 years</li>
+<li>5 years</li>
+<li>Indefinite</li>
+</ul>
+
+<p>Retention policies are applied by the maintenance subsystem, which runs cleanup jobs on a periodic schedule. Expired records are soft-deleted first, then purged after a grace period.</p>
+
+<h2 id="backup-and-restore">Backup and Restore</h2>
+
+<h3 id="backup">Backup</h3>
+
+<p>Use <code>pg_dump</code> for logical backups:</p>
+
+<pre><code class="language-bash"># From Docker Compose
+docker compose exec postgres pg_dump -U raptor raptor &gt; backup.sql
+
+<h1 id="from-any-postgresql-client">From any PostgreSQL client</h1>
+pg_dump -h host -U raptor -d raptor &gt; backup.sql
+
+<h1 id="compressed">Compressed</h1>
+pg_dump -h host -U raptor -d raptor -Fc &gt; backup.dump</code></pre>
+
+<h3 id="restore">Restore</h3>
+
+<pre><code class="language-bash"># From a SQL backup
+psql -h host -U raptor -d raptor &lt; backup.sql
+
+<h1 id="from-a-compressed-backup">From a compressed backup</h1>
+pg_restore -h host -U raptor -d raptor backup.dump
+
+<h1 id="into-docker-compose">Into Docker Compose</h1>
+docker compose exec -T postgres psql -U raptor raptor &lt; backup.sql</code></pre>
+
+<h3 id="managed-database-pitr">Managed Database PITR</h3>
+
+<p>If you use a managed PostgreSQL provider with point-in-time recovery (Neon, RDS, Cloud SQL), use their native PITR capabilities for the fastest recovery:</p>
+
+<ul>
+<li><strong>Neon:</strong> Built-in PITR with branching. Restore to any point in the retention window.</li>
+<li><strong>RDS:</strong> Automated backups with configurable retention (up to 35 days).</li>
+<li><strong>Cloud SQL:</strong> Automated backups with PITR.</li>
+</ul>
+
+<h3 id="backup-schedule">Backup Schedule</h3>
+
+<p>For production deployments:</p>
+
+<p>| Strategy | Frequency | Retention |<br>|---|---|---|<br>| Full logical backup | Daily | 30 days |<br>| WAL archiving / PITR | Continuous | 7 days minimum |<br>| Off-site copy | Weekly | 90 days |</p>
+
+<p>Target RPO (Recovery Point Objective) is under 1 hour. See <a href="/self-hosted/production">Production Hardening</a> for the full disaster recovery plan.</p>
+
+<h2 id="storage-growth">Storage Growth</h2>
+
+<p>Immutable tables grow monotonically. Estimate growth based on your inference volume:</p>
+
+<ul>
+<li>Each <code>execution_event</code> row is approximately 2-4 KB</li>
+<li>Each <code>governance_decision</code> row is approximately 1-2 KB</li>
+<li>Transparency log entries are approximately 500 bytes each</li>
+</ul>
+
+<p>For a deployment processing 10,000 inferences per day, expect roughly 30-50 MB/day of immutable data growth, or 10-18 GB/year. Mutable data (sessions, cache) is bounded by retention policy.</p>
+
+<p>Monitor database size:</p>
+
+<pre><code class="language-sql">SELECT pg_size_pretty(pg_database_size('raptor'));</code></pre>
+
+<p>Monitor per-table size:</p>
+
+<pre><code class="language-sql">SELECT relname, pg_size_pretty(pg_total_relation_size(relid))
+FROM pg_catalog.pg_statio_user_tables
+ORDER BY pg_total_relation_size(relid) DESC
+LIMIT 20;</code></pre>
+</div>

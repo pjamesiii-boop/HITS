@@ -1,0 +1,74 @@
+<div class="docs-page">
+<h1>Pattern 3: Substrate</h1>
+<p class="docs-page-description">Build your entire AI application on Raptor's governed platform.</p>
+<h1 id="pattern-3-substrate">Pattern 3: Substrate</h1>
+
+<p>Build directly on Raptor's platform — use it as the foundation for your AI application.</p>
+
+<h2 id="when-to-use">When to use</h2>
+
+<ul>
+<li>You're building a new AI product from scratch</li>
+<li>Governance, audit, and trust boundaries are core requirements</li>
+<li>You want the full Raptor stack without running your own AI orchestration</li>
+</ul>
+
+<h2 id="architecture">Architecture</h2>
+
+<pre><code>Your Users → Your Frontend → Raptor Platform
+                                  ↓
+                           Decision Engine
+                           Governance
+                           4 AI Providers
+                           Hash-chain Audit
+                           Trust Boundaries</code></pre>
+
+<h2 id="integration">Integration</h2>
+
+<h3 id="1-embed-the-chat-interface">1. Embed the chat interface</h3>
+
+<p>Use Raptor's API to build a governed chat interface in your application:</p>
+
+<pre><code class="language-javascript">// Send governed messages
+const response = await fetch('/api/chat', {
+  method: 'POST',
+  headers: { 'Authorization': 'Bearer rpt_...', 'Content-Type': 'application/json' },
+  body: JSON.stringify({ message: userInput, conversation_id: nestId })
+});
+
+<p>// Response includes full structured output<br>const { reply, trust_boundary, segments, claims, audit_trail } = await response.json();</code></pre></p>
+
+<h3 id="2-use-contextual-surfaces">2. Use contextual surfaces</h3>
+
+<p>Each nest provides structured views:</p>
+
+<pre><code>GET /api/nests/{id}/governance    — policy decisions
+GET /api/nests/{id}/verification  — claim freshness
+GET /api/nests/{id}/summary       — aggregate counts
+GET /api/nests/{id}/actions       — action proposals
+GET /api/nests/{id}/executions    — execution history
+GET /api/nests/{id}/artifacts     — generated artifacts</code></pre>
+
+<h3 id="3-manage-via-api">3. Manage via API</h3>
+
+<pre><code>POST /api/keys           — create API keys for your tenants
+POST /api/webhooks       — receive governance events
+GET  /api/billing/usage  — monitor usage
+POST /api/admin/policies/sign — deploy governance policies</code></pre>
+
+<h2 id="multi-tenant-architecture">Multi-tenant architecture</h2>
+
+<p>Raptor is natively multi-tenant:<br><ul><br><li>Row-Level Security on all tables</li><br><li>Per-tenant policies, budgets, and rate limits</li><br><li>Tenant isolation enforced at the database level</li><br><li>Each tenant gets their own nests, keys, webhooks, and billing</li><br></ul></p>
+
+<h2 id="what-you-get">What you get</h2>
+
+<ul>
+<li>Complete AI governance platform (no orchestration code to write)</li>
+<li>4 AI providers with failover (Anthropic, OpenAI, Gemini, Together)</li>
+<li>Trust boundaries on every response</li>
+<li>Hash-chained audit trail</li>
+<li>Policy enforcement and RBAC</li>
+<li>Billing and usage metering</li>
+<li>MCP server for AI assistant integration</li>
+</ul>
+</div>

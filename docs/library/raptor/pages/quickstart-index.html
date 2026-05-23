@@ -1,0 +1,100 @@
+<div class="docs-page">
+<h1>Quickstart</h1>
+<p class="docs-page-description">Get your first governed AI response in under 5 minutes.</p>
+<h1 id="quickstart">Quickstart</h1>
+
+<p>Raptor is a deterministic governance substrate for AI applications. Every AI response passes through classification, policy enforcement, and cryptographic attestation before it reaches the user.</p>
+
+<p>This guide covers two paths: cloud signup and self-hosted Docker.</p>
+
+<h2 id="cloud">Cloud</h2>
+
+<ol>
+<li>Sign up at <a href="https://raptor.dev">raptor.dev</a> with Google, GitHub, Microsoft, or email.</li>
+<li>Create an organization and connect at least one AI provider (Anthropic recommended).</li>
+<li>Copy your API key from Settings. It starts with <code>rpt_</code>.</li>
+</ol>
+
+<p>Your base URL is <code>https://api.raptor.dev</code>.</p>
+
+<h2 id="self-hosted-docker">Self-Hosted (Docker)</h2>
+
+<h3 id="prerequisites">Prerequisites</h3>
+
+<ul>
+<li>Docker and Docker Compose v2+</li>
+<li>At least one AI provider API key (Anthropic, OpenAI, Gemini, or Together AI)</li>
+</ul>
+
+<h3 id="setup">Setup</h3>
+
+<pre><code class="language-bash">git clone https://github.com/pjamesiii/raptor.git &amp;&amp; cd raptor
+cp .env.example .env</code></pre>
+
+<p>Edit <code>.env</code> and set two required values:</p>
+
+<pre><code class="language-dotenv">RAPTOR_ACCESS_TOKEN=a-strong-random-token
+ANTHROPIC_API_KEY=sk-ant-...</code></pre>
+
+<p>Start the stack:</p>
+
+<pre><code class="language-bash">docker compose up -d</code></pre>
+
+<p>Three services come up:</p>
+
+<p>| Service | Port | Purpose |<br>|---------|------|---------|<br>| Control Panel | <code>localhost:4000</code> | API and workspace UI |<br>| MCP Server | <code>localhost:4001</code> | Claude Desktop / Cursor integration |<br>| PostgreSQL | <code>localhost:5432</code> | Governance event store |</p>
+
+<p>Verify the stack is healthy:</p>
+
+<pre><code class="language-bash">curl http://localhost:4000/api/health
+<h1 id="status-ok-code-pre">{"status":"ok"}</code></pre></h1>
+
+<h2 id="send-your-first-governed-message">Send your first governed message</h2>
+
+<pre><code class="language-bash">curl -X POST http://localhost:4000/api/chat \
+  -H "Content-Type: application/json" \
+  -H "X-Raptor-Token: your-access-token" \
+  -d '{"message": "Is this deployment verified?"}'</code></pre>
+
+<p>For cloud, replace <code>localhost:4000</code> with <code>api.raptor.dev</code> and use your <code>rpt_</code> API key:</p>
+
+<pre><code class="language-bash">curl -X POST https://api.raptor.dev/api/chat \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer rpt_your_api_key" \
+  -d '{"message": "Is this deployment verified?"}'</code></pre>
+
+<p>The response includes:</p>
+
+<ul>
+<li><strong><code>reply</code></strong> -- the AI's governed response text</li>
+<li><strong><code>trust_boundary</code></strong> -- classification: <code>confirmed</code>, <code>executed</code>, <code>retrieved</code>, <code>likely</code>, or <code>uncertain</code></li>
+<li><strong><code>segments</code></strong> -- per-claim trust boundaries within the response</li>
+<li><strong><code>decision_support</code></strong> -- confidence level, recommendation, basis, and risk assessment</li>
+<li><strong><code>audit_trail</code></strong> -- the 4-event governance chain for this request</li>
+</ul>
+
+<p>See <a href="/quickstart/first-response">Understanding Your First Response</a> for a full breakdown.</p>
+
+<h2 id="what-just-happened">What just happened?</h2>
+
+<ol>
+<li>Your message entered the <strong>decision engine</strong> (classifier + confidence rules).</li>
+<li><strong>Governance middleware</strong> checked capabilities, policies, and budgets.</li>
+<li>The AI generated a response in the <strong>proposal layer</strong>.</li>
+<li>The <strong>commit layer</strong> structured the response with per-claim trust boundaries.</li>
+<li>Everything was recorded in the <strong>hash-chained event log</strong>.</li>
+</ol>
+
+<p>Every response follows this exact process. The process does not vary.</p>
+
+<h2 id="next-steps">Next steps</h2>
+
+<ul>
+<li><a href="/quickstart/first-response">Understanding your first response</a> -- anatomy of a governed response</li>
+<li><a href="/quickstart/installation">Installation guide</a> -- Docker Compose, build from source, cloud</li>
+<li><a href="/quickstart/authentication">Authentication</a> -- Clerk SSO, API keys, Founder Key</li>
+<li><a href="/concepts/trust-boundaries">Trust boundaries</a> -- the five trust levels</li>
+<li><a href="/guides/mcp">MCP server</a> -- connect Claude Desktop or Cursor to Raptor</li>
+<li><a href="/api-reference">API reference</a> -- full endpoint documentation</li>
+</ul>
+</div>

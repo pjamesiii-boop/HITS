@@ -1,0 +1,159 @@
+<div class="docs-page">
+<h1>API Key Management</h1>
+<p class="docs-page-description">Create, scope, rotate, and revoke Raptor API keys for backend and CI integrations.</p>
+<h1 id="api-key-management">API Key Management</h1>
+
+<p>Raptor API keys authenticate backend services, CI pipelines, and SDK integrations. Keys use the <code>rpt_</code> prefix and are stored as SHA-256 hashes — the plaintext key is shown exactly once at creation.</p>
+
+<h2 id="1-create-a-key">1. Create a key</h2>
+
+<h3 id="via-api">Via API</h3>
+
+<pre><code class="language-bash">curl -X POST https://raptor.harpyits.com/api/keys \
+  -H "Authorization: Bearer your_clerk_jwt" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "production-backend",
+    "scopes": ["all"],
+    "expires_at": "2027-01-01T00:00:00Z"
+  }'</code></pre>
+
+<p>Response:</p>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "key": "rpt_a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6",
+  "key_id": "uuid",
+  "name": "production-backend",
+  "prefix": "rpt_a1b2",
+  "warning": "Store this key securely. It will not be shown again."
+}</code></pre>
+
+<p>Copy the <code>key</code> value immediately. After this response, Raptor only stores the hash — there is no way to retrieve the full key.</p>
+
+<h3 id="via-settings-ui">Via Settings UI</h3>
+
+<ol>
+<li>Open the Control Panel</li>
+<li>Navigate to Settings</li>
+<li>Click "Create API Key"</li>
+<li>Name the key and set optional expiration</li>
+<li>Copy the displayed key before closing the dialog</li>
+</ol>
+
+<h2 id="2-key-format">2. Key format</h2>
+
+<p>Keys follow the format <code>rpt_</code> + 32 hex characters:</p>
+
+<pre><code>rpt_a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6</code></pre>
+
+<p>The first 8 characters (<code>rpt_a1b2</code>) are stored as a prefix for identification in the key list. The full key is never stored — only its SHA-256 hash.</p>
+
+<h2 id="3-authentication">3. Authentication</h2>
+
+<p>Use the key in either header:</p>
+
+<pre><code class="language-bash"># Authorization header
+curl -H "Authorization: Bearer rpt_a1b2c3d4..." \
+  https://raptor.harpyits.com/api/chat
+
+<h1 id="x-raptor-key-header">X-Raptor-Key header</h1>
+curl -H "X-Raptor-Key: rpt_a1b2c3d4..." \
+  https://raptor.harpyits.com/api/chat</code></pre>
+
+<p>Keys inherit the permissions of the tenant that created them. Every request made with a key is attributed to the creating actor and tenant.</p>
+
+<h2 id="4-scoping">4. Scoping</h2>
+
+<p>Keys accept a <code>scopes</code> array at creation. If omitted, the default scope is <code>["all"]</code>.</p>
+
+<pre><code class="language-json">{
+  "name": "read-only-dashboard",
+  "scopes": ["read"]
+}</code></pre>
+
+<p>Scoped keys can only perform operations matching their granted scopes. Use narrow scopes for integrations that only need read access.</p>
+
+<h2 id="5-expiration">5. Expiration</h2>
+
+<p>Set <code>expires_at</code> (RFC 3339) to create time-limited keys:</p>
+
+<pre><code class="language-json">{
+  "name": "ci-pipeline-q3",
+  "expires_at": "2026-09-30T23:59:59Z"
+}</code></pre>
+
+<p>Expired keys are rejected at authentication time. They remain in the key list with their <code>expires_at</code> visible.</p>
+
+<h2 id="6-rotation">6. Rotation</h2>
+
+<p>Raptor does not have an in-place rotation endpoint. To rotate a key:</p>
+
+<ol>
+<li>Create a new key with the same name and scopes</li>
+<li>Deploy the new key to your integration</li>
+<li>Revoke the old key once traffic has migrated</li>
+</ol>
+
+<pre><code class="language-bash"># Revoke the old key
+curl -X DELETE https://raptor.harpyits.com/api/keys/{old_key_id} \
+  -H "Authorization: Bearer your_clerk_jwt"</code></pre>
+
+<p>For zero-downtime rotation, your integration should accept the key from an environment variable so the swap requires no code deploy.</p>
+
+<h2 id="7-revocation">7. Revocation</h2>
+
+<pre><code class="language-bash">curl -X DELETE https://raptor.harpyits.com/api/keys/{key_id} \
+  -H "Authorization: Bearer your_clerk_jwt"</code></pre>
+
+<p>Revoked keys are rejected immediately. The revocation timestamp is recorded in <code>revoked_at</code>.</p>
+
+<h2 id="8-listing-keys">8. Listing keys</h2>
+
+<pre><code class="language-bash">curl -H "Authorization: Bearer your_clerk_jwt" \
+  https://raptor.harpyits.com/api/keys</code></pre>
+
+<p>The response shows prefix, name, scopes, last-used timestamp, expiration, and revocation status for each key. The full key is never included.</p>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "keys": [
+    {
+      "id": "uuid",
+      "name": "production-backend",
+      "prefix": "rpt_a1b2",
+      "scopes": ["all"],
+      "last_used_at": "2026-05-21T14:30:00Z",
+      "expires_at": "2027-01-01T00:00:00Z",
+      "revoked_at": null,
+      "created_at": "2026-05-01T10:00:00Z"
+    }
+  ]
+}</code></pre>
+
+<h2 id="9-credit-exhaustion-behavior">9. Credit exhaustion behavior</h2>
+
+<p>When a tenant's credit balance reaches zero, API keys for that tenant are subject to the tenant's billing tier behavior — requests may be paused or capped depending on the plan. Keys themselves are not revoked; the billing layer controls access.</p>
+
+<h2 id="hash-only-storage">Hash-only storage</h2>
+
+<p>Raptor never stores plaintext API keys. The key creation flow:</p>
+
+<ol>
+<li>Generate 16 random bytes, hex-encode to 32 characters</li>
+<li>Prepend <code>rpt_</code> prefix</li>
+<li>Compute SHA-256 hash of the full key</li>
+<li>Store the hash and the 8-character prefix</li>
+<li>Return the full key once in the creation response</li>
+</ol>
+
+<p>If you lose a key, revoke it and create a new one.</p>
+
+<h2 id="next-steps">Next steps</h2>
+
+<ul>
+<li><a href="/guides/rest-api">REST API integration</a> — use your key to call the API</li>
+<li><a href="/guides/typescript-sdk">TypeScript SDK</a> — pass your key to the SDK client</li>
+<li><a href="/guides/webhooks">Webhook integration</a> — webhook secrets use a separate <code>whsec_</code> prefix</li>
+</ul>
+</div>

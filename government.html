@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="hits_logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Government & Contracting | HITS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'deep-slate': '#020617',
+            'electric-blue': '#3b82f6',
+            'blue-glow': '#60a5fa',
+            'blue-bright': '#93c5fd',
+          },
+          fontFamily: {
+            'display': ['Syne', 'sans-serif'],
+            'body': ['DM Sans', 'sans-serif'],
+            'mono': ['JetBrains Mono', 'monospace'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --blue: #3b82f6;
+      --blue-glow: #60a5fa;
+      --bg: #020617;
+      --card-bg: rgba(15,23,42,0.75);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background-color: var(--bg);
+      font-family: 'DM Sans', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Grain */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: 0.4;
+    }
+
+    /* ── Nav ── */
+    .nav-glass {
+      background: rgba(2,6,23,0.65);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid rgba(59,130,246,0.12);
+    }
+    .nav-link {
+      position: relative;
+      color: rgba(203,213,225,0.85);
+      font-size: 0.875rem; font-weight: 500;
+      letter-spacing: 0.02em;
+      transition: color 0.2s;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute; bottom: -3px; left: 0;
+      width: 0; height: 1px;
+      background: var(--blue);
+      transition: width 0.25s ease;
+    }
+    .nav-link:hover { color: #93c5fd; }
+    .nav-link:hover::after { width: 100%; }
+    .nav-link.active { color: #93c5fd; }
+    .nav-link.active::after { width: 100%; }
+
+    .btn-contact {
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      box-shadow: 0 0 20px rgba(59,130,246,0.4);
+      transition: box-shadow 0.3s, transform 0.2s;
+    }
+    .btn-contact:hover {
+      box-shadow: 0 0 32px rgba(59,130,246,0.65);
+      transform: translateY(-1px);
+    }
+
+    /* ── Authority Hero ── */
+    .hero-scanline {
+      background-image:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 3px,
+          rgba(59,130,246,0.015) 3px,
+          rgba(59,130,246,0.015) 4px
+        );
+    }
+
+    .data-block {
+      background: rgba(2,6,23,0.85);
+      border: 1px solid rgba(59,130,246,0.3);
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      position: relative;
+      overflow: hidden;
+    }
+    .data-block::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(59,130,246,0.8), transparent);
+    }
+
+    .terminal-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(59,130,246,0.6);
+    }
+
+    .terminal-value {
+      font-family: 'JetBrains Mono', monospace;
+      color: #e2e8f0;
+      letter-spacing: 0.05em;
+    }
+
+    .sdvosb-badge {
+      background: linear-gradient(135deg, rgba(34,197,94,0.15), rgba(16,185,129,0.1));
+      border: 1px solid rgba(34,197,94,0.5);
+      box-shadow: 0 0 24px rgba(34,197,94,0.25), inset 0 0 20px rgba(34,197,94,0.05);
+      animation: sdvosbPulse 3s ease-in-out infinite;
+    }
+    @keyframes sdvosbPulse {
+      0%,100% { box-shadow: 0 0 20px rgba(34,197,94,0.2), inset 0 0 20px rgba(34,197,94,0.05); }
+      50%      { box-shadow: 0 0 36px rgba(34,197,94,0.45), inset 0 0 24px rgba(34,197,94,0.1); }
+    }
+
+    .clearance-badge {
+      background: linear-gradient(135deg, rgba(239,68,68,0.15), rgba(220,38,38,0.1));
+      border: 1px solid rgba(239,68,68,0.45);
+      box-shadow: 0 0 20px rgba(239,68,68,0.2);
+    }
+
+    /* ── Grid / cards ── */
+    .bento-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(59,130,246,0.15);
+      border-radius: 16px;
+      backdrop-filter: blur(12px);
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .bento-card:hover {
+      border-color: rgba(59,130,246,0.38);
+      box-shadow: 0 0 36px rgba(59,130,246,0.1);
+    }
+
+    .glow-bullet {
+      width: 7px; height: 7px;
+      background: var(--blue);
+      border-radius: 50%; flex-shrink: 0;
+      box-shadow: 0 0 8px 2px rgba(59,130,246,0.65);
+    }
+
+    .tag {
+      display: inline-flex; align-items: center;
+      padding: 3px 10px;
+      background: rgba(59,130,246,0.12);
+      border: 1px solid rgba(59,130,246,0.3);
+      border-radius: 999px;
+      font-size: 0.68rem; font-weight: 600;
+      letter-spacing: 0.08em; color: #93c5fd;
+      text-transform: uppercase;
+    }
+
+    .blue-line {
+      width: 48px; height: 2px;
+      background: linear-gradient(90deg, var(--blue), transparent);
+      border-radius: 2px;
+    }
+
+    /* ── NAICS table ── */
+    .naics-row {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 0;
+      border-bottom: 1px solid rgba(59,130,246,0.08);
+      transition: background 0.2s;
+    }
+    .naics-row:last-child { border-bottom: none; }
+    .naics-row:hover { background: rgba(59,130,246,0.04); }
+
+    .naics-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: #60a5fa;
+      padding: 11px 16px;
+      border-right: 1px solid rgba(59,130,246,0.1);
+      font-weight: 500;
+    }
+
+    .naics-desc {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.83rem;
+      color: #94a3b8;
+      padding: 11px 16px;
+      display: flex;
+      align-items: center;
+    }
+
+    .primary-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.58rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      padding: 2px 7px;
+      border-radius: 3px;
+      background: rgba(59,130,246,0.2);
+      border: 1px solid rgba(59,130,246,0.35);
+      color: #93c5fd;
+      margin-left: auto;
+      flex-shrink: 0;
+      text-transform: uppercase;
+    }
+
+    /* ── Past Performance cards ── */
+    .perf-card {
+      background: rgba(10,22,40,0.8);
+      border: 1px solid rgba(59,130,246,0.18);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+      position: relative;
+    }
+    .perf-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--blue), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .perf-card:hover {
+      border-color: rgba(59,130,246,0.4);
+      transform: translateY(-4px);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.4), 0 0 30px rgba(59,130,246,0.12);
+    }
+    .perf-card:hover::before { opacity: 1; }
+
+    .theater-chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(59,130,246,0.1);
+      border: 1px solid rgba(59,130,246,0.25);
+      color: #93c5fd;
+      text-transform: uppercase;
+    }
+
+    .status-active {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: #86efac;
+      padding: 3px 10px;
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.3);
+      border-radius: 4px;
+    }
+    .status-active::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: #4ade80;
+      border-radius: 50%;
+      box-shadow: 0 0 6px rgba(74,222,128,0.8);
+      animation: activePulse 2s ease-in-out infinite;
+    }
+    @keyframes activePulse {
+      0%,100% { opacity: 1; } 50% { opacity: 0.4; }
+    }
+
+    .status-complete {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: #94a3b8;
+      padding: 3px 10px;
+      background: rgba(148,163,184,0.08);
+      border: 1px solid rgba(148,163,184,0.2);
+      border-radius: 4px;
+    }
+
+    /* ── Download CTA ── */
+    .btn-download {
+      background: linear-gradient(135deg, #1d4ed8, #2563eb, #3b82f6);
+      box-shadow: 0 0 40px rgba(59,130,246,0.5), 0 0 80px rgba(59,130,246,0.2);
+      transition: box-shadow 0.3s, transform 0.2s;
+      animation: downloadGlow 3s ease-in-out infinite;
+    }
+    .btn-download:hover {
+      box-shadow: 0 0 60px rgba(59,130,246,0.75), 0 0 100px rgba(59,130,246,0.35);
+      transform: translateY(-2px);
+    }
+    @keyframes downloadGlow {
+      0%,100% { box-shadow: 0 0 36px rgba(59,130,246,0.45), 0 0 72px rgba(59,130,246,0.18); }
+      50%      { box-shadow: 0 0 56px rgba(59,130,246,0.7), 0 0 100px rgba(59,130,246,0.3); }
+    }
+
+    /* ── Cert badge images ── */
+    .cert-badge-wrap {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      padding: 14px 18px;
+      background: rgba(10,18,36,0.85);
+      border: 1px solid rgba(59,130,246,0.2);
+      border-radius: 12px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      min-width: 110px;
+    }
+    .cert-badge-wrap:hover {
+      border-color: rgba(59,130,246,0.45);
+      box-shadow: 0 0 20px rgba(59,130,246,0.12);
+    }
+    /* Cert img — wrapped in vignette div, img itself has no direct size */
+    .cert-badge-wrap img {
+      height: 52px; width: auto; object-fit: contain; display: block;
+      border-radius: 8px;
+    }
+    /* Cert badge — clean ice-blue card, intentional brand badge */
+    .cert-img-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #f0f7ff;
+      border-radius: 8px;
+      padding: 4px;
+      box-shadow: 0 0 0 1px rgba(147,197,253,0.5),
+                  0 0 14px rgba(59,130,246,0.2);
+    }
+    .cert-img-wrap img {
+      display: block;
+      border-radius: 6px;
+    }
+    .cert-badge-wrap .cert-fallback {
+      display: none;
+      width: 52px; height: 52px;
+      border-radius: 8px;
+      background: rgba(59,130,246,0.15);
+      border: 1px solid rgba(59,130,246,0.3);
+      align-items: center; justify-content: center;
+    }
+
+    /* ── Animations ── */
+    .anim-1 { opacity:0; animation: fadeUp 0.65s ease 0.1s forwards; }
+    .anim-2 { opacity:0; animation: fadeUp 0.65s ease 0.22s forwards; }
+    .anim-3 { opacity:0; animation: fadeUp 0.65s ease 0.34s forwards; }
+    .anim-4 { opacity:0; animation: fadeUp 0.65s ease 0.46s forwards; }
+    .anim-5 { opacity:0; animation: fadeUp 0.65s ease 0.58s forwards; }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(22px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .scroll-reveal { opacity:0; transform:translateY(28px); transition: opacity 0.65s ease, transform 0.65s ease; }
+    .scroll-reveal.visible { opacity:1; transform:translateY(0); }
+
+    /* Mobile menu */
+    #mobile-menu { display:none; }
+    #mobile-menu.open { display:block; }
+  
+    /* ── Products Dropdown ── */
+    .dropdown-wrap { position: relative; }
+    .dropdown-btn {
+      display: flex; align-items: center; gap: 5px;
+      color: rgba(203,213,225,0.85); font-size: .875rem; font-weight: 500;
+      letter-spacing: .02em; cursor: pointer; background: none; border: none;
+      padding: 0; transition: color .2s; font-family: 'DM Sans', sans-serif;
+      position: relative;
+    }
+    .dropdown-btn::after {
+      content: ''; position: absolute; bottom: -3px; left: 0;
+      width: 0; height: 1px; background: #3b82f6; transition: width .25s ease;
+    }
+    .dropdown-btn:hover, .dropdown-btn.active { color: #93c5fd; }
+    .dropdown-btn:hover::after, .dropdown-btn.active::after { width: calc(100% - 16px); }
+    .dropdown-btn svg { transition: transform .25s ease; flex-shrink: 0; }
+    .dropdown-wrap:hover .dropdown-btn svg,
+    .dropdown-wrap.open .dropdown-btn svg { transform: rotate(180deg); }
+    .dropdown-menu {
+      position: absolute; top: 100%; left: 50%; padding-top: 12px;
+      transform: translateX(-50%) scale(0.95);
+      min-width: 230px; z-index: 100;
+      background: transparent;
+      opacity: 0; pointer-events: none;
+      transform-origin: top center;
+      transition: opacity .22s ease, transform .22s ease;
+    }
+    .dropdown-menu-inner {
+      background: rgba(7,12,28,0.92);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid rgba(59,130,246,0.22);
+      border-radius: 14px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(59,130,246,0.08);
+      padding: 8px;
+    }
+    .dropdown-wrap:hover .dropdown-menu,
+    .dropdown-wrap.open .dropdown-menu {
+      opacity: 1; pointer-events: auto;
+      transform: translateX(-50%) scale(1);
+    }
+    .dropdown-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 8px;
+      font-family: 'DM Sans', sans-serif; font-size: .85rem; font-weight: 500;
+      color: rgba(203,213,225,0.85); text-decoration: none;
+      transition: background .18s, color .18s; white-space: nowrap;
+    }
+    .dropdown-item:hover { background: rgba(59,130,246,0.1); color: #93c5fd; }
+    .dropdown-item .d-icon {
+      width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.22);
+    }
+    .dropdown-item.coming-soon { cursor: default; opacity: .42; pointer-events: none; }
+    .dropdown-divider { height: 1px; background: rgba(59,130,246,0.1); margin: 6px 4px; }
+    .coming-tag {
+      margin-left: auto; font-size: .6rem; font-family: 'JetBrains Mono', monospace;
+      font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+      padding: 2px 6px; border-radius: 4px;
+      background: rgba(148,163,184,0.1); border: 1px solid rgba(148,163,184,0.2);
+      color: rgba(148,163,184,0.6);
+    }
+    .mob-dropdown-items { display: none; padding-left: 14px; margin-top: 4px; }
+    .mob-dropdown-items.open { display: flex; flex-direction: column; gap: 2px; }
+    .mob-dropdown-btn {
+      display: flex; align-items: center; justify-content: space-between;
+      color: rgba(203,213,225,0.85); font-size: 1rem; font-weight: 500;
+      background: none; border: none; padding: 0; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; width: 100%;
+    }
+    .mob-dropdown-btn svg { transition: transform .25s; }
+    .mob-dropdown-btn.open svg { transform: rotate(180deg); }
+
+  </style>
+</head>
+
+<body class="text-slate-100 relative">
+
+  <!-- ══════════════════════════════
+       NAV
+  ══════════════════════════════ -->
+  <header class="nav-glass fixed top-0 inset-x-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-16">
+
+      <a href="index.html" class="flex items-center gap-2.5 group">
+        <!-- HITS logo — Smart Card badge housing -->
+        <div class="relative flex items-center justify-center" style="width:36px;height:36px;">
+          <!-- Outer cyber-glow bloom -->
+          <div style="position:absolute;inset:-7px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,0.28) 0%,transparent 68%);pointer-events:none;z-index:0;"></div>
+          <!-- Secure housing ring -->
+          <div style="position:absolute;inset:-1px;border-radius:10px;border:1px solid rgba(96,165,250,0.55);background:transparent;pointer-events:none;z-index:3;box-shadow:0 0 14px rgba(59,130,246,0.3);"></div>
+          <div style="position:relative;z-index:2;
+                      border-radius:7px;overflow:hidden;
+                      width:32px;height:32px;
+                      display:flex;align-items:center;justify-content:center;
+                      background:#dbeafe;
+                      box-shadow:inset 0 0 0 1px rgba(147,197,253,0.6);">
+            <img src="hits_logo.png" alt="HITS"
+                 class="h-7 w-auto"
+                 style="border-radius:5px;"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+          </div>
+          <!-- Text fallback -->
+          <div style="display:none;position:relative;z-index:2;" class="w-8 h-8 rounded-md bg-electric-blue items-center justify-center shadow-[0_0_14px_rgba(59,130,246,0.7)]">
+            <span class="font-display font-800 text-white text-sm">H</span>
+          </div>
+        </div>
+        <span class="font-display font-700 text-white text-lg tracking-tight">HITS</span>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-7 font-body">
+        <a href="index.html"      class="nav-link">Home</a>
+        <div class="dropdown-wrap">
+          <button class="dropdown-btn">
+            Products
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="dropdown-menu"><div class="dropdown-menu-inner">
+            <a href="products.html" class="dropdown-item">
+              <span class="d-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+              Product Hub
+            </a>
+            <div class="dropdown-divider"></div>
+            <a href="product.html" class="dropdown-item">
+              <span class="d-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></span>
+              Harpy Talon
+            </a>
+            <a href="https://raptor.harpyits.com" class="dropdown-item">
+              <span class="d-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span>
+              Raptor
+            </a>
+            <span class="dropdown-item coming-soon">
+              <span class="d-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+              CrestView PDS
+              <span class="coming-tag">Soon</span>
+            </span>
+          </div></div>
+        </div>
+        <a href="services.html"   class="nav-link">Services</a>
+        <a href="government.html" class="nav-link active">Government</a>
+        <a href="about.html"      class="nav-link">About</a>
+        <a href="careers.html"    class="nav-link">Careers</a>
+        <a href="news.html"       class="nav-link">News</a>
+        <a href="docs.html"       class="nav-link">Docs</a>
+      </nav>
+
+      <div class="hidden md:flex">
+        <a href="contact.html" class="btn-contact px-5 py-2 rounded-lg text-sm font-display font-600 text-white tracking-wide">
+          Contact Us
+        </a>
+      </div>
+
+      <button id="menu-toggle" class="md:hidden flex flex-col gap-1.5 p-1" aria-label="Toggle menu">
+        <span class="w-5 h-0.5 bg-slate-300 block"></span>
+        <span class="w-5 h-0.5 bg-slate-300 block"></span>
+        <span class="w-5 h-0.5 bg-slate-300 block"></span>
+      </button>
+    </div>
+
+    <div id="mobile-menu" class="md:hidden px-6 pb-5 pt-2 flex flex-col gap-4 font-body border-t border-white/5">
+      <a href="index.html"      class="nav-link text-base">Home</a>
+      <div>
+        <button class="mob-dropdown-btn" id="mob-prod-btn">
+          Products
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="mob-dropdown-items" id="mob-prod-items">
+          <a href="products.html" class="dropdown-item" style="padding:8px 10px;font-size:.9rem;">Product Hub</a>
+          <a href="product.html" class="dropdown-item" style="padding:8px 10px;font-size:.9rem;">Harpy Talon</a>
+          <a href="https://raptor.harpyits.com" class="dropdown-item" style="padding:8px 10px;font-size:.9rem;">Raptor</a>
+          <span class="dropdown-item coming-soon" style="padding:8px 10px;font-size:.9rem;">CrestView PDS <span class="coming-tag">Soon</span></span>
+        </div>
+      </div>
+      <a href="services.html"   class="nav-link text-base">Services</a>
+      <a href="government.html" class="nav-link active text-base">Government</a>
+      <a href="about.html"      class="nav-link text-base">About</a>
+      <a href="careers.html"    class="nav-link text-base">Careers</a>
+      <a href="news.html"       class="nav-link text-base">News</a>
+      <a href="docs.html"       class="nav-link text-base">Docs</a>
+      <a href="contact.html" class="btn-contact px-5 py-2.5 rounded-lg text-sm font-display font-600 text-white text-center">Contact Us</a>
+    </div>
+  </header>
+
+
+  <!-- ══════════════════════════════
+       AUTHORITY HERO
+  ══════════════════════════════ -->
+  <section class="relative min-h-[92vh] flex flex-col justify-center px-6 pt-24 pb-20 overflow-hidden hero-scanline">
+
+    <!-- Background radial -->
+    <div class="absolute inset-0 pointer-events-none"
+         style="background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(59,130,246,0.09) 0%, transparent 70%);">
+    </div>
+
+    <!-- Subtle corner bracket marks -->
+    <div class="absolute top-24 left-6 w-10 h-10 border-t border-l border-electric-blue/20"></div>
+    <div class="absolute top-24 right-6 w-10 h-10 border-t border-r border-electric-blue/20"></div>
+    <div class="absolute bottom-8 left-6 w-10 h-10 border-b border-l border-electric-blue/20"></div>
+    <div class="absolute bottom-8 right-6 w-10 h-10 border-b border-r border-electric-blue/20"></div>
+
+    <div class="relative z-10 max-w-7xl mx-auto w-full">
+
+      <!-- Eyebrow -->
+      <div class="anim-1 flex flex-wrap items-center gap-3 mb-8">
+        <span class="tag">Government &amp; Contracting</span>
+        <span class="clearance-badge tag" style="background:rgba(239,68,68,0.12); border-color:rgba(239,68,68,0.4); color:#fca5a5;">
+          ● Tier 5 — Active
+        </span>
+      </div>
+
+      <!-- Main headline -->
+      <h1 class="anim-2 font-display font-800 text-5xl sm:text-6xl lg:text-7xl leading-[1.04] tracking-tight mb-6">
+        <span style="background: linear-gradient(135deg,#fff 0%,#e2eeff 35%,#93c5fd 65%,#3b82f6 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
+          Mission-Cleared.<br />Contract-Ready.
+        </span>
+      </h1>
+
+      <p class="anim-3 font-body text-lg text-slate-400 max-w-2xl leading-relaxed mb-10">
+        HITS is a verified Service-Disabled Veteran-Owned Small Business delivering enterprise IT,
+        cybersecurity, and systems engineering to federal agencies and DoD commands worldwide.
+      </p>
+
+      <!-- DATA BLOCK — Authority IDs -->
+      <div class="anim-4 data-block p-0 mb-10 max-w-3xl">
+        <!-- Header bar -->
+        <div class="flex items-center gap-3 px-5 py-3 border-b border-blue-900/50"
+             style="background:rgba(59,130,246,0.06);">
+          <div class="w-2 h-2 rounded-full bg-electric-blue shadow-[0_0_8px_rgba(59,130,246,0.9)]"></div>
+          <span class="terminal-label text-xs">ENTITY AUTHORITY RECORD — VERIFIED</span>
+          <span class="ml-auto terminal-label" style="color:rgba(34,197,94,0.7);">STATUS: ACTIVE</span>
+        </div>
+
+        <!-- ID rows -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-blue-900/40">
+          <div class="px-6 py-5">
+            <p class="terminal-label mb-1.5">CAGE Code</p>
+            <p class="terminal-value text-xl font-600 tracking-widest">9M2N1</p>
+          </div>
+          <div class="px-6 py-5">
+            <p class="terminal-label mb-1.5">UEI (SAM.gov)</p>
+            <p class="terminal-value text-base font-500 tracking-wider">UJ5VCLDTKK87</p>
+          </div>
+          <div class="px-6 py-5">
+            <p class="terminal-label mb-1.5">DUNS Number</p>
+            <p class="terminal-value text-xl font-600 tracking-widest">129854474</p>
+          </div>
+        </div>
+
+        <!-- Footer bar -->
+        <div class="flex flex-wrap items-center gap-4 px-5 py-3 border-t border-blue-900/50"
+             style="background:rgba(2,6,23,0.6);">
+          <span class="terminal-label">Business Type: <span style="color:#93c5fd;">Small Business</span></span>
+          <span class="terminal-label">Set-Aside: <span style="color:#93c5fd;">SDVOSB / 8(a) Eligible</span></span>
+          <span class="terminal-label">Registration: <span style="color:#86efac;">SAM Active</span></span>
+        </div>
+      </div>
+
+      <!-- Badges row -->
+      <div class="anim-5 flex flex-wrap items-center gap-5">
+
+        <!-- SDVOSB glowing badge -->
+        <div class="sdvosb-badge flex items-center gap-3 px-5 py-3.5 rounded-xl">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="1.8">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <polyline points="9 12 11 14 15 10" stroke="#4ade80" stroke-width="2"/>
+          </svg>
+          <div>
+            <p class="font-display font-700 text-sm text-green-300">SDVOSB Certified</p>
+            <p class="font-mono text-xs text-green-500/70">Service-Disabled Veteran-Owned</p>
+          </div>
+        </div>
+
+        <!-- Cert badge images -->
+        <div class="cert-badge-wrap">
+          <div class="cert-img-wrap">
+            <img src="sba-sdvosb.png" alt="SBA SDVOSB"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          </div>
+          <div class="cert-fallback flex items-center justify-center">
+            <span class="font-mono text-xs text-electric-blue text-center leading-tight">SBA<br/>SDVOSB</span>
+          </div>
+          <span class="font-mono text-xs text-slate-500">SBA Verified</span>
+        </div>
+
+        <div class="cert-badge-wrap">
+          <div class="cert-img-wrap">
+            <img src="cmmc-level2.png" alt="CMMC Level 2"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          </div>
+          <div class="cert-fallback flex items-center justify-center">
+            <span class="font-mono text-xs text-electric-blue text-center leading-tight">CMMC<br/>LVL 2</span>
+          </div>
+          <span class="font-mono text-xs text-slate-500">CMMC Level 2</span>
+        </div>
+
+        <div class="cert-badge-wrap">
+          <div class="cert-img-wrap">
+            <img src="vip-graduate.png" alt="VIP Graduate"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          </div>
+          <div class="cert-fallback flex items-center justify-center">
+            <span class="font-mono text-xs text-electric-blue text-center leading-tight">VIP<br/>GRAD</span>
+          </div>
+          <span class="font-mono text-xs text-slate-500">VIP Graduate</span>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════
+       CAPABILITIES BENTO GRID
+  ══════════════════════════════ -->
+  <section class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 py-24 scroll-reveal">
+
+    <div class="flex items-center gap-4 mb-4">
+      <div class="blue-line"></div>
+      <span class="font-display font-600 text-slate-500 text-sm tracking-widest uppercase">Core Capabilities</span>
+    </div>
+    <h2 class="font-display font-800 text-3xl lg:text-4xl text-white mb-3">What We Deliver</h2>
+    <p class="font-body text-slate-400 text-base mb-12 max-w-2xl">
+      Four mission-critical disciplines — executed by cleared personnel, governed by rigorous standards.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+      <!-- Card 1: Enterprise Systems -->
+      <div class="bento-card p-8 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-56 h-56 pointer-events-none opacity-[0.06]"
+             style="background: radial-gradient(circle at top right, #3b82f6, transparent);">
+        </div>
+        <div class="w-11 h-11 rounded-xl bg-electric-blue/10 border border-electric-blue/25 flex items-center justify-center mb-5">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8">
+            <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+          </svg>
+        </div>
+        <span class="tag mb-3 inline-block">DISN / DoDNet</span>
+        <h3 class="font-display font-700 text-xl text-white mb-3">Enterprise Systems &amp; Network Design</h3>
+        <p class="font-body text-slate-400 text-sm leading-relaxed mb-5">
+          Architecting and sustaining enterprise-grade networks across DoD enclaves. Deep expertise in
+          DISN, DoDNet, NIPRNet, SIPRNet, and classified transport architectures that meet NSA and DISA
+          Technical Reference Model requirements.
+        </p>
+        <div class="flex flex-col gap-2.5">
+          <div class="flex items-center gap-3 text-slate-300 text-sm font-body"><div class="glow-bullet"></div>NIPRNet / SIPRNet architecture &amp; segmentation</div>
+          <div class="flex items-center gap-3 text-slate-300 text-sm font-body"><div class="glow-bullet"></div>DISN transport &amp; DoDNet integration</div>
+          <div class="flex items-center gap-3 text-slate-300 text-sm font-body"><div class="glow-bullet"></div>WAN / LAN optimization for austere environments</div>
+          <div class="flex items-center gap-3 text-slate-300 text-sm font-body"><div class="glow-bullet"></div>Unified Communications (VoIP, VTC, VSAT)</div>
+          <div class="flex items-center gap-3 text-slate-300 text-sm font-body"><div class="glow-bullet"></div>Cross-domain solutions &amp; guard implementation</div>
+        </div>
+      </div>
+
+      <!-- Card 2: Infrastructure -->
+      <div class="bento-card p-8 relative overflow-hidden">
+        <div class="absolute bottom-0 left-0 w-56 h-56 pointer-events-none opacity-[0.05]"
+             style="background: radial-gradient(circle at bottom left, #3b82f6, transparent);">
+        </div>
+        <div class="w-11 h-11 rounded-xl bg-electric-blue/10 border border-electric-blue/25 flex items-center justify-center mb-5">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8">
+            <path d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+          </svg>
+        </div>
+        <span class="tag mb-3 inline-block">Installation &amp; O&amp;M</span>
+        <h3 class="font-display font-700 text-xl text-white mb-3">Infrastructure Installation &amp; Sustainment</h3>
+        <p class="font-body text-slate-400 text-sm leading-relaxed mb-5">
+          Full lifecycle infrastructure delivery — from low-voltage cabling and server rack installation
+          to ongoing Operations &amp; Maintenance under long-term government task orders. We build it right and keep it running.
+        </p>
+        <div class="flex flex-col gap-2.5">
+          <div class="flex items-center gap-3 text-slate-300 text-sm font-body"><div class="glow-bullet"></div>Structured cabling (CAT6A, fiber, coax)</div>
+          <div class="flex items-center gap-3 text-slate-300 text-sm font-body"><div class="glow-bullet"></div>Data center buildout &amp; rack/stack integration</div>
+          <div class="flex items-center gap-3 text-slate-300 text-sm font-body"><div class="glow-bullet"></div>OCONUS/expeditionary deployment support</div>
+          <div class="flex items-center gap-3 text-slate-300 text-sm font-body"><div class="glow-bullet"></div>Preventive maintenance &amp; SLA-bound O&amp;M</div>
+          <div class="flex items-center gap-3 text-slate-300 text-sm font-body"><div class="glow-bullet"></div>Help desk &amp; Tier I–III field support</div>
+        </div>
+      </div>
+
+      <!-- Card 3: Cybersecurity -->
+      <div class="bento-card p-8 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-56 h-56 pointer-events-none opacity-[0.05]"
+             style="background: radial-gradient(circle at top left, #3b82f6, transparent);">
+        </div>
+        <div class="w-11 h-11 rounded-xl bg-electric-blue/10 border border-electric-blue/25 flex items-center justify-center mb-5">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <span class="tag mb-3 inline-block">CMMC / NIST</span>
+        <h3 class="font-display font-700 text-xl text-white mb-3">Cybersecurity &amp; Compliance</h3>
+        <p class="font-body text-slate-400 text-sm leading-relaxed mb-5">
+          CMMC Level 2 certified and actively pursuing Level 3. Our cybersecurity practice delivers
+          full-spectrum assessments, continuous monitoring, and compliance engineering aligned to
+          NIST SP 800-53, 800-171, and DoD RMF frameworks.
+        </p>
+        <div class="flex flex-col gap-2.5">
+          <div class="flex items-center gap-3 text-slate-300 text-sm font-body"><div class="glow-bullet"></div>CMMC Level 2 assessment &amp; remediation</div>
+          <div class="flex items-center gap-3 text-slate-300 text-sm font-body"><div class="glow-bullet"></div>NIST SP 800-171 / 800-53 compliance engineering</div>
+          <div class="flex items-center gap-3 text-slate-300 text-sm font-body"><div class="glow-bullet"></div>DoD Risk Management Framework (RMF) A&amp;A</div>
+          <div class="flex items-center gap-3 text-slate-300 text-sm font-body"><div class="glow-bullet"></div>SIEM / SOC integration &amp; continuous monitoring</div>
+          <div class="flex items-center gap-3 text-slate-300 text-sm font-body"><div class="glow-bullet"></div>Zero-trust architecture implementation</div>
+        </div>
+      </div>
+
+      <!-- Card 4: PM -->
+      <div class="bento-card p-8 relative overflow-hidden">
+        <div class="absolute bottom-0 right-0 w-56 h-56 pointer-events-none opacity-[0.05]"
+             style="background: radial-gradient(circle at bottom right, #3b82f6, transparent);">
+        </div>
+        <div class="w-11 h-11 rounded-xl bg-electric-blue/10 border border-electric-blue/25 flex items-center justify-center mb-5">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <span class="tag mb-3 inline-block">PMP / ITIL</span>
+        <h3 class="font-display font-700 text-xl text-white mb-3">Technical Project Management</h3>
+        <p class="font-body text-slate-400 text-sm leading-relaxed mb-5">
+          PMP and ITIL v4-certified program leadership driving on-time, on-budget delivery across
+          complex multi-stakeholder DoD programs. We bridge the gap between technical teams and
+          government contracting officers with disciplined execution.
+        </p>
+        <div class="flex flex-col gap-2.5">
+          <div class="flex items-center gap-3 text-slate-300 text-sm font-body"><div class="glow-bullet"></div>PMP-certified program &amp; project management</div>
+          <div class="flex items-center gap-3 text-slate-300 text-sm font-body"><div class="glow-bullet"></div>ITIL v4 service delivery &amp; ITSM governance</div>
+          <div class="flex items-center gap-3 text-slate-300 text-sm font-body"><div class="glow-bullet"></div>Agile / SAFe delivery for federal programs</div>
+          <div class="flex items-center gap-3 text-slate-300 text-sm font-body"><div class="glow-bullet"></div>CDRL / CLIN management &amp; deliverable tracking</div>
+          <div class="flex items-center gap-3 text-slate-300 text-sm font-body"><div class="glow-bullet"></div>Earned Value Management (EVM) reporting</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════
+       NAICS / PSC MATRIX
+  ══════════════════════════════ -->
+  <section class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pb-24 scroll-reveal">
+
+    <div class="flex items-center gap-4 mb-4">
+      <div class="blue-line"></div>
+      <span class="font-display font-600 text-slate-500 text-sm tracking-widest uppercase">Contract Vehicles</span>
+    </div>
+    <h2 class="font-display font-800 text-3xl lg:text-4xl text-white mb-3">NAICS &amp; PSC Matrix</h2>
+    <p class="font-body text-slate-400 text-base mb-10 max-w-2xl">
+      Authorized industry codes across IT, engineering, and professional services — ready for set-aside and full &amp; open competition.
+    </p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- Primary NAICS -->
+      <div class="bento-card overflow-hidden">
+        <div class="flex items-center gap-3 px-6 py-4 border-b border-blue-900/40"
+             style="background:rgba(59,130,246,0.05);">
+          <div class="w-2 h-2 rounded-full bg-electric-blue shadow-[0_0_8px_rgba(59,130,246,0.8)]"></div>
+          <span class="font-mono text-xs text-slate-400 uppercase tracking-widest">Primary NAICS Codes</span>
+        </div>
+        <div>
+          <div class="naics-row">
+            <div class="naics-code">541512</div>
+            <div class="naics-desc">Computer Systems Design Services <span class="primary-badge">Primary</span></div>
+          </div>
+          <div class="naics-row">
+            <div class="naics-code">541511</div>
+            <div class="naics-desc">Custom Computer Programming Services</div>
+          </div>
+          <div class="naics-row">
+            <div class="naics-code">541513</div>
+            <div class="naics-desc">Computer Facilities Management</div>
+          </div>
+          <div class="naics-row">
+            <div class="naics-code">541519</div>
+            <div class="naics-desc">Other Computer-Related Services</div>
+          </div>
+          <div class="naics-row">
+            <div class="naics-code">517110</div>
+            <div class="naics-desc">Wired Telecommunications Carriers</div>
+          </div>
+          <div class="naics-row">
+            <div class="naics-code">334220</div>
+            <div class="naics-desc">Radio &amp; TV Broadcasting &amp; Wireless Equipment</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Secondary NAICS + PSC -->
+      <div class="flex flex-col gap-6">
+        <div class="bento-card overflow-hidden">
+          <div class="flex items-center gap-3 px-6 py-4 border-b border-blue-900/40"
+               style="background:rgba(59,130,246,0.05);">
+            <div class="w-2 h-2 rounded-full bg-blue-400/60"></div>
+            <span class="font-mono text-xs text-slate-400 uppercase tracking-widest">Secondary NAICS Codes</span>
+          </div>
+          <div>
+            <div class="naics-row">
+              <div class="naics-code">541330</div>
+              <div class="naics-desc">Engineering Services</div>
+            </div>
+            <div class="naics-row">
+              <div class="naics-code">541618</div>
+              <div class="naics-desc">Other Management Consulting Services</div>
+            </div>
+            <div class="naics-row">
+              <div class="naics-code">561210</div>
+              <div class="naics-desc">Facilities Support Services</div>
+            </div>
+            <div class="naics-row">
+              <div class="naics-code">811213</div>
+              <div class="naics-desc">Communication Equipment Repair</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PSC codes -->
+        <div class="bento-card overflow-hidden">
+          <div class="flex items-center gap-3 px-6 py-4 border-b border-blue-900/40"
+               style="background:rgba(59,130,246,0.05);">
+            <div class="w-2 h-2 rounded-full bg-blue-400/60"></div>
+            <span class="font-mono text-xs text-slate-400 uppercase tracking-widest">Product Service Codes (PSC)</span>
+          </div>
+          <div class="grid grid-cols-2">
+            <div class="naics-row col-span-2" style="grid-template-columns: 80px 1fr;">
+              <div class="naics-code text-sm">D302</div>
+              <div class="naics-desc text-sm">IT Telecom / Network Services</div>
+            </div>
+            <div class="naics-row col-span-2" style="grid-template-columns: 80px 1fr;">
+              <div class="naics-code text-sm">D307</div>
+              <div class="naics-desc text-sm">IT Strategy &amp; Architecture</div>
+            </div>
+            <div class="naics-row col-span-2" style="grid-template-columns: 80px 1fr;">
+              <div class="naics-code text-sm">R425</div>
+              <div class="naics-desc text-sm">Engineering &amp; Technical Services</div>
+            </div>
+            <div class="naics-row col-span-2" style="grid-template-columns: 80px 1fr;">
+              <div class="naics-code text-sm">D399</div>
+              <div class="naics-desc text-sm">Other ADP &amp; Telecom Services</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════
+       PAST PERFORMANCE
+  ══════════════════════════════ -->
+  <section class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pb-24 scroll-reveal">
+
+    <div class="flex items-center gap-4 mb-4">
+      <div class="blue-line"></div>
+      <span class="font-display font-600 text-slate-500 text-sm tracking-widest uppercase">Past Performance</span>
+    </div>
+    <h2 class="font-display font-800 text-3xl lg:text-4xl text-white mb-3">Proven on the Mission</h2>
+    <p class="font-body text-slate-400 text-base mb-12 max-w-2xl">
+      Delivered across CONUS, Pacific, European, and Southwest Asia theaters — supporting DISA and DoD commands at global scale.
+    </p>
+
+    <!-- Theater legend -->
+    <div class="flex flex-wrap gap-2 mb-8">
+      <span class="theater-chip">CONUS</span>
+      <span class="theater-chip">PAC</span>
+      <span class="theater-chip">EUR</span>
+      <span class="theater-chip">SWA</span>
+      <span class="font-body text-xs text-slate-600 self-center ml-2">— Theaters of Operation</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      <!-- Project 1: DoDNET -->
+      <div class="perf-card">
+        <!-- Card header accent -->
+        <div class="h-1.5 w-full" style="background: linear-gradient(90deg, #1d4ed8, #3b82f6, #60a5fa);"></div>
+        <div class="p-6">
+          <div class="flex items-start justify-between mb-4">
+            <div class="w-10 h-10 rounded-lg bg-electric-blue/10 border border-electric-blue/25 flex items-center justify-center flex-shrink-0">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8">
+                <circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
+              </svg>
+            </div>
+            <span class="status-active">Active</span>
+          </div>
+
+          <p class="font-mono text-xs text-electric-blue mb-1 tracking-wider">DISA / DoDNET</p>
+          <h3 class="font-display font-700 text-lg text-white mb-3 leading-snug">
+            DoDNET Enterprise Network Operations &amp; Maintenance
+          </h3>
+          <p class="font-body text-sm text-slate-400 leading-relaxed mb-5">
+            Providing network operations, engineering support, and sustainment for the Department of Defense
+            Network (DoDNET) infrastructure. Supporting DISA's global enterprise network management mission
+            through NOC-level monitoring, incident response, and change management.
+          </p>
+
+          <div class="flex flex-wrap gap-1.5 mb-5">
+            <span class="theater-chip">CONUS</span>
+            <span class="theater-chip">PAC</span>
+            <span class="theater-chip">EUR</span>
+            <span class="theater-chip">SWA</span>
+          </div>
+
+          <div class="space-y-2 border-t border-slate-800 pt-4">
+            <div class="flex justify-between text-xs">
+              <span class="font-mono text-slate-500">Customer</span>
+              <span class="font-body text-slate-300">DISA / J6</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="font-mono text-slate-500">Contract Type</span>
+              <span class="font-body text-slate-300">IDIQ — T&amp;M</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="font-mono text-slate-500">NAICS</span>
+              <span class="font-mono text-electric-blue">541512</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 2: Transport -->
+      <div class="perf-card">
+        <div class="h-1.5 w-full" style="background: linear-gradient(90deg, #0f766e, #14b8a6, #5eead4);"></div>
+        <div class="p-6">
+          <div class="flex items-start justify-between mb-4">
+            <div class="w-10 h-10 rounded-lg bg-teal-500/10 border border-teal-500/25 flex items-center justify-center flex-shrink-0">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="1.8">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+            </div>
+            <span class="status-active">Active</span>
+          </div>
+
+          <p class="font-mono text-xs text-teal-400 mb-1 tracking-wider">DISA / TRANSPORT</p>
+          <h3 class="font-display font-700 text-lg text-white mb-3 leading-snug">
+            DISN Transport Infrastructure Engineering &amp; Support
+          </h3>
+          <p class="font-body text-sm text-slate-400 leading-relaxed mb-5">
+            Engineering and installation support for DISN transport circuits and backbone infrastructure.
+            Activities include fiber route management, SONET/DWDM provisioning, and circuit
+            activation supporting classified and unclassified enclave connectivity.
+          </p>
+
+          <div class="flex flex-wrap gap-1.5 mb-5">
+            <span class="theater-chip">CONUS</span>
+            <span class="theater-chip">EUR</span>
+            <span class="theater-chip">SWA</span>
+          </div>
+
+          <div class="space-y-2 border-t border-slate-800 pt-4">
+            <div class="flex justify-between text-xs">
+              <span class="font-mono text-slate-500">Customer</span>
+              <span class="font-body text-slate-300">DISA DITCO</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="font-mono text-slate-500">Contract Type</span>
+              <span class="font-body text-slate-300">FFP / Task Order</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="font-mono text-slate-500">NAICS</span>
+              <span class="font-mono text-teal-400">517110</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 3: MANDO -->
+      <div class="perf-card">
+        <div class="h-1.5 w-full" style="background: linear-gradient(90deg, #7c3aed, #8b5cf6, #a78bfa);"></div>
+        <div class="p-6">
+          <div class="flex items-start justify-between mb-4">
+            <div class="w-10 h-10 rounded-lg bg-violet-500/10 border border-violet-500/25 flex items-center justify-center flex-shrink-0">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <span class="status-complete">Completed</span>
+          </div>
+
+          <p class="font-mono text-xs text-violet-400 mb-1 tracking-wider">DISA / MANDO</p>
+          <h3 class="font-display font-700 text-lg text-white mb-3 leading-snug">
+            MANDO Cybersecurity Operations &amp; Compliance Support
+          </h3>
+          <p class="font-body text-sm text-slate-400 leading-relaxed mb-5">
+            Delivered cybersecurity compliance engineering, RMF Authority-to-Operate (ATO) support,
+            and continuous monitoring services under the MANDO program. STIG implementation,
+            vulnerability scanning, and eMASS data management across multiple classified systems.
+          </p>
+
+          <div class="flex flex-wrap gap-1.5 mb-5">
+            <span class="theater-chip">CONUS</span>
+            <span class="theater-chip">PAC</span>
+          </div>
+
+          <div class="space-y-2 border-t border-slate-800 pt-4">
+            <div class="flex justify-between text-xs">
+              <span class="font-mono text-slate-500">Customer</span>
+              <span class="font-body text-slate-300">DISA / JFHQ-DODIN</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="font-mono text-slate-500">Contract Type</span>
+              <span class="font-body text-slate-300">CPFF / Labor Hour</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="font-mono text-slate-500">NAICS</span>
+              <span class="font-mono text-violet-400">541512</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════
+       DOWNLOAD CTA
+  ══════════════════════════════ -->
+  <section class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pb-28 scroll-reveal">
+    <div class="bento-card p-10 lg:p-16 text-center relative overflow-hidden"
+         style="background: linear-gradient(135deg, rgba(15,23,42,0.95) 0%, rgba(17,32,68,0.7) 100%);">
+
+      <!-- Background glow -->
+      <div class="absolute inset-0 pointer-events-none"
+           style="background: radial-gradient(ellipse 70% 70% at 50% 100%, rgba(59,130,246,0.16) 0%, transparent 70%);">
+      </div>
+
+      <!-- Decorative data lines -->
+      <div class="absolute top-6 left-8 font-mono text-xs text-blue-900/50 text-left leading-relaxed hidden lg:block">
+        CAGE: 9M2N1<br/>UEI: UJ5VCLDTKK87<br/>DUNS: 129854474
+      </div>
+      <div class="absolute top-6 right-8 font-mono text-xs text-blue-900/50 text-right leading-relaxed hidden lg:block">
+        SDVOSB: Verified<br/>CMMC: Level 2<br/>Clearance: Tier 5
+      </div>
+
+      <div class="relative z-10">
+        <div class="w-16 h-16 rounded-2xl bg-electric-blue/10 border border-electric-blue/30 flex items-center justify-center mx-auto mb-6"
+             style="box-shadow: 0 0 30px rgba(59,130,246,0.3);">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </div>
+
+        <span class="tag mb-4 inline-block">Capabilities Statement</span>
+        <h2 class="font-display font-800 text-3xl lg:text-4xl text-white mb-4">
+          Ready to Partner With HITS?
+        </h2>
+        <p class="font-body text-slate-400 text-lg max-w-xl mx-auto mb-10">
+          Download our full Capabilities Statement — all NAICS codes, certifications, past performance summaries, and contact information in one GSA-format document.
+        </p>
+
+        <!-- Download button with heavy glow -->
+        <a href="capability-statement.html"
+           class="btn-download inline-flex items-center gap-3 px-10 py-4 rounded-xl font-display font-700 text-white text-base tracking-wide">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Download Full Capabilities Statement (PDF)
+        </a>
+
+        <p class="font-mono text-xs text-slate-600 mt-4">capabilities-statement.pdf · Updated Q1 2025</p>
+
+        <!-- Secondary CTA -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+          <a href="contact.html"
+             class="px-7 py-3 rounded-xl text-sm font-display font-600 text-slate-300 border border-slate-700 hover:border-blue-500 hover:text-white transition-all duration-300">
+            Schedule a Briefing
+          </a>
+          <a href="services.html"
+             class="px-7 py-3 rounded-xl text-sm font-display font-600 text-slate-300 border border-slate-700 hover:border-blue-500 hover:text-white transition-all duration-300">
+            View All Services
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════
+       FOOTER
+  ══════════════════════════════ -->
+  <footer class="relative z-10 border-t border-slate-800/60 py-10 px-6 lg:px-10">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="flex items-center gap-2.5">
+        <span style="display:inline-flex;align-items:center;justify-content:center;background:#dbeafe;border-radius:6px;padding:2px;box-shadow:0 0 10px rgba(59,130,246,0.3),inset 0 0 0 1px rgba(147,197,253,0.5);"><img src="hits_logo.png" alt="HITS" class="h-7 w-auto" style="border-radius:4px;display:block;" onerror="this.parentElement.style.display='none';this.nextElementSibling.style.display='flex';" /></span>
+        <div style="display:none;" class="items-center gap-2">
+          <div class="w-7 h-7 rounded-md bg-electric-blue flex items-center justify-center shadow-[0_0_10px_rgba(59,130,246,0.5)]">
+            <span class="font-display font-800 text-white text-xs">H</span>
+          </div>
+          <span class="font-display font-600 text-white text-base tracking-tight">HITS</span>
+        </div>
+      </div>
+      <p class="font-body text-slate-600 text-sm">&copy; 2023 Harpy I.T. Solutions INC. All rights reserved.</p>
+      <div class="flex items-center gap-5">
+        <a href="about.html"   class="text-slate-600 hover:text-slate-400 text-sm transition-colors">About</a>
+        <a href="careers.html" class="text-slate-600 hover:text-slate-400 text-sm transition-colors">Careers</a>
+        <a href="contact.html" class="text-slate-600 hover:text-slate-400 text-sm transition-colors">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+
+  <script>
+    // Mobile menu
+    document.getElementById('menu-toggle').addEventListener('click', () => {
+      document.getElementById('mobile-menu').classList.toggle('open');
+    });
+
+    // Cert badge fallback: if img fails, show the text div
+    document.querySelectorAll('.cert-badge-wrap img').forEach(img => {
+      img.addEventListener('error', function() {
+        this.style.display = 'none';
+        const fb = this.nextElementSibling;
+        if (fb) fb.style.display = 'flex';
+      });
+    });
+
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+  
+    // Products mobile dropdown
+    const mobBtn = document.getElementById('mob-prod-btn');
+    if (mobBtn) {
+      mobBtn.addEventListener('click', () => {
+        mobBtn.classList.toggle('open');
+        document.getElementById('mob-prod-items').classList.toggle('open');
+      });
+    }
+</script>
+</body>
+</html>

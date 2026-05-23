@@ -1,0 +1,79 @@
+<div class="docs-page">
+<h1>Environment Variables</h1>
+<p class="docs-page-description">Complete reference for all Raptor configuration variables, organized by category.</p>
+<h1 id="environment-variables">Environment Variables</h1>
+
+<p>All configuration is done through environment variables. Set them in a <code>.env</code> file for Docker Compose, or inject them through your secret manager in production.</p>
+
+<p>Start from the provided template:</p>
+
+<pre><code class="language-bash">cp .env.example .env</code></pre>
+
+<h2 id="required">Required</h2>
+
+<p>These must be set for Raptor to start.</p>
+
+<p>| Variable | Description | Example |<br>|---|---|---|<br>| <code>DATABASE_URL</code> | PostgreSQL 16+ connection string. The <code>migrate</code> container and <code>control-panel</code> both use this to connect. | <code>postgresql://raptor:secret@postgres:5432/raptor?sslmode=disable</code> |<br>| <code>RAPTOR_ACCESS_TOKEN</code> | Operator access token for API authentication. Used with <code>X-Raptor-Token</code> header or <code>Authorization: Bearer</code> header. Must be a strong, unique string. | <code>rpt_a1b2c3d4e5f6...</code> |</p>
+
+<p>At least one AI provider key is also required. See <a href="#ai-providers">Providers</a> below.</p>
+
+<h2 id="authentication">Authentication</h2>
+
+<p>Raptor supports three authentication modes: token-only, Clerk SSO, and Founder Key. Token auth (<code>RAPTOR_ACCESS_TOKEN</code>) is always active. Clerk and Founder Key are layered on top for production use.</p>
+
+<h3 id="clerk-sso">Clerk SSO</h3>
+
+<p>| Variable | Required | Description | Example |<br>|---|---|---|---|<br>| <code>CLERK_SECRET_KEY</code> | For SSO | Clerk backend secret key. Enables SSO/OAuth authentication. | <code>sk_live_abc123...</code> |<br>| <code>CLERK_PUBLISHABLE_KEY</code> | For SSO | Clerk frontend publishable key. Used by the Preact UI. | <code>pk_live_abc123...</code> |<br>| <code>CLERK_DOMAIN</code> | For SSO | Your Clerk instance domain. | <code>your-app.clerk.accounts.dev</code> |<br>| <code>RAPTOR_ALLOW_TOKEN_FALLBACK</code> | No | When Clerk is configured, allow token auth as a fallback. Default: <code>false</code>. | <code>false</code> |</p>
+
+<h3 id="founder-key">Founder Key</h3>
+
+<p>| Variable | Required | Description | Example |<br>|---|---|---|---|<br>| <code>RAPTOR_FOUNDER_KEY_HASH</code> | No | SHA-256 hash of the founder key. Enables <code>/api/auth/founder</code> login endpoint. | <code>e3b0c44298fc...</code> |</p>
+
+<h2 id="ai-providers">AI Providers</h2>
+
+<p>At least one provider key must be set. Raptor uses configured providers for inference and automatically detects available providers at startup.</p>
+
+<p>| Variable | Provider | Models |<br>|---|---|---|<br>| <code>ANTHROPIC_API_KEY</code> | Anthropic | Claude family |<br>| <code>OPENAI_API_KEY</code> | OpenAI | GPT-4o family |<br>| <code>GEMINI_API_KEY</code> | Google | Gemini family |<br>| <code>TOGETHER_API_KEY</code> | Together AI | Llama, Mixtral, open models |</p>
+
+<p>Check which providers are active at runtime:</p>
+
+<pre><code class="language-bash">curl http://localhost:4000/api/runtime/config</code></pre>
+
+<p>See the <a href="/self-hosted/providers">Providers</a> guide for failover behavior and pricing.</p>
+
+<h2 id="server">Server</h2>
+
+<p>| Variable | Required | Default | Description |<br>|---|---|---|---|<br>| <code>RAPTOR_ENV</code> | No | <code>dev</code> | Set to <code>production</code> for production deployments. Controls logging level, error verbosity, and security defaults. |<br>| <code>CONTROL_HOST</code> | No | <code>localhost</code> | Bind address. Set to <code>0.0.0.0</code> inside containers. The Docker Compose file sets this automatically. |<br>| <code>CONTROL_PORT</code> | No | <code>4000</code> | HTTP listen port for the control-panel. |</p>
+
+<h2 id="mcp-server">MCP Server</h2>
+
+<p>| Variable | Required | Default | Description |<br>|---|---|---|---|<br>| <code>MCP_PORT</code> | No | <code>4001</code> | Listen port for the MCP server. |<br>| <code>RAPTOR_URL</code> | No | <code>http://localhost:4000</code> | Internal URL the MCP server uses to reach the control-panel. In Docker Compose, this is set to <code>http://control-panel:4000</code>. |<br>| <code>MCP_PUBLIC_URL</code> | No | <code>http://localhost:4001</code> | Public-facing URL for the MCP server. Used in tool discovery responses. |</p>
+
+<h2 id="billing-stripe">Billing (Stripe)</h2>
+
+<p>All Stripe variables are optional. Omit them entirely for free-tier-only operation.</p>
+
+<p>| Variable | Required | Description |<br>|---|---|---|<br>| <code>STRIPE_SECRET_KEY</code> | For billing | Stripe API secret key. |<br>| <code>STRIPE_WEBHOOK_SECRET</code> | For billing | Stripe webhook signing secret for verifying inbound events. |<br>| <code>STRIPE_PRICE_ID_INDIVIDUAL</code> | For billing | Stripe Price ID for the Individual plan. |<br>| <code>STRIPE_PRICE_ID_TEAM</code> | For billing | Stripe Price ID for the Team plan. |<br>| <code>STRIPE_PRICE_ID_GROWTH</code> | For billing | Stripe Price ID for the Growth plan. |<br>| <code>STRIPE_PRICE_ID_CREDIT_PURCHASE</code> | For billing | Stripe Price ID for one-time credit purchases. |<br>| <code>STRIPE_PRICE_ID_CREDIT_AUTOTOPUP</code> | For billing | Stripe Price ID for automatic credit top-ups. |</p>
+
+<h2 id="signing">Signing</h2>
+
+<p>| Variable | Required | Default | Description |<br>|---|---|---|---|<br>| <code>RAPTOR_SIGNING_PRIVATE_KEY</code> | No | None | Ed25519 private key for build-time attestation signing. When set during <code>docker build</code>, the binary is signed and an <code>.attestation.json</code> file is embedded in the image. Verify with <code>raptor-verify</code>. |</p>
+
+<h2 id="artifact-storage">Artifact Storage</h2>
+
+<p>| Variable | Required | Default | Description |<br>|---|---|---|---|<br>| <code>RAPTOR_ARTIFACT_BACKEND</code> | No | <code>local</code> | Storage backend for artifacts. Options: <code>local</code>, <code>r2</code>. |<br>| <code>RAPTOR_ARTIFACT_ROOT</code> | No | <code>data/artifacts</code> | Local filesystem path for artifact storage (when backend is <code>local</code>). |<br>| <code>RAPTOR_R2_BUCKET</code> | No | None | Cloudflare R2 bucket name (when backend is <code>r2</code>). |<br>| <code>RAPTOR_SCANNER_ENABLED</code> | No | <code>true</code> | Enable artifact integrity scanning. |</p>
+
+<h2 id="classifier-shadow">Classifier Shadow</h2>
+
+<p>| Variable | Required | Default | Description |<br>|---|---|---|---|<br>| <code>RAPTOR_CLASSIFIER_SHADOW_ENABLED</code> | No | <code>false</code> | Enable shadow classifier for evaluation. Does not affect production decisions. |<br>| <code>RAPTOR_CLASSIFIER_SHADOW_PROVIDER</code> | No | None | Provider to use for shadow classification. |</p>
+
+<h2 id="docker-compose">Docker Compose</h2>
+
+<p>These variables are used only by the Docker Compose file, not by the application directly.</p>
+
+<p>| Variable | Required | Default | Description |<br>|---|---|---|---|<br>| <code>POSTGRES_PASSWORD</code> | No | <code>raptor_dev</code> | Password for the bundled PostgreSQL container. Change this in production. |</p>
+
+<h2 id="legacy-aliases">Legacy / Aliases</h2>
+
+<p>| Variable | Maps to | Notes |<br>|---|---|---|<br>| <code>RAPTOR_DB_URL</code> | <code>DATABASE_URL</code> | Accepted as a fallback. Prefer <code>DATABASE_URL</code>. |</p>
+</div>

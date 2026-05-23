@@ -1,0 +1,132 @@
+<div class="docs-page">
+<h1>FAQ</h1>
+<p class="docs-page-description">Frequently asked questions about Raptor's capabilities, requirements, and operational details.</p>
+<h1 id="faq">FAQ</h1>
+
+<h2 id="how-long-can-records-be-retained">How long can records be retained?</h2>
+
+<p>It depends on the table type.</p>
+
+<ul>
+<li><strong>Immutable tables</strong> (execution events, build attestations, transparency log, authorization events, governance policies): indefinitely. These tables form the cryptographic hash chain and cannot be deleted without breaking chain integrity. There is no retention limit.</li>
+<li><strong>Mutable tables</strong> (conversations, uploads, cache, artifacts): configurable per tenant. Retention periods range from 30 days to indefinite. Auto-delete can be enabled per resource type via retention policies.</li>
+</ul>
+
+<p>You configure retention policies in Settings > Privacy > Retention Policies.</p>
+
+<h2 id="what-database-does-raptor-need">What database does Raptor need?</h2>
+
+<p>PostgreSQL 16 or later. Any PostgreSQL instance will work — self-managed, AWS RDS, Google Cloud SQL, Railway, Supabase, Neon, or a local Docker container.</p>
+
+<p>Raptor connects via a standard <code>DATABASE_URL</code> connection string:</p>
+
+<pre><code>postgresql://user:password@host:port/database</code></pre>
+
+<p>The database user needs permission to create tables, triggers, and enable Row-Level Security. Raptor runs its own migrations on startup.</p>
+
+<h2 id="can-i-use-my-own-ai-providers">Can I use my own AI providers?</h2>
+
+<p>Yes. Raptor uses a Bring Your Own Provider (BYOP) model.</p>
+
+<p>You supply your own API keys for any supported provider — Anthropic, OpenAI, Google Gemini, or Together AI. Raptor routes requests to your chosen provider using your key. You pay the provider directly at their published rates.</p>
+
+<p>Raptor charges a governance fee of <strong>$0.012 per governed response</strong> for the classification, policy enforcement, trust boundary assignment, and hash-chained audit trail. The governance fee is the same regardless of which provider you use or what the provider charges.</p>
+
+<h2 id="what-happens-when-my-credit-balance-runs-out">What happens when my credit balance runs out?</h2>
+
+<p>It depends on how the API key is configured.</p>
+
+<ul>
+<li><strong>Pause (default):</strong> Requests return a <code>402 Payment Required</code> response. No provider calls are made. The governance layer records the pause event in the audit trail. Service resumes when credits are added.</li>
+<li><strong>Continue:</strong> Requests continue to be processed. The credit balance goes negative. This is useful for production systems that cannot tolerate interruption. Negative balances must be settled.</li>
+</ul>
+
+<p>You configure this behavior per API key in Settings > API Keys.</p>
+
+<h2 id="is-my-data-isolated-from-other-tenants">Is my data isolated from other tenants?</h2>
+
+<p>Yes. Tenant isolation is enforced at the database level, not the application level.</p>
+
+<ul>
+<li><strong>30 tables</strong> have PostgreSQL Row-Level Security (RLS) policies with <code>FORCE ROW LEVEL SECURITY</code> enabled</li>
+<li>The database role used by the application sets the tenant ID at connection time — every query is automatically scoped</li>
+<li>Even the database owner role is subject to RLS policies</li>
+<li>A bug in application code cannot leak data across tenants because the database itself enforces the boundary</li>
+</ul>
+
+<p>API keys, webhooks, policies, nests, execution events, and all other tenant data are scoped to a single tenant ID.</p>
+
+<h2 id="can-i-export-my-data">Can I export my data?</h2>
+
+<p>Yes. Raptor supports full data export in compliance with GDPR Article 20 (data portability).</p>
+
+<p><code>GET /api/tenant/audit/export</code> exports your complete tenant data in JSON format, covering 12 tables:</p>
+
+<ul>
+<li>Execution events (the hash-chained audit trail)</li>
+<li>Nests and conversation history</li>
+<li>Governance decisions and policy evaluations</li>
+<li>Authorization events</li>
+<li>Artifacts and uploads</li>
+<li>Provider call records</li>
+<li>Cost events</li>
+</ul>
+
+<p>You can also export per-nest data via <code>GET /api/nests/{id}/verification</code> for a single nest's chain and governance history.</p>
+
+<h2 id="what-is-the-difference-between-infrastructure-and-workspace">What is the difference between Infrastructure and Workspace?</h2>
+
+<p>Same governance substrate, different consumption model.</p>
+
+<p>| | Infrastructure | Workspace |<br>|---|---|---|<br>| <strong>Access</strong> | API-only | API + Control Panel UI |<br>| <strong>Authentication</strong> | API keys | Clerk SSO + API keys |<br>| <strong>Billing</strong> | Usage-based (per governed response) | Subscription + usage |<br>| <strong>Team</strong> | Not applicable — API keys are the identity | Owner, Admin, Member roles with RBAC |<br>| <strong>Use case</strong> | Embed Raptor governance into your own application | Use Raptor as a governed AI workspace for your team |</p>
+
+<p>Both tiers get the same governance: classification, trust boundaries, policy enforcement, hash-chained audit, and cryptographic attestation.</p>
+
+<h2 id="how-do-i-verify-the-hash-chain">How do I verify the hash chain?</h2>
+
+<p>Raptor exposes three public verification endpoints that do not require authentication:</p>
+
+<h3 id="code-get-well-known-raptor-attestation-code"><code>GET /.well-known/raptor/attestation</code></h3>
+
+<p>Returns the Ed25519 build attestation for the current deployment, linking a specific Git commit to the running build.</p>
+
+<h3 id="code-get-well-known-raptor-transparency-code"><code>GET /.well-known/raptor/transparency</code></h3>
+
+<p>Returns the transparency log — a public record of governance policy changes and significant system events.</p>
+
+<h3 id="code-get-well-known-raptor-trust-code"><code>GET /.well-known/raptor/trust</code></h3>
+
+<p>Returns the trust configuration, including the five trust boundary definitions and the composition rules.</p>
+
+<p>For authenticated verification of a specific tenant's data:</p>
+
+<ul>
+<li><strong>Per-nest:</strong> <code>GET /api/nests/{id}/verification</code> — checks chain integrity and returns claim-level freshness</li>
+<li><strong>Per-execution:</strong> <code>GET /api/executions/{id}/trace</code> — returns the full event chain with hash verification</li>
+<li><strong>Tenant-wide:</strong> <code>GET /api/tenant/audit/export</code> — exports the complete audit trail for independent verification</li>
+</ul>
+
+<p>To verify independently: re-serialize each event's payload using canonical hashing (JSON keys sorted alphabetically, no whitespace, null values preserved), compute SHA-256, and compare against the stored <code>event_hash</code>. Each hash should include the previous event's hash, forming the chain.</p>
+
+<h2 id="can-raptor-run-air-gapped">Can Raptor run air-gapped?</h2>
+
+<p>Yes. Raptor's runtime dependencies are minimal:</p>
+
+<ol>
+<li><strong>Docker</strong> — to run the Raptor container</li>
+<li><strong>PostgreSQL 16+</strong> — the governance event store</li>
+<li><strong>Network access to at least one AI provider</strong> — Raptor needs to reach the provider's API endpoint to generate responses</li>
+</ol>
+
+<p>That is it. Raptor does not phone home, does not require internet access for governance operations, and does not depend on external services for authentication (Clerk is optional — the Founder Key works without it).</p>
+
+<p>For a fully air-gapped deployment:</p>
+
+<ul>
+<li>Use the Founder Key (<code>RAPTOR_ACCESS_TOKEN</code>) for authentication instead of Clerk</li>
+<li>Host PostgreSQL locally</li>
+<li>Use a provider that can run on your network (e.g., a local model server compatible with the OpenAI API format, or Together AI's on-premises offering)</li>
+</ul>
+
+<p>The governance substrate — classification, policy enforcement, trust boundaries, hash chaining — operates entirely locally. No external calls are made for governance decisions.</p>
+</div>

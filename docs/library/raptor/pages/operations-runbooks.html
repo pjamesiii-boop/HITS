@@ -1,0 +1,298 @@
+<div class="docs-page">
+<h1>Runbooks</h1>
+<p class="docs-page-description">Step-by-step operational procedures for tenant management, policy rollback, provider failover, integrity incidents, and data recovery.</p>
+<h1 id="runbooks">Runbooks</h1>
+
+<p>These runbooks are step-by-step procedures for common operational tasks and incident responses. Each runbook assumes you have operator-level access to the Raptor API and database.</p>
+
+<h2 id="tenant-provisioning">Tenant Provisioning</h2>
+
+<h3 id="create-a-new-tenant">Create a New Tenant</h3>
+
+<pre><code class="language-bash">curl -X POST http://localhost:4000/api/tenants \
+  -H "X-Raptor-Token: your-access-token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Acme Corp",
+    "slug": "acme-corp"
+  }'</code></pre>
+
+<p>Save the <code>tenant_id</code> from the response.</p>
+
+<h3 id="verify-tenant-creation">Verify Tenant Creation</h3>
+
+<pre><code class="language-bash">curl http://localhost:4000/api/tenants/acme-corp \
+  -H "X-Raptor-Token: your-access-token"</code></pre>
+
+<p>Confirm the tenant appears with <code>status: "active"</code>.</p>
+
+<h3 id="provision-first-policy">Provision First Policy</h3>
+
+<p>Every tenant needs at least one active policy before they can make governed requests.</p>
+
+<pre><code class="language-bash">curl -X POST http://localhost:4000/api/tenants/acme-corp/policies \
+  -H "X-Raptor-Token: your-access-token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Default Policy",
+    "rules": {
+      "trust_threshold": "likely",
+      "require_decision_support": true
+    }
+  }'</code></pre>
+
+<h3 id="generate-access-token">Generate Access Token</h3>
+
+<pre><code class="language-bash">curl -X POST http://localhost:4000/api/tenants/acme-corp/tokens \
+  -H "X-Raptor-Token: your-access-token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Production API Key",
+    "expires_in": "90d"
+  }'</code></pre>
+
+<p>The response includes the token value. This is the only time the full token is returned -- store it securely.</p>
+
+<h3 id="verification-checklist">Verification Checklist</h3>
+
+<ul>
+<li>[ ] Tenant exists and is active</li>
+<li>[ ] At least one policy is active</li>
+<li>[ ] Access token is generated and stored securely</li>
+<li>[ ] Test request succeeds with the new token</li>
+</ul>
+
+<hr>
+
+<h2 id="tenant-suspension">Tenant Suspension</h2>
+
+<p>Use suspension to immediately block a tenant from making governed requests without deleting their data.</p>
+
+<h3 id="suspend-a-tenant">Suspend a Tenant</h3>
+
+<pre><code class="language-bash">curl -X POST http://localhost:4000/api/tenants/acme-corp/suspend \
+  -H "X-Raptor-Token: your-access-token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "reason": "Billing delinquent since 2026-05-15"
+  }'</code></pre>
+
+<p>The tenant's status changes to <code>"suspended"</code>. All API requests using their tokens return <code>403 Forbidden</code> with a structured error indicating suspension.</p>
+
+<h3 id="unsuspend-a-tenant">Unsuspend a Tenant</h3>
+
+<pre><code class="language-bash">curl -X POST http://localhost:4000/api/tenants/acme-corp/unsuspend \
+  -H "X-Raptor-Token: your-access-token"</code></pre>
+
+<p>The tenant's status returns to <code>"active"</code> and their tokens resume working immediately.</p>
+
+<h3 id="verification">Verification</h3>
+
+<pre><code class="language-bash">curl http://localhost:4000/api/tenants/acme-corp \
+  -H "X-Raptor-Token: your-access-token"</code></pre>
+
+<p>Confirm <code>status</code> matches the expected state (<code>"suspended"</code> or <code>"active"</code>).</p>
+
+<hr>
+
+<h2 id="policy-rollback-emergency">Policy Rollback (Emergency)</h2>
+
+<p>Use this procedure when a recently deployed policy is causing incorrect governance behavior and needs to be reverted immediately.</p>
+
+<h3 id="step-1-identify-the-current-and-previous-policy">Step 1: Identify the Current and Previous Policy</h3>
+
+<pre><code class="language-bash"># List policies for the tenant, ordered by creation date
+curl "http://localhost:4000/api/tenants/acme-corp/policies?order=desc" \
+  -H "X-Raptor-Token: your-access-token"</code></pre>
+
+<p>Note the <code>policy_id</code> of the current active policy and the previous one you want to roll back to.</p>
+
+<h3 id="step-2-activate-the-previous-policy">Step 2: Activate the Previous Policy</h3>
+
+<pre><code class="language-bash">curl -X POST http://localhost:4000/api/tenants/acme-corp/policies/{previous_policy_id}/activate \
+  -H "X-Raptor-Token: your-access-token"</code></pre>
+
+<p>This immediately makes the previous policy active. The problematic policy is deactivated but not deleted (governance history is preserved).</p>
+
+<h3 id="step-3-verify">Step 3: Verify</h3>
+
+<pre><code class="language-bash"># Confirm active policy changed
+curl http://localhost:4000/api/tenants/acme-corp/policies/active \
+  -H "X-Raptor-Token: your-access-token"
+
+<h1 id="send-a-test-request-to-verify-governance-behavior">Send a test request to verify governance behavior</h1>
+curl -X POST http://localhost:4000/api/chat \
+  -H "X-Raptor-Token: tenant-access-token" \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Test message for policy verification"}'</code></pre>
+
+<h3 id="step-4-document">Step 4: Document</h3>
+
+<p>Record the rollback in your incident log:</p>
+
+<ul>
+<li>When the problematic policy was activated</li>
+<li>When it was rolled back</li>
+<li>What behavior it caused</li>
+<li>How many requests were affected (check governance event counts between the two timestamps)</li>
+</ul>
+
+<hr>
+
+<h2 id="provider-failover">Provider Failover</h2>
+
+<p>Raptor handles multi-provider failover automatically. When the primary AI provider fails (timeout, rate limit, 5xx error), Raptor routes to the next configured provider. This runbook covers manual verification and intervention.</p>
+
+<h3 id="verify-current-provider-status">Verify Current Provider Status</h3>
+
+<pre><code class="language-bash">curl http://localhost:4000/api/health/dependencies \
+  -H "X-Raptor-Token: your-access-token"</code></pre>
+
+<p>Check each provider's <code>status</code> field. Values are <code>"ok"</code>, <code>"degraded"</code>, or <code>"down"</code>.</p>
+
+<h3 id="verify-failover-is-working">Verify Failover Is Working</h3>
+
+<pre><code class="language-bash">curl http://localhost:4000/api/runtime/config \
+  -H "X-Raptor-Token: your-access-token"</code></pre>
+
+<p>The <code>active_provider</code> field shows which provider is currently handling requests. If the primary is down, this should show the failover provider.</p>
+
+<h3 id="manual-provider-override">Manual Provider Override</h3>
+
+<p>If automatic failover is not behaving as expected, you can force a specific provider:</p>
+
+<pre><code class="language-bash">curl -X POST http://localhost:4000/api/runtime/config/provider \
+  -H "X-Raptor-Token: your-access-token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "primary": "openai",
+    "reason": "Anthropic API degraded, manual override"
+  }'</code></pre>
+
+<p>This override persists until you clear it:</p>
+
+<pre><code class="language-bash">curl -X DELETE http://localhost:4000/api/runtime/config/provider \
+  -H "X-Raptor-Token: your-access-token"</code></pre>
+
+<p>After clearing the override, automatic failover resumes.</p>
+
+<hr>
+
+<h2 id="integrity-failure-response">Integrity Failure Response</h2>
+
+<p>Integrity failures indicate that the running binary, its attestation, or the governance hash chain is in a state that cannot be verified. These are high-severity events.</p>
+
+<h3 id="failure-types">Failure Types</h3>
+
+<p>| Status | Meaning | Severity |<br>|---|---|---|<br>| <code>attestation_missing</code> | No build attestation found. Binary was deployed without signing. | High |<br>| <code>untrusted_signer</code> | Attestation exists but the signing key is not in the trust store. | Critical |<br>| <code>invalid_signature</code> | Attestation signature does not match the binary hash. | Critical |<br>| <code>chain_broken</code> | Hash chain has a gap or inconsistency. | Critical |</p>
+
+<h3 id="step-1-assess">Step 1: Assess</h3>
+
+<pre><code class="language-bash">curl http://localhost:4000/api/runtime/integrity \
+  -H "X-Raptor-Token: your-access-token"</code></pre>
+
+<p>Note the <code>status</code>, <code>signer</code>, and <code>chain_valid</code> fields.</p>
+
+<h3 id="step-2-respond-by-failure-type">Step 2: Respond by Failure Type</h3>
+
+<h4 id="code-attestation-missing-code"><code>attestation_missing</code></h4>
+
+<p>The binary was deployed without build attestation. This usually means someone used a direct deploy command instead of the CI pipeline.</p>
+
+<p><strong>Fix:</strong> Redeploy via git push through the CI pipeline.</p>
+
+<pre><code class="language-bash">git push origin main</code></pre>
+
+<p>The CI pipeline signs the build with Ed25519. After redeploy, verify integrity returns <code>"verified"</code>.</p>
+
+<h4 id="code-untrusted-signer-code"><code>untrusted_signer</code></h4>
+
+<p>The build was signed, but with a key that is not in the configured trust store.</p>
+
+<p><strong>Investigate:</strong></p>
+
+<ol>
+<li>Check who triggered the build (CI logs).</li>
+<li>Compare the <code>signer</code> public key in the integrity response against your known signing keys.</li>
+<li>If the key is legitimate but new, add it to the trust store via environment configuration.</li>
+<li>If the key is unrecognized, treat this as a security incident. Do not accept traffic from this instance.</li>
+</ol>
+
+<h4 id="code-invalid-signature-code"><code>invalid_signature</code></h4>
+
+<p>The attestation signature does not match the binary. The binary may have been modified after signing.</p>
+
+<p><strong>Respond:</strong></p>
+
+<ol>
+<li>Immediately remove the instance from the load balancer.</li>
+<li>Do not attempt to fix in place. Redeploy from a known-good image via git push.</li>
+<li>Investigate how the binary was modified (check container runtime, host access logs).</li>
+</ol>
+
+<h4 id="code-chain-broken-code"><code>chain_broken</code></h4>
+
+<p>The governance hash chain has a gap or inconsistency.</p>
+
+<p><strong>Respond:</strong></p>
+
+<ol>
+<li>Check <code>/api/runtime/integrity/events</code> for details on where the chain breaks.</li>
+<li>This typically indicates database corruption or an incomplete restore. See <a href="#data-recovery">Data Recovery</a> below.</li>
+<li>Do not attempt to repair the chain manually. Restore from the last backup where the chain was intact.</li>
+</ol>
+
+<h3 id="step-3-verify-resolution">Step 3: Verify Resolution</h3>
+
+<p>After applying the fix:</p>
+
+<pre><code class="language-bash">curl http://localhost:4000/api/runtime/integrity \
+  -H "X-Raptor-Token: your-access-token"</code></pre>
+
+<p>Confirm <code>"status": "verified"</code> and <code>"chain_valid": true</code> before routing traffic.</p>
+
+<hr>
+
+<h2 id="data-recovery">Data Recovery</h2>
+
+<p>Use this procedure when data loss or corruption is detected. The approach depends on severity.</p>
+
+<h3 id="assess-the-damage">Assess the Damage</h3>
+
+<pre><code class="language-sql">-- Check governance event counts
+SELECT COUNT(*) FROM governance_events;
+
+<p>-- Check for hash chain gaps<br>SELECT event_id, previous_hash<br>FROM governance_events<br>WHERE previous_hash IS NULL<br>  AND event_id != (SELECT MIN(event_id) FROM governance_events);</code></pre></p>
+
+<p>Any rows returned by the second query indicate chain breaks.</p>
+
+<h3 id="recovery-via-pitr-preferred">Recovery via PITR (Preferred)</h3>
+
+<p>For Neon or any PostgreSQL with WAL archiving:</p>
+
+<ol>
+<li>Identify the last known-good timestamp (before corruption occurred).</li>
+<li>Create a PITR branch or restore to that timestamp.</li>
+<li>Update <code>DATABASE_URL</code> to point to the recovered database.</li>
+<li>Redeploy the control-panel.</li>
+<li>Run the <a href="/operations/backup-restore#post-restore-verification">Post-Restore Verification</a> checklist.</li>
+</ol>
+
+<h3 id="recovery-via-pg-restore">Recovery via pg_restore</h3>
+
+<p>For self-hosted without WAL archiving:</p>
+
+<pre><code class="language-bash">docker compose stop control-panel
+
+<p>pg_restore -h localhost -U raptor -d raptor_db \<br>  --clean --if-exists \<br>  raptor_backup_YYYYMMDD_HHMMSS.dump</p>
+
+<p>docker compose up -d</code></pre></p>
+
+<h3 id="what-not-to-do">What NOT to Do</h3>
+
+<ul>
+<li><strong>Do not</strong> manually insert, update, or delete rows in immutable governance tables (<code>governance_events</code>, <code>attestations</code>, <code>hash_chain</code>). Manual modification invalidates the cryptographic chain and is unrecoverable.</li>
+<li><strong>Do not</strong> attempt to "patch" a broken hash chain by recalculating hashes. The chain must be restored from a backup where it was intact.</li>
+<li><strong>Do not</strong> skip post-restore verification. An incomplete restore that passes health checks but has a broken chain will produce unverifiable governance records going forward.</li>
+</ul>
+</div>

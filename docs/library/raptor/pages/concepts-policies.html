@@ -1,0 +1,77 @@
+<div class="docs-page">
+<h1>Governance Policies</h1>
+<p class="docs-page-description">How Raptor policies control what AI can do — signed, versioned, deterministic enforcement.</p>
+<h1 id="governance-policies">Governance Policies</h1>
+
+<p>Policies are the rules that govern what Raptor's AI is permitted to do. They are signed with Ed25519, versioned, and applied deterministically to every governed operation.</p>
+
+<h2 id="policy-lifecycle">Policy lifecycle</h2>
+
+<ol>
+<li><strong>Author</strong> — define rules (operations, actions, capabilities, budgets)</li>
+<li><strong>Sign</strong> — cryptographically sign the policy JSON</li>
+<li><strong>Activate</strong> — make it the active policy (previous version superseded)</li>
+<li><strong>Evaluate</strong> — every governed request checks the active policy</li>
+<li><strong>Supersede</strong> — when a new version activates, old versions are preserved in history</li>
+</ol>
+
+<p>Policies are append-only. Old versions are never deleted — they're marked <code>superseded</code> and remain in the audit trail.</p>
+
+<h2 id="policy-structure">Policy structure</h2>
+
+<pre><code class="language-json">{
+  "name": "deployment_governance",
+  "version": 3,
+  "mode": "enforced",
+  "rules": [
+    {
+      "operation": "*",
+      "action": "allow",
+      "capabilities": ["chat:execute"],
+      "max_steps": 1000,
+      "max_provider_calls": 100
+    },
+    {
+      "operation": "artifact_export",
+      "action": "deny",
+      "capabilities": []
+    }
+  ]
+}</code></pre>
+
+<h2 id="modes">Modes</h2>
+
+<ul>
+<li><strong>Enforced</strong> — policy violations block the operation (403 with reason)</li>
+<li><strong>Permissive</strong> — violations are logged but not blocked (monitoring mode)</li>
+</ul>
+
+<p>Start with permissive to understand what your AI is doing, then switch to enforced when ready.</p>
+
+<h2 id="built-in-enforcement">Built-in enforcement</h2>
+
+<p>Every governed request passes through:</p>
+
+<ol>
+<li><strong>Rate limit</strong> — per-tenant API/provider limits</li>
+<li><strong>Tenant suspension check</strong> — suspended tenants cannot execute</li>
+<li><strong>Capability check</strong> — does the operation require a capability the policy grants?</li>
+<li><strong>Budget check</strong> — max steps, provider calls, artifacts per operation</li>
+<li><strong>Policy evaluation</strong> — does the active policy allow this operation?</li>
+</ol>
+
+<p>If any check fails, the request is blocked and an <code>authorization_event</code> is recorded.</p>
+
+<h2 id="api-endpoints">API endpoints</h2>
+
+<pre><code>POST /api/admin/policies/validate    — validate policy JSON
+POST /api/admin/policies/sign        — sign and store a policy
+POST /api/admin/policies/{id}/activate — activate a signed policy
+POST /api/admin/policies/rollback    — rollback to previous version
+GET  /api/admin/policies             — list policy history
+POST /api/admin/policies/simulate    — simulate policy against a request</code></pre>
+
+<h2 id="ui-policy-editor">UI: Policy Editor</h2>
+
+<p>The Settings surface includes a visual policy editor:<br><ul><br><li>Form-based rule builder (no raw JSON editing required)</li><br><li>Templates for common patterns (budget limits, confirmation gates, operation whitelists)</li><br><li>Preview as formatted JSON</li><br><li>One-click sign and activate</li><br></ul></p>
+</div>

@@ -1,0 +1,300 @@
+<div class="docs-page">
+<h1>System & Runtime API</h1>
+<p class="docs-page-description">Health checks, runtime configuration, version info, and public attestation endpoints.</p>
+<h1 id="system-runtime-api">System & Runtime API</h1>
+
+<p>System endpoints provide health monitoring, runtime configuration, version information, and public transparency data. Health endpoints are designed for orchestrator probes (Kubernetes, Railway, etc.).</p>
+
+<h2 id="get-api-health">GET /api/health</h2>
+
+<p>Liveness probe. Returns success if the server process is running.</p>
+
+<p><strong>Authentication:</strong> Not required</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "uptime_seconds": 86432
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>This endpoint does not return errors. A non-200 response indicates the server is down.</p>
+
+<hr>
+
+<h2 id="get-api-ready">GET /api/ready</h2>
+
+<p>Readiness probe. Returns success when the server is ready to accept traffic. Checks database connectivity and integrity scanner status.</p>
+
+<p><strong>Authentication:</strong> Not required</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "checks": {
+    "database": "healthy",
+    "integrity_scanner": "healthy"
+  }
+}</code></pre>
+
+<p>Not ready:</p>
+
+<pre><code class="language-json">{
+  "ok": false,
+  "checks": {
+    "database": "healthy",
+    "integrity_scanner": "initializing"
+  }
+}</code></pre>
+
+<hr>
+
+<h2 id="get-api-health-dependencies">GET /api/health/dependencies</h2>
+
+<p>Per-dependency health status. Returns the health of each external dependency the server relies on.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "dependencies": {
+    "database": { "status": "healthy", "latency_ms": 2 },
+    "clerk": { "status": "healthy", "latency_ms": 45 },
+    "stripe": { "status": "healthy", "latency_ms": 120 },
+    "openai": { "status": "healthy", "latency_ms": 89 },
+    "anthropic": { "status": "healthy", "latency_ms": 67 }
+  }
+}</code></pre>
+
+<p>Degraded dependency:</p>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "dependencies": {
+    "database": { "status": "healthy", "latency_ms": 2 },
+    "clerk": { "status": "degraded", "latency_ms": 2500, "error": "timeout" },
+    "stripe": { "status": "healthy", "latency_ms": 130 },
+    "openai": { "status": "healthy", "latency_ms": 95 },
+    "anthropic": { "status": "unhealthy", "error": "connection_refused" }
+  }
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |</p>
+
+<hr>
+
+<h2 id="get-api-version">GET /api/version</h2>
+
+<p>API version information.</p>
+
+<p><strong>Authentication:</strong> Not required</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "api_version": "2026-05-09",
+  "supported_versions": ["2026-05-09", "2026-03-15"]
+}</code></pre>
+
+<hr>
+
+<h2 id="get-api-config-clerk">GET /api/config/clerk</h2>
+
+<p>Get the Clerk publishable key for client-side authentication setup. Used by frontends to initialize Clerk without embedding the key in client bundles.</p>
+
+<p><strong>Authentication:</strong> Not required</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "publishable_key": "pk_live_abc123..."
+}</code></pre>
+
+<hr>
+
+<h2 id="get-api-manifest">GET /api/manifest</h2>
+
+<p>Route manifest listing all registered API routes. Useful for debugging and SDK generation.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "routes": [
+    { "method": "POST", "path": "/api/chat" },
+    { "method": "GET", "path": "/api/nests" },
+    { "method": "POST", "path": "/api/nests" },
+    { "method": "GET", "path": "/api/health" }
+  ],
+  "total": 47
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |</p>
+
+<hr>
+
+<h2 id="get-api-runtime-config">GET /api/runtime/config</h2>
+
+<p>Provider availability and runtime configuration. Shows which AI providers are configured and available.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "providers": {
+    "openai": { "available": true, "models": ["gpt-4o", "gpt-4o-mini"] },
+    "anthropic": { "available": true, "models": ["claude-sonnet-4-20250514"] }
+  },
+  "features": {
+    "file_upload": true,
+    "ocr": true,
+    "webhooks": true,
+    "billing": true
+  }
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |</p>
+
+<hr>
+
+<h2 id="get-api-runtime-release">GET /api/runtime/release</h2>
+
+<p>Current release information including git commit and build timestamp.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "commit": "a1b2c3d4e5f6",
+  "branch": "main",
+  "build_time": "2026-05-21T16:00:00Z",
+  "node_version": "22.0.0"
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |</p>
+
+<hr>
+
+<h2 id="get-api-runtime-integrity">GET /api/runtime/integrity</h2>
+
+<p>Integrity verification status. Reports whether the runtime integrity scanner has detected any anomalies.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "integrity": {
+    "status": "verified",
+    "last_scan": "2026-05-21T18:30:00Z",
+    "scan_interval_seconds": 300,
+    "anomalies": 0
+  }
+}</code></pre>
+
+<p>Integrity violation detected:</p>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "integrity": {
+    "status": "violation_detected",
+    "last_scan": "2026-05-21T18:30:00Z",
+    "scan_interval_seconds": 300,
+    "anomalies": 1,
+    "details": [
+      {
+        "type": "hash_mismatch",
+        "resource": "policy_abc123",
+        "detected_at": "2026-05-21T18:30:00Z"
+      }
+    ]
+  }
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |</p>
+
+<hr>
+
+<h2 id="get-well-known-raptor-attestation">GET /.well-known/raptor/attestation</h2>
+
+<p>Public build attestation. Returns a cryptographically signed attestation of the current running build. No authentication required -- this is a public transparency endpoint.</p>
+
+<p><strong>Authentication:</strong> Not required</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "attestation": {
+    "subject": "raptor-control-panel",
+    "commit": "a1b2c3d4e5f6",
+    "build_time": "2026-05-21T16:00:00Z",
+    "digest": "sha256:9a8b7c6d5e4f...",
+    "signature": "ed25519:...",
+    "signer": "github-actions",
+    "transparency_log": "https://raptor.harpyits.com/.well-known/raptor/transparency"
+  }
+}</code></pre>
+
+<hr>
+
+<h2 id="get-well-known-raptor-transparency">GET /.well-known/raptor/transparency</h2>
+
+<p>Public transparency log. Returns a paginated list of governance-significant events (policy activations, integrity checks, build deployments). No authentication required.</p>
+
+<p><strong>Authentication:</strong> Not required</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "entries": [
+    {
+      "id": "tlog_abc123",
+      "type": "policy_activated",
+      "timestamp": "2026-05-21T18:05:00Z",
+      "digest": "sha256:a1b2c3d4...",
+      "details": {
+        "policy_version": 4,
+        "mode": "enforced"
+      }
+    },
+    {
+      "id": "tlog_def456",
+      "type": "build_deployed",
+      "timestamp": "2026-05-21T16:00:00Z",
+      "digest": "sha256:9a8b7c6d...",
+      "details": {
+        "commit": "a1b2c3d4e5f6",
+        "environment": "production"
+      }
+    }
+  ],
+  "has_more": true,
+  "next_cursor": "tlog_def456"
+}</code></pre>
+</div>

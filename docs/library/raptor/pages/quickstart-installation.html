@@ -1,0 +1,149 @@
+<div class="docs-page">
+<h1>Installation</h1>
+<p class="docs-page-description">Install Raptor via Docker Compose, build from source, or sign up for cloud.</p>
+<h1 id="installation">Installation</h1>
+
+<p>Three ways to run Raptor: Docker Compose (recommended for most teams), build from source, or cloud.</p>
+
+<h2 id="option-1-docker-compose-recommended">Option 1: Docker Compose (recommended)</h2>
+
+<h3 id="prerequisites">Prerequisites</h3>
+
+<ul>
+<li>Docker Engine 24+ and Docker Compose v2+</li>
+<li>At least one AI provider API key (Anthropic, OpenAI, Gemini, or Together AI)</li>
+</ul>
+
+<h3 id="steps">Steps</h3>
+
+<p>Clone the repository and create your environment file:</p>
+
+<pre><code class="language-bash">git clone https://github.com/pjamesiii/raptor.git &amp;&amp; cd raptor
+cp .env.example .env</code></pre>
+
+<p>Edit <code>.env</code> and set the required variables:</p>
+
+<pre><code class="language-dotenv"># Required
+RAPTOR_ACCESS_TOKEN=a-strong-random-token
+ANTHROPIC_API_KEY=sk-ant-...
+
+<h1 id="optional-additional-providers">Optional: additional providers</h1>
+OPENAI_API_KEY=sk-...
+GEMINI_API_KEY=...
+TOGETHER_API_KEY=...
+
+<h1 id="optional-clerk-sso-omit-for-token-only-auth">Optional: Clerk SSO (omit for token-only auth)</h1>
+CLERK_SECRET_KEY=sk_live_...
+CLERK_PUBLISHABLE_KEY=pk_live_...
+CLERK_DOMAIN=your-app.clerk.accounts.dev</code></pre>
+
+<p>Start the stack:</p>
+
+<pre><code class="language-bash">docker compose up -d</code></pre>
+
+<p>This starts three services:</p>
+
+<p>| Service | Port | Description |<br>|---------|------|-------------|<br>| <strong>control-panel</strong> | 4000 | API server and workspace UI |<br>| <strong>mcp-server</strong> | 4001 | MCP protocol server for Claude Desktop / Cursor |<br>| <strong>postgres</strong> | 5432 | PostgreSQL 16 with governance event store |</p>
+
+<p>Database migrations run automatically on startup via the <code>migrate</code> service.</p>
+
+<h3 id="verification">Verification</h3>
+
+<p>Run all three health checks to confirm the stack is operational:</p>
+
+<pre><code class="language-bash"># Liveness — confirms the process is running
+curl http://localhost:4000/api/health
+<h1 id="status-ok">{"status":"ok"}</h1>
+
+<h1 id="readiness-confirms-the-database-connection-is-live">Readiness — confirms the database connection is live</h1>
+curl http://localhost:4000/api/ready
+<h1 id="status-ready">{"status":"ready"}</h1>
+
+<h1 id="dependencies-per-dependency-status">Dependencies — per-dependency status</h1>
+curl http://localhost:4000/api/health/dependencies
+<h1 id="postgres-ok-anthropic-ok-code-pre">{"postgres":"ok","anthropic":"ok"}</code></pre></h1>
+
+<p>All three should return HTTP 200. If <code>/api/ready</code> fails, check that PostgreSQL is healthy:</p>
+
+<pre><code class="language-bash">docker compose ps
+docker compose logs postgres</code></pre>
+
+<h3 id="updating">Updating</h3>
+
+<pre><code class="language-bash">git pull &amp;&amp; docker compose build &amp;&amp; docker compose up -d</code></pre>
+
+<p>Migrations run automatically on restart.</p>
+
+<hr>
+
+<h2 id="option-2-build-from-source">Option 2: Build from source</h2>
+
+<h3 id="prerequisites">Prerequisites</h3>
+
+<ul>
+<li>Go 1.25+</li>
+<li>PostgreSQL 16+ (running and accessible)</li>
+<li><code>migrate</code> CLI (<a href="https://github.com/golang-migrate/migrate">golang-migrate</a>) for database migrations</li>
+</ul>
+
+<h3 id="steps">Steps</h3>
+
+<p>Clone and build:</p>
+
+<pre><code class="language-bash">git clone https://github.com/pjamesiii/raptor.git &amp;&amp; cd raptor
+go build -o raptor-control ./cmd/control-panel</code></pre>
+
+<p>Run database migrations:</p>
+
+<pre><code class="language-bash">export DATABASE_URL="postgresql://raptor:password@localhost:5432/raptor?sslmode=disable"
+migrate -path ./migrations -database "$DATABASE_URL" up</code></pre>
+
+<p>Set environment variables and start:</p>
+
+<pre><code class="language-bash">export RAPTOR_ACCESS_TOKEN=a-strong-random-token
+export ANTHROPIC_API_KEY=sk-ant-...
+export CONTROL_HOST=localhost
+export CONTROL_PORT=4000
+
+<p>./raptor-control</code></pre></p>
+
+<h3 id="verification">Verification</h3>
+
+<pre><code class="language-bash">curl http://localhost:4000/api/health
+curl http://localhost:4000/api/ready
+curl http://localhost:4000/api/health/dependencies</code></pre>
+
+<h3 id="building-the-mcp-server">Building the MCP server</h3>
+
+<pre><code class="language-bash">go build -o raptor-mcp ./cmd/mcp-server
+
+<p>export RAPTOR_URL=http://localhost:4000<br>export RAPTOR_ACCESS_TOKEN=a-strong-random-token<br>export MCP_PORT=4001</p>
+
+<p>./raptor-mcp</code></pre></p>
+
+<hr>
+
+<h2 id="option-3-cloud">Option 3: Cloud</h2>
+
+<ol>
+<li>Go to <a href="https://raptor.dev">raptor.dev</a> and sign up with Google, GitHub, Microsoft, or email (via Clerk).</li>
+<li>Create an organization.</li>
+<li>Connect at least one AI provider in Settings.</li>
+<li>Copy your API key (starts with <code>rpt_</code>).</li>
+</ol>
+
+<p>Your base URL is <code>https://api.raptor.dev</code>. No infrastructure to manage.</p>
+
+<h3 id="verification">Verification</h3>
+
+<pre><code class="language-bash">curl -H "Authorization: Bearer rpt_your_api_key" \
+  https://api.raptor.dev/api/health</code></pre>
+
+<hr>
+
+<h2 id="health-check-reference">Health check reference</h2>
+
+<p>| Endpoint | Purpose | Healthy response |<br>|----------|---------|-----------------|<br>| <code>GET /api/health</code> | Liveness probe. Process is running. | <code>{"status":"ok"}</code> |<br>| <code>GET /api/ready</code> | Readiness probe. Database is connected. | <code>{"status":"ready"}</code> |<br>| <code>GET /api/health/dependencies</code> | Per-dependency status for all backends. | <code>{"postgres":"ok", ...}</code> |</p>
+
+<p>Use <code>/api/health</code> for container orchestrator liveness probes and <code>/api/ready</code> for readiness gates.</p>
+</div>

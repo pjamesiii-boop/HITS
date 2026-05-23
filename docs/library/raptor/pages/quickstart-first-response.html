@@ -1,0 +1,104 @@
+<div class="docs-page">
+<h1>Understanding Your First Response</h1>
+<p class="docs-page-description">Anatomy of a governed AI response — trust boundaries, segments, and audit trail.</p>
+<h1 id="understanding-your-first-response">Understanding Your First Response</h1>
+
+<p>Every Raptor response is a structured message. Here's what each field means.</p>
+
+<h2 id="response-anatomy">Response anatomy</h2>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "reply": "The deployment is verified. Binary hash matches...",
+  "decision_type": "respond",
+  "trust_boundary": {
+    "primary": "verified",
+    "sublabel": "1 segments verified",
+    "actionability": { "level": "safe", "label": "All claims verified" },
+    "provenance": {
+      "execution_id": "abc-123",
+      "input_hash": "sha256:..."
+    }
+  },
+  "segments": [
+    {
+      "boundary": "confirmed",
+      "text": "Binary hash matches the build attestation.",
+      "basis": "attestation"
+    }
+  ],
+  "decision_support": {
+    "confidence": "CLEAR",
+    "recommendation": "Deployment integrity confirmed.",
+    "basis": "Ed25519 attestation verified against signer trust registry."
+  },
+  "audit_trail": [
+    { "name": "intent_received", "time": "17:44:23 UTC", "status": "pass" },
+    { "name": "governance_evaluated", "time": "17:44:23 UTC", "status": "pass" },
+    { "name": "response_generated", "time": "17:44:24 UTC", "status": "pass" },
+    { "name": "response_attested", "time": "17:44:24 UTC", "status": "pass" }
+  ]
+}</code></pre>
+
+<h2 id="trust-boundary-levels">Trust boundary levels</h2>
+
+<p>| Level | Letter | Meaning |<br>|-------|--------|---------|<br>| <strong>Confirmed</strong> | C | Verified against an authoritative source |<br>| <strong>Executed</strong> | X | Action ran with recorded result |<br>| <strong>Retrieved</strong> | R | Fetched from a system of record |<br>| <strong>Likely</strong> | L | High-confidence inference, not verified |<br>| <strong>Uncertain</strong> | U | Limited evidence, treat with caution |</p>
+
+<h2 id="segments">Segments</h2>
+
+<p>A single AI response often contains multiple claims. Raptor does not assign one trust level to the entire response -- it classifies each claim independently.</p>
+
+<p>The <code>segments</code> array breaks the response into individually governed pieces:</p>
+
+<pre><code class="language-json">"segments": [
+  {
+    "boundary": "confirmed",
+    "text": "Binary hash matches the build attestation.",
+    "basis": "attestation"
+  },
+  {
+    "boundary": "likely",
+    "text": "The deployment should complete within the maintenance window.",
+    "basis": "historical_pattern"
+  }
+]</code></pre>
+
+<p>Each segment contains:</p>
+
+<p>| Field | Description |<br>|-------|-------------|<br>| <code>boundary</code> | Trust level for this specific claim (<code>confirmed</code>, <code>executed</code>, <code>retrieved</code>, <code>likely</code>, <code>uncertain</code>) |<br>| <code>text</code> | The exact text of the claim |<br>| <code>basis</code> | What evidence supports the classification (e.g., <code>attestation</code>, <code>system_record</code>, <code>historical_pattern</code>, <code>model_inference</code>) |</p>
+
+<p>The top-level <code>trust_boundary.primary</code> reflects the lowest trust level across all segments. If one segment is <code>likely</code> and the rest are <code>confirmed</code>, the primary boundary is <code>likely</code>. This ensures the overall classification is conservative -- the response is only as trustworthy as its weakest claim.</p>
+
+<p>The <code>trust_boundary.sublabel</code> summarizes the segment distribution (e.g., "2 segments confirmed, 1 likely").</p>
+
+<h2 id="audit-trail">Audit trail</h2>
+
+<p>Every governed response produces exactly four events in sequence. This is the governance chain:</p>
+
+<pre><code class="language-json">"audit_trail": [
+  { "name": "intent_received", "time": "17:44:23 UTC", "status": "pass" },
+  { "name": "governance_evaluated", "time": "17:44:23 UTC", "status": "pass" },
+  { "name": "response_generated", "time": "17:44:24 UTC", "status": "pass" },
+  { "name": "response_attested", "time": "17:44:24 UTC", "status": "pass" }
+]</code></pre>
+
+<p>| Event | What happens |<br>|-------|-------------|<br>| <strong>intent_received</strong> | The inbound message is captured, hashed, and logged. The decision engine classifies intent and determines capability requirements. |<br>| <strong>governance_evaluated</strong> | Active policies are checked against the request. Budget limits, capability gates, and tenant-level rules are enforced. If any policy blocks the request, the chain stops here with <code>status: "blocked"</code>. |<br>| <strong>response_generated</strong> | The AI provider generates the response. The proposal layer structures the output and the commit layer assigns per-claim trust boundaries. |<br>| <strong>response_attested</strong> | The complete response (input hash, output, trust boundaries, policy decisions) is written to the hash-chained event log. This entry is immutable and forms the cryptographic proof that governance was applied. |</p>
+
+<p>The chain is append-only. If <code>governance_evaluated</code> returns <code>"blocked"</code>, no response is generated and no attestation is recorded -- the chain has only two events. A complete chain always has exactly four events with <code>status: "pass"</code>.</p>
+
+<p>These events are stored in the hash-chained event log and can be queried via the <a href="/api-reference">audit events endpoint</a> (<code>GET /api/tenant/audit/events</code>).</p>
+
+<h2 id="confidence-levels">Confidence levels</h2>
+
+<p>| Level | Threshold | Meaning |<br>|-------|-----------|---------|<br>| CLEAR | >= 95% | Proceed with confidence |<br>| RECOMMENDED | >= 80% | Strong recommendation |<br>| ADVISORY | >= 50% | Consider alternatives |<br>| INSUFFICIENT | < 50% | Do not act without further evidence |</p>
+
+<h2 id="actionability">Actionability</h2>
+
+<p>The <code>actionability</code> field tells you whether to act on the response:</p>
+
+<ul>
+<li><strong>safe</strong> -- all claims verified, safe to act</li>
+<li><strong>review</strong> -- contains inference, review before acting</li>
+<li><strong>blocked</strong> -- review required, do not act without verification</li>
+</ul>
+</div>

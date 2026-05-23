@@ -1,0 +1,159 @@
+<div class="docs-page">
+<h1>Policy Authoring</h1>
+<p class="docs-page-description">Write, validate, sign, activate, simulate, and rollback governance policies in Raptor.</p>
+<h1 id="policy-authoring">Policy Authoring</h1>
+
+<p>Governance policies define what operations are allowed, with what capabilities and budgets. Policies are default-deny, Ed25519-signed, and immutable once stored. This guide covers the full lifecycle: write, validate, sign, activate, simulate, and rollback.</p>
+
+<h2 id="policy-structure">Policy structure</h2>
+
+<p>A policy document is JSON with three required fields:</p>
+
+<pre><code class="language-json">{
+  "version": "1.0",
+  "default": "deny",
+  "rules": [
+    {
+      "match": { "operation": "chat_execution" },
+      "action": "allow",
+      "capabilities": ["chat", "read_context"],
+      "budget": {
+        "max_duration_ms": 30000,
+        "max_steps": 10,
+        "max_provider_calls": 5,
+        "max_artifacts": 3
+      }
+    },
+    {
+      "match": { "operation": "artifact_generate" },
+      "action": "allow",
+      "capabilities": ["artifact_write"],
+      "budget": { "max_artifacts": 10 }
+    },
+    {
+      "match": { "operation": "<em>" },
+      "action": "deny"
+    }
+  ]
+}</code></pre>
+
+<p>| Field | Required | Description |<br>|---|---|---|<br>| <code>version</code> | Yes | Policy format version |<br>| <code>default</code> | Yes | Must be <code>"deny"</code> — Raptor enforces default-deny |<br>| <code>rules</code> | Yes | At least one rule |<br>| <code>rules[].match.operation</code> | Yes | Operation type to match, or <code>"</em>"</code> for wildcard |<br>| <code>rules[].action</code> | Yes | <code>"allow"</code> or <code>"deny"</code> |<br>| <code>rules[].capabilities</code> | No | Capabilities granted when rule matches |<br>| <code>rules[].budget</code> | No | Resource limits for matched operations |<br>| <code>rules[].required_approvals</code> | No | Number of human approvals before execution |</p>
+
+<p>Rules are evaluated in order. The first match wins. If no rule matches, the default (<code>deny</code>) applies.</p>
+
+<h2 id="1-validate">1. Validate</h2>
+
+<p>Test your policy without storing or signing it:</p>
+
+<pre><code class="language-bash">curl -X POST https://raptor.harpyits.com/api/admin/policies/validate \
+  -H "Authorization: Bearer rpt_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "policy_json": "{\"version\":\"1.0\",\"default\":\"deny\",\"rules\":[{\"match\":{\"operation\":\"chat_execution\"},\"action\":\"allow\"}]}"
+  }'</code></pre>
+
+<p>A valid policy returns:</p>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "valid": true,
+  "version": "1.0",
+  "default": "deny",
+  "rule_count": 1,
+  "policy_hash": "sha256:abc123..."
+}</code></pre>
+
+<p>Validation checks: <code>version</code> present, <code>default</code> is <code>"deny"</code>, at least one rule, every rule has <code>match.operation</code> and <code>action</code>.</p>
+
+<h2 id="2-sign">2. Sign</h2>
+
+<p>Signing creates a cryptographic attestation using Ed25519. The platform signing key is configured server-side (<code>RAPTOR_SIGNING_PRIVATE_KEY</code>). Requires tenant admin role.</p>
+
+<pre><code class="language-bash">curl -X POST https://raptor.harpyits.com/api/admin/policies/sign \
+  -H "Authorization: Bearer rpt_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "policy_json": "{\"version\":\"1.0\",\"default\":\"deny\",\"rules\":[{\"match\":{\"operation\":\"chat_execution\"},\"action\":\"allow\"}]}",
+    "policy_version": "1.0"
+  }'</code></pre>
+
+<p>Response:</p>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "policy_id": "uuid",
+  "policy_version": "1.0",
+  "policy_hash": "sha256:abc123...",
+  "signature": "base64-ed25519-signature",
+  "signer_key_id": "key-id",
+  "status": "signed",
+  "note": "Policy is signed but NOT active. Use /api/admin/policies/{id}/activate to activate."
+}</code></pre>
+
+<p>Signing is a separate step from activation. A signed policy is inert until explicitly activated. Anti-replay protection rejects duplicate policy content for the same tenant.</p>
+
+<h2 id="3-activate">3. Activate</h2>
+
+<pre><code class="language-bash">curl -X POST https://raptor.harpyits.com/api/admin/policies/{policy_id}/activate \
+  -H "Authorization: Bearer rpt_your_key"</code></pre>
+
+<p>Activation verifies the signature again, then creates a new immutable <code>active</code> row. The previous active policy is superseded — policy rows are never updated or deleted.</p>
+
+<h2 id="4-simulate">4. Simulate</h2>
+
+<p>Test how a policy would evaluate a specific operation without activating it:</p>
+
+<pre><code class="language-bash">curl -X POST https://raptor.harpyits.com/api/admin/policies/simulate \
+  -H "Authorization: Bearer rpt_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "policy_json": "{\"version\":\"1.0\",\"default\":\"deny\",\"rules\":[{\"match\":{\"operation\":\"chat_execution\"},\"action\":\"allow\",\"capabilities\":[\"chat\"]}]}",
+    "operation": "chat_execution"
+  }'</code></pre>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "operation": "chat_execution",
+  "simulated": true,
+  "decision": "allow",
+  "matched_rule": {
+    "match": { "operation": "chat_execution" },
+    "action": "allow",
+    "capabilities": ["chat"]
+  }
+}</code></pre>
+
+<p>Simulation is a pure dry-run. No grants are issued, no events are recorded, and no side effects occur.</p>
+
+<h2 id="5-rollback">5. Rollback</h2>
+
+<p>Revert to the previous signed policy:</p>
+
+<pre><code class="language-bash">curl -X POST https://raptor.harpyits.com/api/admin/policies/rollback \
+  -H "Authorization: Bearer rpt_your_key"</code></pre>
+
+<p>Rollback finds the most recent signed policy with different content from the current active policy, verifies its signature, and activates it. Requires at least two distinct policies in the history.</p>
+
+<h2 id="6-view-policy-history">6. View policy history</h2>
+
+<pre><code class="language-bash">curl https://raptor.harpyits.com/api/admin/policies \
+  -H "Authorization: Bearer rpt_your_key"</code></pre>
+
+<p>Returns all policy versions for the tenant with their status (<code>active</code>, <code>signed</code>, <code>superseded</code>), hash, and signer key ID.</p>
+
+<h2 id="governance-modes">Governance modes</h2>
+
+<p>| Mode | Behavior |<br>|---|---|<br>| <code>permissive</code> | All known operations allowed (development default) |<br>| <code>enforced</code> | Only operations explicitly allowed by a signed, verified policy |</p>
+
+<p>Set via the <code>RAPTOR_GOVERNANCE_MODE</code> environment variable. Production defaults to <code>enforced</code>.</p>
+
+<p>In enforced mode, policy management operations (validate, sign, activate, rollback, simulate) are always allowed — they are bootstrap operations that cannot require a policy to manage policies.</p>
+
+<h2 id="next-steps">Next steps</h2>
+
+<ul>
+<li><a href="/guides/audit-export">Audit export</a> — every policy decision is recorded in the audit chain</li>
+<li><a href="/guides/rest-api">REST API integration</a> — policies govern every API call</li>
+<li><a href="/guides/webhooks">Webhook integration</a> — receive <code>policy.activated</code> events</li>
+</ul>
+</div>

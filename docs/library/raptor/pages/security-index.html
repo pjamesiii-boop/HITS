@@ -1,0 +1,173 @@
+<div class="docs-page">
+<h1>Security Architecture</h1>
+<p class="docs-page-description">Authentication, authorization, data isolation, cryptographic integrity, and privacy controls in Raptor.</p>
+<h1 id="security-architecture">Security Architecture</h1>
+
+<p>Raptor's security model is built into the substrate, not bolted on after the fact. Authentication, authorization, data isolation, cryptographic integrity, and privacy controls are structural — they operate at the database and middleware layers, not the application layer alone.</p>
+
+<h2 id="authentication">Authentication</h2>
+
+<p>Raptor supports three authentication modes. Each serves a different operational context.</p>
+
+<h3 id="clerk-sso-production">Clerk SSO (Production)</h3>
+
+<p>For workspace users signing in through the Control Panel UI.</p>
+
+<ul>
+<li>OAuth 2.0 via Clerk with Google, GitHub, and Microsoft identity providers</li>
+<li>JWT verification on every request using Clerk's published JWKS</li>
+<li>Session tokens include tenant binding — a user's Clerk organization maps to exactly one Raptor tenant</li>
+<li>Token expiration and refresh handled by Clerk's session management</li>
+</ul>
+
+<p><strong>Required variables:</strong> <code>CLERK_SECRET_KEY</code>, <code>CLERK_PUBLISHABLE_KEY</code>, <code>CLERK_DOMAIN</code></p>
+
+<h3 id="api-keys-infrastructure">API Keys (Infrastructure)</h3>
+
+<p>For programmatic access via the REST API.</p>
+
+<ul>
+<li>Keys are prefixed with <code>rpt_</code> for identification</li>
+<li>Only the SHA-256 hash is stored in the database — the plaintext key is shown once at creation and never again</li>
+<li>Each key is scoped to a single tenant and carries an explicit set of permissions</li>
+<li>Keys can be configured with credit-exhaustion behavior: pause requests or continue with degraded service</li>
+</ul>
+
+<h3 id="founder-key-bootstrap">Founder Key (Bootstrap)</h3>
+
+<p>For initial setup and emergency access before Clerk is configured.</p>
+
+<ul>
+<li>Set via <code>RAPTOR_ACCESS_TOKEN</code> environment variable</li>
+<li>Authenticated using SHA-256 constant-time comparison to prevent timing attacks</li>
+<li>Grants full access to the tenant — intended for bootstrap, not production operation</li>
+<li>Should be rotated or disabled once Clerk SSO is configured</li>
+</ul>
+
+<h2 id="authorization">Authorization</h2>
+
+<h3 id="role-based-access-control-rbac">Role-Based Access Control (RBAC)</h3>
+
+<p>Every authenticated user or API key is assigned a role within their tenant. Three roles govern access:</p>
+
+<p>| Role | Purpose |<br>|------|---------|<br>| <strong>Owner</strong> | Full administrative control. Manages billing, team, and governance policies. |<br>| <strong>Admin</strong> | Operational management. Configures providers, policies, and integrations. |<br>| <strong>Member</strong> | Standard usage. Creates nests, sends messages, views governance data. |</p>
+
+<h3 id="permissions">Permissions</h3>
+
+<p>10 permissions are mapped to roles via the <code>role_permissions</code> table:</p>
+
+<p>| Permission | Owner | Admin | Member |<br>|------------|:-----:|:-----:|:------:|<br>| <code>tenant.manage</code> | Yes | No | No |<br>| <code>billing.manage</code> | Yes | No | No |<br>| <code>team.manage</code> | Yes | Yes | No |<br>| <code>provider.manage</code> | Yes | Yes | No |<br>| <code>policy.manage</code> | Yes | Yes | No |<br>| <code>api_key.manage</code> | Yes | Yes | No |<br>| <code>webhook.manage</code> | Yes | Yes | No |<br>| <code>nest.create</code> | Yes | Yes | Yes |<br>| <code>nest.read</code> | Yes | Yes | Yes |<br>| <code>audit.read</code> | Yes | Yes | Yes |</p>
+
+<p>15+ API endpoints are gated by these permissions. Unauthorized requests return <code>403 Forbidden</code> with a structured error body identifying the missing permission.</p>
+
+<h2 id="data-isolation">Data Isolation</h2>
+
+<h3 id="postgresql-row-level-security">PostgreSQL Row-Level Security</h3>
+
+<p>Every tenant's data is isolated at the database level using PostgreSQL RLS.</p>
+
+<ul>
+<li><strong>30 tables</strong> have RLS policies enforced via <code>FORCE ROW LEVEL SECURITY</code></li>
+<li>The <code>raptor_app</code> database role sets <code>tenant_id</code> on every connection via <code>SET LOCAL</code></li>
+<li>Even the database owner role is subject to RLS — cross-tenant access requires explicit opt-out within a transaction</li>
+<li>Every query is automatically scoped to the authenticated tenant's <code>tenant_id</code></li>
+</ul>
+
+<p>This is not application-level filtering. A bug in application code cannot leak data across tenants because the database itself enforces the boundary.</p>
+
+<h3 id="tenant-scoped-everything">Tenant-Scoped Everything</h3>
+
+<ul>
+<li>Nests, execution events, governance decisions, policies, API keys, billing records, and audit trails are all keyed to <code>tenant_id</code></li>
+<li>No shared tables exist between tenants except system-level configuration</li>
+<li>Indexes are structured as <code>(tenant_id, ...)</code> to ensure query plans respect isolation</li>
+</ul>
+
+<h2 id="cryptographic-integrity">Cryptographic Integrity</h2>
+
+<h3 id="hash-chained-audit-trail">Hash-Chained Audit Trail</h3>
+
+<p>Every governed operation produces an execution event linked to the previous event via SHA-256 hashing.</p>
+
+<ul>
+<li><strong>Canonical hashing:</strong> JSON keys sorted alphabetically, no whitespace, deterministic number representation, null values preserved</li>
+<li><strong>Chain linking:</strong> each event's <code>event_hash</code> includes the <code>previous_event_hash</code></li>
+<li><strong>Database-level immutability:</strong> triggers on <strong>11 tables</strong> prevent <code>UPDATE</code> and <code>DELETE</code> operations — this cannot be bypassed by application code</li>
+<li><strong>Verification endpoints:</strong> per-nest, per-execution, and tenant-wide chain verification</li>
+</ul>
+
+<p>Protected tables include: <code>execution_events</code>, <code>build_attestations</code>, <code>transparency_log</code>, <code>authorization_events</code>, <code>governance_policies</code>, and 6 others.</p>
+
+<h3 id="build-attestation">Build Attestation</h3>
+
+<p>Every deployment can be signed with Ed25519 keys to prove build provenance.</p>
+
+<ul>
+<li>Attestation records are stored in the immutable <code>build_attestations</code> table</li>
+<li>Public verification available at <code>/.well-known/raptor/attestation</code></li>
+<li>Attestations link a specific Git commit to a deployed build</li>
+</ul>
+
+<h3 id="webhook-signatures">Webhook Signatures</h3>
+
+<p>Outbound webhooks are signed with HMAC-SHA256 using per-tenant webhook secrets.</p>
+
+<ul>
+<li>Recipients verify the signature header to confirm the payload originated from Raptor</li>
+<li>Replay protection via timestamp headers</li>
+<li>Secrets are stored hashed — the plaintext is shown once at creation</li>
+</ul>
+
+<h2 id="encryption">Encryption</h2>
+
+<h3 id="in-transit">In Transit</h3>
+
+<p>All external communication uses TLS 1.2+ encryption. Self-hosted deployments should terminate TLS at a reverse proxy or load balancer.</p>
+
+<h3 id="at-rest">At Rest</h3>
+
+<p>Database-level encryption at rest is provided by the PostgreSQL hosting provider (Railway, AWS RDS, or equivalent). Raptor does not implement application-level encryption at rest — sensitive fields (API key hashes, webhook secret hashes) are stored as one-way hashes, not encrypted values.</p>
+
+<h2 id="privacy">Privacy</h2>
+
+<h3 id="gdpr-compliance">GDPR Compliance</h3>
+
+<p>Raptor implements the following GDPR provisions:</p>
+
+<ul>
+<li><strong>Article 6 (Lawful basis):</strong> consent records tracked per user with grant/revoke timestamps, IP address, and user agent</li>
+<li><strong>Article 7 (Conditions for consent):</strong> explicit consent management with revocation support</li>
+<li><strong>Article 17 (Right to erasure):</strong> data subject requests processed via the <code>data_subject_requests</code> table. Mutable data is deleted; immutable audit records have PII redacted while preserving hash chain integrity</li>
+<li><strong>Article 20 (Data portability):</strong> JSON export of all tenant data across 12 tables via <code>GET /api/tenant/audit/export</code></li>
+<li><strong>Article 28 (Processor obligations):</strong> tenant isolation ensures data processing boundaries are structurally enforced</li>
+</ul>
+
+<h3 id="ccpa-compliance">CCPA Compliance</h3>
+
+<ul>
+<li><strong>Right to know:</strong> full data export available on request</li>
+<li><strong>Right to delete:</strong> data subject request workflow with completion tracking</li>
+<li><strong>Right to opt-out:</strong> consent records support opt-out with timestamp and audit trail</li>
+</ul>
+
+<h3 id="retention-policies">Retention Policies</h3>
+
+<p>Tenants configure retention policies per resource type via the <code>retention_policies</code> table:</p>
+
+<ul>
+<li><strong>Immutable tables</strong> (execution events, attestations, authorization events): retained indefinitely — these form the audit chain and cannot be deleted without breaking cryptographic integrity</li>
+<li><strong>Mutable tables</strong> (conversations, uploads, cache): configurable retention from 30 days to indefinite</li>
+<li><strong>Auto-delete:</strong> optional automatic purge when retention period expires</li>
+</ul>
+
+<h3 id="consent-management">Consent Management</h3>
+
+<p>The <code>consent_records</code> table tracks:</p>
+
+<ul>
+<li>Consent type (data processing, analytics, marketing)</li>
+<li>Grant and revocation timestamps</li>
+<li>IP address and user agent at time of consent</li>
+<li>Full audit trail of consent state changes</li>
+</ul>
+</div>

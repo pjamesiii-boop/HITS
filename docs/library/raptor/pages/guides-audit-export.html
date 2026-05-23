@@ -1,0 +1,184 @@
+<div class="docs-page">
+<h1>Audit and Compliance</h1>
+<p class="docs-page-description">Export audit trails, verify hash chain integrity, and implement compliance patterns with Raptor.</p>
+<h1 id="audit-and-compliance">Audit and Compliance</h1>
+
+<p>Every governed operation in Raptor produces an immutable, hash-chained record. This guide covers exporting audit data, verifying chain integrity, understanding retention, and implementing regulatory compliance patterns.</p>
+
+<h2 id="1-export-the-audit-trail">1. Export the audit trail</h2>
+
+<p>The tenant-wide export endpoint returns four tables of governance evidence:</p>
+
+<pre><code class="language-bash">curl -H "Authorization: Bearer rpt_your_key" \
+  https://raptor.harpyits.com/api/tenant/audit/export</code></pre>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "tenant_id": "uuid",
+  "export": {
+    "authorization_events": [...],
+    "capability_grants": [...],
+    "governance_policies": [...],
+    "tenant_events": [...]
+  },
+  "counts": {
+    "authorization_events": 142,
+    "capability_grants": 89,
+    "governance_policies": 3,
+    "tenant_events": 12
+  },
+  "exported_at": "2026-05-21T14:30:00Z"
+}</code></pre>
+
+<h3 id="authorization-events">Authorization events</h3>
+
+<p>Each authorization event records a governance decision:</p>
+
+<pre><code class="language-json">{
+  "id": "uuid",
+  "operation": "chat_execution",
+  "decision": "allowed",
+  "reason": "policy_rule_matched",
+  "policy_mode": "enforced",
+  "correlation_id": "uuid",
+  "created_at": "2026-05-21T14:30:00Z"
+}</code></pre>
+
+<h3 id="capability-grants">Capability grants</h3>
+
+<p>Each grant records what capabilities were issued for an allowed operation, with a cryptographic hash:</p>
+
+<pre><code class="language-json">{
+  "id": "uuid",
+  "operation": "chat_execution",
+  "capabilities": "chat,read_context",
+  "required_approvals": 0,
+  "grant_hash": "sha256:abc123...",
+  "created_at": "2026-05-21T14:30:00Z"
+}</code></pre>
+
+<h3 id="paginated-access">Paginated access</h3>
+
+<p>For large audit histories, use the paginated events endpoint:</p>
+
+<pre><code class="language-bash">curl -H "Authorization: Bearer rpt_your_key" \
+  "https://raptor.harpyits.com/api/tenant/audit/events?after=cursor_id"</code></pre>
+
+<h2 id="2-understand-the-hash-chain">2. Understand the hash chain</h2>
+
+<p>Every execution event is linked to the previous event via SHA-256 hashing:</p>
+
+<pre><code>Event N:
+  event_hash = SHA-256(payload + previous_event_hash)
+  previous_event_hash = Event N-1's event_hash
+
+<p>Event N-1:<br>  event_hash = SHA-256(payload + previous_event_hash)<br>  previous_event_hash = Event N-2's event_hash</code></pre></p>
+
+<p>The payload is canonically serialized (sorted keys, no whitespace, nulls preserved) before hashing. Any system can independently verify a hash by re-serializing with the same rules.</p>
+
+<p>The hash chain is per-tenant, per-nest. Each nest maintains its own chain.</p>
+
+<h2 id="3-verify-chain-integrity">3. Verify chain integrity</h2>
+
+<h3 id="per-nest-verification">Per-nest verification</h3>
+
+<pre><code class="language-bash">curl -H "Authorization: Bearer rpt_your_key" \
+  https://raptor.harpyits.com/api/nests/{nestId}/verification</code></pre>
+
+<p>Returns chain integrity status and claim-level freshness for the nest.</p>
+
+<h3 id="per-execution-trace">Per-execution trace</h3>
+
+<pre><code class="language-bash">curl -H "Authorization: Bearer rpt_your_key" \
+  https://raptor.harpyits.com/api/executions/{id}/trace</code></pre>
+
+<p>Returns the full event chain for a single execution with hash verification at each link.</p>
+
+<h3 id="independent-verification">Independent verification</h3>
+
+<p>To verify the chain externally:</p>
+
+<ol>
+<li>Export the execution events for a nest</li>
+<li>For each event, canonically serialize the payload (sort keys, no whitespace)</li>
+<li>Compute <code>SHA-256(serialized_payload + previous_event_hash)</code></li>
+<li>Compare against the stored <code>event_hash</code></li>
+<li>If any hash mismatches, the chain has been tampered with</li>
+</ol>
+
+<h2 id="4-immutability-guarantees">4. Immutability guarantees</h2>
+
+<p>Raptor's audit tables are protected by database-level triggers that prevent UPDATE and DELETE:</p>
+
+<ul>
+<li><code>execution_events</code> — the primary hash chain</li>
+<li><code>authorization_events</code> — governance decision ledger</li>
+<li><code>governance_policies</code> — append-only policy lifecycle</li>
+<li><code>build_attestations</code> — Ed25519 signed build proofs</li>
+<li><code>transparency_log</code> — public transparency records</li>
+</ul>
+
+<p>This is database-level enforcement, not application-level. Application code cannot bypass these triggers.</p>
+
+<h2 id="5-retention">5. Retention</h2>
+
+<p>The audit export endpoint returns the most recent records per table (200 authorization events, 200 capability grants, 50 governance policies, 50 tenant events). For complete historical data, use the paginated events endpoint.</p>
+
+<p>Raptor does not automatically delete audit records. The hash chain is append-only by design — deletion would break chain integrity.</p>
+
+<h2 id="6-gdpr-data-export">6. GDPR data export</h2>
+
+<p>The privacy endpoints support per-user data export:</p>
+
+<pre><code class="language-bash"># Export all data for a specific user
+curl -H "Authorization: Bearer rpt_your_key" \
+  https://raptor.harpyits.com/api/privacy/export</code></pre>
+
+<p>This returns all governed interactions, governance decisions, and execution artifacts associated with the requesting identity.</p>
+
+<h2 id="7-regulatory-compliance-patterns">7. Regulatory compliance patterns</h2>
+
+<h3 id="soc-2-evidence">SOC 2 evidence</h3>
+
+<p>The audit export provides the evidence trail SOC 2 auditors need:</p>
+
+<ul>
+<li>Every operation authorized with recorded decision and reason</li>
+<li>Every capability grant with cryptographic hash</li>
+<li>Policy version history with Ed25519 signatures</li>
+<li>Tamper-evident chain with independent verifiability</li>
+</ul>
+
+<h3 id="audit-log-forwarding">Audit log forwarding</h3>
+
+<p>Use webhooks to forward governance events to your SIEM or compliance platform in real time:</p>
+
+<pre><code class="language-bash">curl -X POST https://raptor.harpyits.com/api/webhooks \
+  -H "Authorization: Bearer rpt_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-siem.com/ingest/raptor",
+    "events": ["governance.allowed", "governance.denied", "policy.activated"]
+  }'</code></pre>
+
+<h3 id="chain-of-custody-documentation">Chain-of-custody documentation</h3>
+
+<p>For each governed response, you can reconstruct the full chain of custody:</p>
+
+<ol>
+<li><strong>Authorization</strong> — who requested what, and what policy allowed it</li>
+<li><strong>Capability grant</strong> — what capabilities were issued, with what budget</li>
+<li><strong>Execution</strong> — what happened, with trust boundary and segments</li>
+<li><strong>Attestation</strong> — Ed25519 signed execution receipt</li>
+</ol>
+
+<p>All four are hash-linked and independently verifiable.</p>
+
+<h2 id="next-steps">Next steps</h2>
+
+<ul>
+<li><a href="/guides/policy-authoring">Policy authoring</a> — the policies that generate audit events</li>
+<li><a href="/guides/webhooks">Webhook integration</a> — forward events in real time</li>
+<li><a href="/guides/rest-api">REST API integration</a> — query audit data programmatically</li>
+</ul>
+</div>

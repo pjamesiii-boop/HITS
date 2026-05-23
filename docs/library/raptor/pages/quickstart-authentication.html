@@ -1,0 +1,176 @@
+<div class="docs-page">
+<h1>Authentication</h1>
+<p class="docs-page-description">Authenticate with Raptor using Clerk SSO, API keys, or the Founder Key.</p>
+<h1 id="authentication">Authentication</h1>
+
+<p>Raptor supports three authentication modes. Use whichever fits your context.</p>
+
+<p>| Mode | Use case | Header |<br>|------|----------|--------|<br>| <strong>Clerk SSO</strong> | Production workspace users | Browser session cookie (automatic) |<br>| <strong>API keys</strong> | Programmatic access, CI/CD, integrations | <code>Authorization: Bearer rpt_...</code> |<br>| <strong>Founder Key</strong> | Development, emergency access, bootstrap | <code>X-Raptor-Founder-Key: ...</code> |</p>
+
+<p>All three modes work against the same API surface. The identity provider is recorded in the audit trail so you can always trace who authorized a request.</p>
+
+<hr>
+
+<h2 id="clerk-sso-production">Clerk SSO (production)</h2>
+
+<p>Clerk handles authentication for workspace users. Supported providers: Google, GitHub, Microsoft, and email/password.</p>
+
+<h3 id="setup">Setup</h3>
+
+<p>Set three environment variables:</p>
+
+<pre><code class="language-dotenv">CLERK_SECRET_KEY=sk_live_...
+CLERK_PUBLISHABLE_KEY=pk_live_...
+CLERK_DOMAIN=your-app.clerk.accounts.dev</code></pre>
+
+<p>Users sign in through the workspace UI at <code>http://localhost:4000</code> (self-hosted) or <code>https://raptor.dev</code> (cloud). Clerk issues a <code>__session</code> JWT cookie that Raptor validates on every request.</p>
+
+<h3 id="how-it-works">How it works</h3>
+
+<ol>
+<li>User signs in via Clerk's hosted UI (OAuth or email).</li>
+<li>Clerk sets a <code>__session</code> cookie containing a signed JWT.</li>
+<li>Raptor validates the JWT against your Clerk domain on every API call.</li>
+<li>The user's Clerk ID, tenant, and role are extracted and recorded in governance events.</li>
+</ol>
+
+<p>No application code is needed -- the browser handles the cookie automatically.</p>
+
+<h3 id="without-clerk">Without Clerk</h3>
+
+<p>If you omit all <code>CLERK_*</code> variables, Raptor runs in token-only mode. All API access uses API keys or the Founder Key. This is valid for self-hosted deployments that do not need SSO.</p>
+
+<hr>
+
+<h2 id="api-keys">API keys</h2>
+
+<p>API keys are the primary method for programmatic access. Keys use the <code>rpt_</code> prefix and are stored as SHA-256 hashes -- the plaintext key is shown exactly once at creation time.</p>
+
+<h3 id="creating-a-key">Creating a key</h3>
+
+<pre><code class="language-bash">curl -X POST http://localhost:4000/api/keys \
+  -H "Content-Type: application/json" \
+  -H "X-Raptor-Token: your-access-token" \
+  -d '{"name": "ci-pipeline", "scope": "chat"}'</code></pre>
+
+<p>Response:</p>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "key": "rpt_a1b2c3d4e5f6...",
+  "prefix": "rpt_a1b2",
+  "name": "ci-pipeline",
+  "id": "uuid-here"
+}</code></pre>
+
+<p>Save the <code>key</code> value immediately. It cannot be retrieved again.</p>
+
+<h3 id="using-a-key">Using a key</h3>
+
+<p>Pass the key in the <code>Authorization</code> header:</p>
+
+<pre><code class="language-bash">curl -X POST http://localhost:4000/api/chat \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer rpt_a1b2c3d4e5f6..." \
+  -d '{"message": "What is the deployment status?"}'</code></pre>
+
+<p>Or use the <code>X-Raptor-Token</code> header:</p>
+
+<pre><code class="language-bash">curl -X POST http://localhost:4000/api/chat \
+  -H "Content-Type: application/json" \
+  -H "X-Raptor-Token: rpt_a1b2c3d4e5f6..." \
+  -d '{"message": "What is the deployment status?"}'</code></pre>
+
+<h3 id="managing-keys">Managing keys</h3>
+
+<pre><code class="language-bash"># List all keys (shows prefix and name, never the full key)
+curl http://localhost:4000/api/keys \
+  -H "X-Raptor-Token: your-access-token"
+
+<h1 id="revoke-a-key">Revoke a key</h1>
+curl -X DELETE http://localhost:4000/api/keys/{id} \
+  -H "X-Raptor-Token: your-access-token"</code></pre>
+
+<h3 id="security-model">Security model</h3>
+
+<ul>
+<li>Keys are hashed with SHA-256 before storage. The database never contains plaintext keys.</li>
+<li>Only the <code>rpt_</code> prefix (first 8 characters) is stored for identification.</li>
+<li>Revocation is immediate -- the hash is deleted, not marked inactive.</li>
+</ul>
+
+<hr>
+
+<h2 id="founder-key-development-emergency">Founder Key (development / emergency)</h2>
+
+<p>The Founder Key is a single shared secret for bootstrap access and emergency recovery. It bypasses Clerk but still passes through full governance -- every Founder Key action is audited.</p>
+
+<h3 id="setup">Setup</h3>
+
+<p>Generate a SHA-256 hash of your chosen key and set it in the environment:</p>
+
+<pre><code class="language-bash"># Generate the hash
+echo -n "my-secret-founder-key" | shasum -a 256
+<h1 id="output-9f86d08-use-this-hash">Output: 9f86d08... (use this hash)</h1>
+
+<h1 id="set-in-env">Set in .env</h1>
+RAPTOR_FOUNDER_KEY_HASH=9f86d08...</code></pre>
+
+<h3 id="using-the-founder-key-api">Using the Founder Key (API)</h3>
+
+<p>Pass the plaintext key in the <code>X-Raptor-Founder-Key</code> header:</p>
+
+<pre><code class="language-bash">curl -X POST http://localhost:4000/api/chat \
+  -H "Content-Type: application/json" \
+  -H "X-Raptor-Founder-Key: my-secret-founder-key" \
+  -d '{"message": "System health check"}'</code></pre>
+
+<h3 id="using-the-founder-key-browser">Using the Founder Key (browser)</h3>
+
+<p>The workspace UI provides a Founder Key login form. On successful login, a <code>raptor_founder_key</code> cookie is set for the session. CSRF protection is enforced on the login endpoint.</p>
+
+<pre><code class="language-bash"># Programmatic login (sets session cookie)
+curl -X POST http://localhost:4000/api/auth/founder-key \
+  -H "Content-Type: application/json" \
+  -H "X-CSRF-Token: token-from-cookie" \
+  -d '{"key": "my-secret-founder-key"}' \
+  -c cookies.txt
+
+<h1 id="subsequent-requests-use-the-cookie">Subsequent requests use the cookie</h1>
+curl http://localhost:4000/api/nests \
+  -b cookies.txt</code></pre>
+
+<h3 id="when-to-use-the-founder-key">When to use the Founder Key</h3>
+
+<ul>
+<li><strong>Local development</strong> -- simpler than configuring Clerk.</li>
+<li><strong>Emergency access</strong> -- if Clerk is unavailable, the Founder Key still works.</li>
+<li><strong>Initial bootstrap</strong> -- set up the first organization before SSO is configured.</li>
+</ul>
+
+<p>The Founder Key is not scoped to a tenant. It authenticates as the platform founder with full access. Do not share it or use it for routine operations in production.</p>
+
+<hr>
+
+<h2 id="authentication-in-the-audit-trail">Authentication in the audit trail</h2>
+
+<p>Every governance event records the authentication method:</p>
+
+<pre><code class="language-json">{
+  "identity_type": "clerk",
+  "identity_id": "user_2abc...",
+  "tenant_id": "org_xyz..."
+}</code></pre>
+
+<p>The <code>identity_type</code> field is one of: <code>clerk</code>, <code>founder_key</code>, or <code>api_key</code>. This makes it possible to audit who authorized every governed response, regardless of authentication method.</p>
+
+<hr>
+
+<h2 id="access-token-vs-api-key">Access token vs. API key</h2>
+
+<p>Two token types exist. Do not confuse them:</p>
+
+<p>| Token | Set via | Purpose |<br>|-------|---------|---------|<br>| <code>RAPTOR_ACCESS_TOKEN</code> | Environment variable | Operator-level access for self-hosted deployments. Used with <code>X-Raptor-Token</code> header. |<br>| <code>rpt_</code> API key | Created via <code>/api/keys</code> | Per-tenant programmatic key. Used with <code>Authorization: Bearer</code> header. Scoped, audited, revocable. |</p>
+
+<p>For production integrations, prefer <code>rpt_</code> API keys. The access token is a bootstrap mechanism for self-hosted operators.</p>
+</div>

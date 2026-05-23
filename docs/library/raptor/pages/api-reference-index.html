@@ -1,0 +1,109 @@
+<div class="docs-page">
+<h1>API Reference</h1>
+<p class="docs-page-description">Complete REST API documentation for the Raptor governance substrate.</p>
+<h1 id="api-reference">API Reference</h1>
+
+<p>The Raptor API is a REST API that provides programmatic access to the governance substrate. Every endpoint returns structured JSON with deterministic trust metadata.</p>
+
+<h2 id="base-url">Base URL</h2>
+
+<p>| Environment | Base URL |<br>|-------------|----------|<br>| Cloud | <code>https://raptor.harpyits.com</code> |<br>| Self-hosted | <code>http://localhost:4000</code> |</p>
+
+<p>All paths in this reference are relative to the base URL.</p>
+
+<h2 id="authentication">Authentication</h2>
+
+<p>Raptor supports three authentication modes. Every endpoint except public well-known routes requires one.</p>
+
+<h3 id="clerk-jwt-bearer-token">Clerk JWT (Bearer Token)</h3>
+
+<p>Used by browser sessions and applications integrated with Clerk identity.</p>
+
+<pre><code class="language-bash">curl -H "Authorization: Bearer eyJhbGciOiJSUzI1NiIs..." \
+  https://raptor.harpyits.com/api/nests</code></pre>
+
+<p>The token is a standard Clerk-issued JWT. In browser contexts, it is attached automatically via the session cookie. Server-side integrations should obtain it from <code>Clerk.getToken()</code>.</p>
+
+<h3 id="api-key">API Key</h3>
+
+<p>Used by backend services, CI pipelines, and SDK integrations. Keys carry the <code>rpt_</code> prefix.</p>
+
+<pre><code class="language-bash">curl -H "X-Raptor-Key: rpt_live_abc123def456" \
+  https://raptor.harpyits.com/api/nests</code></pre>
+
+<p>Create API keys through the Control Panel under Settings, or via the <code>/api/keys</code> endpoint. Keys inherit the permissions of the tenant that created them.</p>
+
+<h3 id="founder-key-cookie">Founder Key (Cookie)</h3>
+
+<p>Used by the platform founder for administrative operations. Authenticates via <code>POST /api/auth/founder</code> which sets a signed HTTP-only cookie.</p>
+
+<pre><code class="language-bash"># Authenticate (sets cookie)
+curl -c cookies.txt -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"key": "your_founder_key"}' \
+  https://raptor.harpyits.com/api/auth/founder
+
+<h1 id="subsequent-requests-use-the-cookie">Subsequent requests use the cookie</h1>
+curl -b cookies.txt https://raptor.harpyits.com/api/admin/policies</code></pre>
+
+<h2 id="api-versioning">API Versioning</h2>
+
+<p>All requests should include the <code>X-Raptor-API-Version</code> header. The current version is <code>2026-05-09</code>.</p>
+
+<pre><code class="language-bash">curl -H "X-Raptor-API-Version: 2026-05-09" \
+  -H "X-Raptor-Key: rpt_live_abc123def456" \
+  https://raptor.harpyits.com/api/nests</code></pre>
+
+<p>When the header is omitted, the server defaults to the latest stable version. Breaking changes are always gated behind a new version date.</p>
+
+<h2 id="rate-limiting">Rate Limiting</h2>
+
+<p>Requests are rate-limited per tenant. Current limits:</p>
+
+<p>| Tier | Requests per minute | Burst |<br>|------|---------------------|-------|<br>| Free | 60 | 10 |<br>| Team | 300 | 50 |<br>| Growth | 1,000 | 100 |</p>
+
+<p>When rate-limited, the API returns HTTP 429 with <code>Retry-After</code> header (seconds).</p>
+
+<h2 id="error-format">Error Format</h2>
+
+<p>All errors follow a consistent envelope:</p>
+
+<pre><code class="language-json">{
+  "ok": false,
+  "error": "validation_error",
+  "message": "Request body failed validation.",
+  "detail": "Field 'message' is required.",
+  "correlation_id": "req_abc123"
+}</code></pre>
+
+<p>| Field | Type | Description |<br>|-------|------|-------------|<br>| <code>ok</code> | boolean | Always <code>false</code> for errors |<br>| <code>error</code> | string | Machine-readable error code |<br>| <code>message</code> | string | Human-readable summary |<br>| <code>detail</code> | string | Additional context (optional) |<br>| <code>correlation_id</code> | string | Request trace ID for support (optional) |</p>
+
+<h3 id="common-error-codes">Common Error Codes</h3>
+
+<p>| HTTP Status | Error Code | Meaning |<br>|-------------|------------|---------|<br>| 400 | <code>validation_error</code> | Request body or parameters invalid |<br>| 401 | <code>unauthorized</code> | Missing or invalid authentication |<br>| 403 | <code>forbidden</code> | Authenticated but not permitted |<br>| 403 | <code>governance_denied</code> | Policy blocked the operation |<br>| 404 | <code>not_found</code> | Resource does not exist |<br>| 409 | <code>conflict</code> | State conflict (e.g., policy already active) |<br>| 429 | <code>rate_limited</code> | Too many requests |<br>| 500 | <code>internal_error</code> | Server error |</p>
+
+<h2 id="pagination">Pagination</h2>
+
+<p>List endpoints use cursor-based pagination. Pass the <code>after</code> parameter with the ID of the last item from the previous page.</p>
+
+<pre><code class="language-bash"># First page
+GET /api/nests
+
+<h1 id="next-page-use-the-last-nest-id-from-previous-response">Next page (use the last nest ID from previous response)</h1>
+GET /api/nests?after=nest_abc123</code></pre>
+
+<p>Paginated responses include:</p>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "nests": [...],
+  "has_more": true,
+  "next_cursor": "nest_abc123"
+}</code></pre>
+
+<p>Chat history uses a <code>before</code> cursor for reverse-chronological ordering.</p>
+
+<h2 id="api-groups">API Groups</h2>
+
+<p>| Group | Description | Reference |<br>|-------|-------------|-----------|<br>| <a href="/api-reference/chat">Chat</a> | Governed messaging with trust boundaries | Send messages, reset context, retrieve history |<br>| <a href="/api-reference/nests">Nests</a> | Governed conversation containers | Create, list, archive, fork, inspect |<br>| <a href="/api-reference/files">Files</a> | File upload and management | Upload, list, metadata, revoke |<br>| <a href="/api-reference/policy">Policy</a> | Governance policy lifecycle | Validate, sign, activate, rollback, simulate |<br>| <a href="/api-reference/system">System</a> | Health, runtime, and public attestation | Liveness, readiness, version, integrity |<br>| <a href="/api-reference/webhooks">Webhooks</a> | Event subscriptions | Create, manage, delivery format |<br>| <a href="/api-reference/billing">Billing</a> | Stripe-powered billing | Checkout, portal, usage |<br>| <a href="/api-reference/privacy">Privacy</a> | GDPR and data governance | Export, delete, consent, retention |</p>
+</div>

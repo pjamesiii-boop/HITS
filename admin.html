@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="hits_logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HITS Admin Panel · Content Manager</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --blue:  #3b82f6;
+      --green: #22c55e;
+      --red:   #ef4444;
+      --bg:    #020617;
+      --card:  rgba(15,23,42,0.85);
+      --border:rgba(59,130,246,0.2);
+    }
+    *, *::before, *::after { box-sizing:border-box; }
+    body { background:var(--bg); font-family:'DM Sans',sans-serif; color:#e2e8f0; min-height:100vh; }
+
+    /* ── Layout ── */
+    .sidebar { width:220px; flex-shrink:0; }
+    .main    { flex:1; min-width:0; }
+
+    /* ── Sidebar nav items ── */
+    .nav-item {
+      display:flex; align-items:center; gap:10px;
+      padding:10px 14px; border-radius:10px; cursor:pointer;
+      font-family:'DM Sans',sans-serif; font-size:.875rem; font-weight:500;
+      color:rgba(148,163,184,.75); border:1px solid transparent;
+      transition:all .2s; user-select:none;
+    }
+    .nav-item:hover   { background:rgba(59,130,246,.08); color:#93c5fd; }
+    .nav-item.active  { background:rgba(59,130,246,.12); border-color:rgba(59,130,246,.3); color:#93c5fd; }
+    .nav-item svg     { flex-shrink:0; }
+
+    /* ── Panels ── */
+    .panel { display:none; }
+    .panel.active { display:block; animation:fadeUp .35s ease forwards; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(12px);} to{opacity:1;transform:translateY(0);} }
+
+    /* ── Cards ── */
+    .card {
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:14px;
+      transition:border-color .25s;
+    }
+    .card:hover { border-color:rgba(59,130,246,.38); }
+
+    /* ── Form controls ── */
+    label.lbl {
+      display:block;
+      font-family:'JetBrains Mono',monospace;
+      font-size:.65rem; font-weight:600;
+      letter-spacing:.12em; text-transform:uppercase;
+      color:rgba(148,163,184,.6); margin-bottom:6px;
+    }
+    .field {
+      width:100%;
+      background:rgba(2,6,23,.8);
+      border:1px solid rgba(59,130,246,.2);
+      border-radius:9px;
+      padding:10px 14px;
+      font-family:'DM Sans',sans-serif; font-size:.875rem;
+      color:#e2e8f0; outline:none;
+      transition:border-color .25s, box-shadow .25s;
+    }
+    .field::placeholder { color:rgba(148,163,184,.3); }
+    .field:focus { border-color:rgba(59,130,246,.55); box-shadow:0 0 0 3px rgba(59,130,246,.1); }
+    select.field { appearance:none; cursor:pointer;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2360a5fa' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:right 12px center; padding-right:36px;
+    }
+    textarea.field { resize:vertical; min-height:90px; line-height:1.55; }
+
+    /* ── Requirement chips ── */
+    .req-chip {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:5px 10px; border-radius:7px;
+      background:rgba(59,130,246,.1); border:1px solid rgba(59,130,246,.22);
+      font-family:'DM Sans',sans-serif; font-size:.8rem; color:#93c5fd;
+    }
+    .req-chip button { background:none; border:none; cursor:pointer; color:rgba(248,113,113,.7); line-height:1; font-size:.9rem; padding:0; transition:color .15s; }
+    .req-chip button:hover { color:#f87171; }
+
+    /* ── Buttons ── */
+    .btn-primary {
+      display:inline-flex; align-items:center; gap:7px;
+      padding:10px 22px; border-radius:10px; border:none; cursor:pointer;
+      background:linear-gradient(135deg,#2563eb,#3b82f6);
+      box-shadow:0 0 20px rgba(59,130,246,.35);
+      font-family:'Syne',sans-serif; font-size:.875rem; font-weight:700;
+      color:#fff; transition:box-shadow .25s, transform .15s;
+    }
+    .btn-primary:hover { box-shadow:0 0 32px rgba(59,130,246,.6); transform:translateY(-1px); }
+    .btn-primary:active { transform:translateY(0); }
+    .btn-primary:disabled { opacity:.45; cursor:not-allowed; transform:none; }
+
+    .btn-secondary {
+      display:inline-flex; align-items:center; gap:7px;
+      padding:10px 20px; border-radius:10px; cursor:pointer;
+      background:transparent; border:1px solid rgba(59,130,246,.3);
+      font-family:'Syne',sans-serif; font-size:.875rem; font-weight:600;
+      color:#93c5fd; transition:all .2s;
+    }
+    .btn-secondary:hover { background:rgba(59,130,246,.1); border-color:rgba(59,130,246,.55); }
+
+    .btn-danger {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:7px 14px; border-radius:8px; cursor:pointer;
+      background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.3);
+      font-family:'DM Sans',sans-serif; font-size:.8rem; font-weight:600;
+      color:#fca5a5; transition:all .2s;
+    }
+    .btn-danger:hover { background:rgba(239,68,68,.2); border-color:rgba(239,68,68,.55); }
+
+    .btn-edit {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:7px 14px; border-radius:8px; cursor:pointer;
+      background:rgba(59,130,246,.1); border:1px solid rgba(59,130,246,.25);
+      font-family:'DM Sans',sans-serif; font-size:.8rem; font-weight:600;
+      color:#93c5fd; transition:all .2s;
+    }
+    .btn-edit:hover { background:rgba(59,130,246,.18); }
+
+    /* ── Record list cards ── */
+    .record-card {
+      background:rgba(10,18,36,.85);
+      border:1px solid rgba(59,130,246,.15);
+      border-radius:12px; padding:16px 20px;
+      transition:border-color .25s, box-shadow .2s;
+    }
+    .record-card:hover {
+      border-color:rgba(59,130,246,.35);
+      box-shadow:0 0 24px rgba(59,130,246,.08);
+    }
+
+    /* ── Status badge ── */
+    .badge {
+      display:inline-flex; align-items:center; gap:5px;
+      padding:3px 9px; border-radius:999px;
+      font-family:'JetBrains Mono',monospace;
+      font-size:.6rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    }
+    .badge-active  { background:rgba(34,197,94,.12);  border:1px solid rgba(34,197,94,.35);  color:#86efac; }
+    .badge-closed  { background:rgba(148,163,184,.1); border:1px solid rgba(148,163,184,.25); color:#94a3b8; }
+    .badge-featured{ background:rgba(59,130,246,.12); border:1px solid rgba(59,130,246,.35);  color:#93c5fd; }
+    .badge-dot { width:5px; height:5px; border-radius:50%; }
+    .badge-dot-g { background:#4ade80; box-shadow:0 0 5px rgba(74,222,128,.8); }
+
+    /* Colour theme swatch */
+    .swatch { width:14px; height:14px; border-radius:3px; flex-shrink:0; }
+
+    /* ── Toast notifications ── */
+    #toast-container { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:10px; pointer-events:none; }
+    .toast {
+      display:flex; align-items:center; gap:10px;
+      padding:12px 18px; border-radius:12px;
+      font-family:'DM Sans',sans-serif; font-size:.875rem; font-weight:500;
+      backdrop-filter:blur(16px);
+      animation:toastIn .3s ease forwards;
+      pointer-events:auto;
+      max-width:340px;
+    }
+    .toast-success { background:rgba(15,40,25,.95); border:1px solid rgba(34,197,94,.4);  color:#86efac; }
+    .toast-error   { background:rgba(40,10,10,.95);  border:1px solid rgba(239,68,68,.4);   color:#fca5a5; }
+    .toast-info    { background:rgba(10,18,36,.95);  border:1px solid rgba(59,130,246,.4); color:#93c5fd; }
+    @keyframes toastIn  { from{opacity:0;transform:translateX(20px);} to{opacity:1;transform:translateX(0);} }
+    @keyframes toastOut { from{opacity:1;transform:translateX(0);}    to{opacity:0;transform:translateX(20px);} }
+
+    /* ── Divider ── */
+    .divider { height:1px; background:linear-gradient(90deg,rgba(59,130,246,.25),rgba(59,130,246,.06),transparent); margin:20px 0; }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width:6px; height:6px; }
+    ::-webkit-scrollbar-track { background:rgba(15,23,42,.5); }
+    ::-webkit-scrollbar-thumb { background:rgba(59,130,246,.3); border-radius:3px; }
+
+    /* ── Modal ── */
+    .modal-overlay { position:fixed; inset:0; background:rgba(2,6,23,.85); backdrop-filter:blur(8px); z-index:1000; display:flex; align-items:center; justify-content:center; padding:24px; }
+    .modal-box { background:rgba(10,18,36,.98); border:1px solid rgba(59,130,246,.3); border-radius:18px; width:100%; max-width:680px; max-height:90vh; overflow-y:auto; }
+
+    /* ── Tag chips (news) ── */
+    .tag-chip {
+      display:inline-flex; align-items:center; gap:5px;
+      padding:3px 9px; border-radius:6px;
+      background:rgba(59,130,246,.1); border:1px solid rgba(59,130,246,.22);
+      font-family:'JetBrains Mono',monospace; font-size:.65rem; color:#93c5fd;
+    }
+    .tag-chip button { background:none; border:none; cursor:pointer; color:rgba(248,113,113,.65); font-size:.8rem; padding:0; line-height:1; transition:color .15s; }
+    .tag-chip button:hover { color:#f87171; }
+
+    /* ── Category colour indicators ── */
+    .cat-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .cat-blue   { background:#3b82f6; box-shadow:0 0 6px rgba(59,130,246,.7); }
+    .cat-green  { background:#22c55e; box-shadow:0 0 6px rgba(34,197,94,.7); }
+    .cat-gold   { background:#fbbf24; box-shadow:0 0 6px rgba(251,191,36,.7); }
+    .cat-violet { background:#a78bfa; box-shadow:0 0 6px rgba(167,139,250,.7); }
+  </style>
+</head>
+
+<body>
+
+  <!-- ══════════════════════════════════════
+       TOP BAR
+  ══════════════════════════════════════ -->
+  <div style="background:rgba(8,14,30,.95);border-bottom:1px solid rgba(59,130,246,.15);padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <!-- Logo mark -->
+      <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#2563eb,#3b82f6);display:flex;align-items:center;justify-content:center;box-shadow:0 0 14px rgba(59,130,246,.55);">
+        <span style="font-family:'Syne',sans-serif;font-weight:800;color:#fff;font-size:.85rem;">H</span>
+      </div>
+      <div>
+        <span style="font-family:'Syne',sans-serif;font-weight:700;color:#fff;font-size:1rem;letter-spacing:-.01em;">HITS Admin</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.6rem;color:rgba(59,130,246,.6);margin-left:10px;letter-spacing:.1em;">CONTENT MANAGER</span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span id="save-status" style="font-family:'JetBrains Mono',monospace;font-size:.65rem;color:rgba(148,163,184,.4);letter-spacing:.08em;"></span>
+      <a href="index.html" style="font-family:'DM Sans',sans-serif;font-size:.8rem;color:rgba(148,163,184,.6);text-decoration:none;display:flex;align-items:center;gap:5px;transition:color .2s;" onmouseover="this.style.color='#93c5fd'" onmouseout="this.style.color='rgba(148,163,184,.6)'">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        View Site
+      </a>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       MAIN LAYOUT
+  ══════════════════════════════════════ -->
+  <div style="display:flex;min-height:calc(100vh - 58px);">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar" style="background:rgba(5,10,20,.8);border-right:1px solid rgba(59,130,246,.1);padding:20px 12px;display:flex;flex-direction:column;gap:4px;">
+
+      <p style="font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(148,163,184,.35);padding:0 6px;margin-bottom:8px;">Content</p>
+
+      <div class="nav-item active" id="nav-jobs" onclick="switchPanel('jobs')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+        Open Roles
+        <span id="jobs-count" style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:.65rem;background:rgba(59,130,246,.2);padding:1px 7px;border-radius:999px;color:#93c5fd;">–</span>
+      </div>
+
+      <div class="nav-item" id="nav-news" onclick="switchPanel('news')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 22h16a2 2 0 002-2V4a2 2 0 00-2-2H8L4 6v14a2 2 0 002 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+        News Stories
+        <span id="news-count" style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:.65rem;background:rgba(59,130,246,.2);padding:1px 7px;border-radius:999px;color:#93c5fd;">–</span>
+      </div>
+
+      <div style="margin-top:auto;padding-top:16px;border-top:1px solid rgba(59,130,246,.1);">
+        <p style="font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(148,163,184,.3);padding:0 6px;margin-bottom:8px;">Quick Links</p>
+        <a href="careers.html" target="_blank" class="nav-item" style="font-size:.8rem;text-decoration:none;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          careers.html
+        </a>
+        <a href="news.html" target="_blank" class="nav-item" style="font-size:.8rem;text-decoration:none;margin-top:2px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          news.html
+        </a>
+      </div>
+    </div>
+
+    <!-- CONTENT AREA -->
+    <div class="main" style="padding:28px 32px;overflow-y:auto;">
+
+      <!-- ════════════════════
+           JOBS PANEL
+      ════════════════════ -->
+      <div class="panel active" id="panel-jobs">
+
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px;">
+          <div>
+            <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;color:#fff;">Open Roles</h1>
+            <p style="font-family:'DM Sans',sans-serif;font-size:.82rem;color:#64748b;margin-top:2px;">Add, edit, or remove job listings. Changes save to <code style="font-family:'JetBrains Mono',monospace;color:#60a5fa;font-size:.75rem;">jobs.json</code> and appear live on careers.html.</p>
+          </div>
+          <button class="btn-primary" onclick="openJobModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add New Role
+          </button>
+        </div>
+
+        <!-- Instruction banner -->
+        <div style="background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);border-radius:10px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:flex-start;gap:10px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" style="margin-top:1px;flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <p style="font-family:'DM Sans',sans-serif;font-size:.8rem;color:#64748b;line-height:1.5;">
+            <strong style="color:#93c5fd;">How it works:</strong> Click <strong style="color:#e2e8f0;">Add New Role</strong> to fill in a form. Click <strong style="color:#e2e8f0;">Edit</strong> to modify existing roles. Click <strong style="color:#e2e8f0;">Save to jobs.json</strong> at the top of the form — then refresh careers.html to see your changes.
+          </p>
+        </div>
+
+        <!-- Job list -->
+        <div id="jobs-list" style="display:flex;flex-direction:column;gap:12px;"></div>
+
+        <!-- Save button -->
+        <div style="margin-top:24px;display:flex;align-items:center;gap:12px;">
+          <button class="btn-primary" onclick="saveJSON('jobs')" id="jobs-save-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save to jobs.json
+          </button>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:.65rem;color:rgba(148,163,184,.4);" id="jobs-save-hint">No unsaved changes</span>
+        </div>
+      </div>
+
+      <!-- ════════════════════
+           NEWS PANEL
+      ════════════════════ -->
+      <div class="panel" id="panel-news">
+
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px;">
+          <div>
+            <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;color:#fff;">News Stories</h1>
+            <p style="font-family:'DM Sans',sans-serif;font-size:.82rem;color:#64748b;margin-top:2px;">Manage corporate updates. Changes save to <code style="font-family:'JetBrains Mono',monospace;color:#60a5fa;font-size:.75rem;">news.json</code> and appear live on news.html.</p>
+          </div>
+          <button class="btn-primary" onclick="openNewsModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add News Story
+          </button>
+        </div>
+
+        <div style="background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);border-radius:10px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:flex-start;gap:10px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" style="margin-top:1px;flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <p style="font-family:'DM Sans',sans-serif;font-size:.8rem;color:#64748b;line-height:1.5;">
+            <strong style="color:#93c5fd;">Featured story:</strong> The first story with status <strong style="color:#e2e8f0;">Featured</strong> appears as the large hero card on news.html. All others appear in the grid below it.
+          </p>
+        </div>
+
+        <div id="news-list" style="display:flex;flex-direction:column;gap:12px;"></div>
+
+        <div style="margin-top:24px;display:flex;align-items:center;gap:12px;">
+          <button class="btn-primary" onclick="saveJSON('news')" id="news-save-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save to news.json
+          </button>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:.65rem;color:rgba(148,163,184,.4);" id="news-save-hint">No unsaved changes</span>
+        </div>
+      </div>
+
+    </div><!-- /main -->
+  </div><!-- /layout -->
+
+
+  <!-- ══════════════════════════════════════
+       JOB MODAL
+  ══════════════════════════════════════ -->
+  <div class="modal-overlay" id="job-modal" style="display:none;" onclick="closeJobModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div style="padding:24px 28px 0;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+          <div>
+            <p style="font-family:'JetBrains Mono',monospace;font-size:.65rem;color:rgba(59,130,246,.6);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px;">Job Editor</p>
+            <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:#fff;" id="job-modal-title">New Role</h2>
+          </div>
+          <button onclick="closeJobModal()" style="background:none;border:none;cursor:pointer;color:#64748b;padding:4px;transition:color .2s;" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#64748b'">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+
+          <div style="grid-column:1/-1;">
+            <label class="lbl">Job Title *</label>
+            <input type="text" id="j-title" class="field" placeholder="e.g. Senior Network Architect" />
+          </div>
+
+          <div>
+            <label class="lbl">Job ID *</label>
+            <input type="text" id="j-id" class="field" placeholder="e.g. SNA-004" />
+          </div>
+
+          <div>
+            <label class="lbl">Department / Focus</label>
+            <input type="text" id="j-dept" class="field" placeholder="e.g. DISN · Transport · WAN" />
+          </div>
+
+          <div>
+            <label class="lbl">Status</label>
+            <select id="j-status" class="field">
+              <option value="active">Active — visible on site</option>
+              <option value="closed">Closed — hidden from site</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="lbl">Work Style</label>
+            <select id="j-workstyle" class="field">
+              <option value="Remote">Remote</option>
+              <option value="Hybrid">Hybrid</option>
+              <option value="On-Site">On-Site</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="lbl">Employment Type</label>
+            <input type="text" id="j-type" class="field" placeholder="e.g. Full-Time / Contract" />
+          </div>
+
+          <div>
+            <label class="lbl">Location</label>
+            <input type="text" id="j-location" class="field" placeholder="e.g. Baltimore, MD / Remote" />
+          </div>
+
+          <div>
+            <label class="lbl">Clearance Level (badge colour)</label>
+            <select id="j-clearance-level" class="field">
+              <option value="ts-sci">TS/SCI — Red badge</option>
+              <option value="secret">Secret — Orange badge</option>
+              <option value="public-trust">Public Trust — Violet badge</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="lbl">Clearance Display Text</label>
+            <input type="text" id="j-clearance" class="field" placeholder="e.g. TS/SCI Required" />
+          </div>
+
+          <div>
+            <label class="lbl">NAICS Code</label>
+            <select id="j-naics" class="field">
+              <option value="541512">541512 — Computer Systems Design</option>
+              <option value="541511">541511 — Custom Programming</option>
+              <option value="541519">541519 — Other Computer Services</option>
+              <option value="541330">541330 — Engineering Services</option>
+              <option value="517110">517110 — Wired Telecom</option>
+              <option value="541618">541618 — Management Consulting</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="lbl">Card Colour Theme</label>
+            <select id="j-theme" class="field">
+              <option value="blue">Blue — Network / IT roles</option>
+              <option value="red">Red — Cybersecurity / IA roles</option>
+              <option value="violet">Violet — Writing / PM roles</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="lbl">Card Icon</label>
+            <select id="j-icon" class="field">
+              <option value="network">Network (signal/radar)</option>
+              <option value="shield">Shield (cybersecurity)</option>
+              <option value="document">Document (writing/PM)</option>
+            </select>
+          </div>
+
+          <div style="grid-column:1/-1;">
+            <label class="lbl">Description *</label>
+            <textarea id="j-desc" class="field" placeholder="Write a 2–3 sentence role overview for candidates..."></textarea>
+          </div>
+
+          <div style="grid-column:1/-1;">
+            <label class="lbl">Requirements</label>
+            <div style="display:flex;gap:8px;margin-bottom:10px;">
+              <input type="text" id="j-req-input" class="field" placeholder="Type a requirement and press Add..." style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();addJobReq();}" />
+              <button class="btn-secondary" onclick="addJobReq()" style="white-space:nowrap;padding:10px 16px;">+ Add</button>
+            </div>
+            <div id="j-req-chips" style="display:flex;flex-wrap:wrap;gap:6px;min-height:28px;"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <div style="padding:20px 28px 24px;display:flex;justify-content:flex-end;gap:10px;border-top:1px solid rgba(59,130,246,.1);margin-top:20px;">
+        <button class="btn-secondary" onclick="closeJobModal()">Cancel</button>
+        <button class="btn-primary" onclick="saveJobFromModal()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Save Role
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════
+       NEWS MODAL
+  ══════════════════════════════════════ -->
+  <div class="modal-overlay" id="news-modal" style="display:none;" onclick="closeNewsModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div style="padding:24px 28px 0;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+          <div>
+            <p style="font-family:'JetBrains Mono',monospace;font-size:.65rem;color:rgba(59,130,246,.6);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px;">Story Editor</p>
+            <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:#fff;" id="news-modal-title">New Story</h2>
+          </div>
+          <button onclick="closeNewsModal()" style="background:none;border:none;cursor:pointer;color:#64748b;padding:4px;transition:color .2s;" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#64748b'">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+
+          <div>
+            <label class="lbl">Story ID *</label>
+            <input type="text" id="n-id" class="field" placeholder="e.g. NEWS-007" />
+          </div>
+
+          <div>
+            <label class="lbl">Date / Period</label>
+            <input type="text" id="n-date" class="field" placeholder="e.g. 2025-Q2" />
+          </div>
+
+          <div>
+            <label class="lbl">Category Label</label>
+            <select id="n-category" class="field" onchange="syncCategoryTheme()">
+              <option value="Innovation">Innovation</option>
+              <option value="Mission Update">Mission Update</option>
+              <option value="Certification">Certification</option>
+              <option value="Community">Community</option>
+              <option value="Product Update">Product Update</option>
+              <option value="Press Release">Press Release</option>
+              <option value="Award">Award</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="lbl">Colour Theme</label>
+            <select id="n-theme" class="field">
+              <option value="blue">Blue — Innovation / Product</option>
+              <option value="green">Green — Mission / Operations</option>
+              <option value="gold">Gold — Certification / Award</option>
+              <option value="violet">Violet — Community / People</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="lbl">Status</label>
+            <select id="n-status" class="field">
+              <option value="published">Published — shown in grid</option>
+              <option value="featured">Featured — shown as hero card</option>
+              <option value="draft">Draft — hidden from site</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="lbl">Links to (page)</label>
+            <select id="n-link" class="field">
+              <option value="index.html">index.html — Home</option>
+              <option value="product.html">product.html — Harpy Talon</option>
+              <option value="products.html">products.html — Product Hub</option>
+              <option value="services.html">services.html — Services</option>
+              <option value="government.html">government.html — Government</option>
+              <option value="about.html">about.html — About</option>
+              <option value="careers.html">careers.html — Careers</option>
+              <option value="news.html">news.html — News</option>
+              <option value="https://raptor.harpyits.com">raptor.harpyits.com — Raptor</option>
+            </select>
+          </div>
+
+          <div style="grid-column:1/-1;">
+            <label class="lbl">Headline *</label>
+            <input type="text" id="n-headline" class="field" placeholder="Main story headline..." />
+          </div>
+
+          <div style="grid-column:1/-1;">
+            <label class="lbl">Subheading</label>
+            <input type="text" id="n-sub" class="field" placeholder="One-line summary shown under headline..." />
+          </div>
+
+          <div style="grid-column:1/-1;">
+            <label class="lbl">Body Text *</label>
+            <textarea id="n-body" class="field" style="min-height:110px;" placeholder="Full story text (2–4 sentences is ideal)..."></textarea>
+          </div>
+
+          <div style="grid-column:1/-1;">
+            <label class="lbl">Tags (press Enter or click Add)</label>
+            <div style="display:flex;gap:8px;margin-bottom:10px;">
+              <input type="text" id="n-tag-input" class="field" placeholder="e.g. DISA, CMMC, Harpy Talon..." style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();addNewsTag();}" />
+              <button class="btn-secondary" onclick="addNewsTag()" style="white-space:nowrap;padding:10px 16px;">+ Add</button>
+            </div>
+            <div id="n-tag-chips" style="display:flex;flex-wrap:wrap;gap:6px;min-height:28px;"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <div style="padding:20px 28px 24px;display:flex;justify-content:flex-end;gap:10px;border-top:1px solid rgba(59,130,246,.1);margin-top:20px;">
+        <button class="btn-secondary" onclick="closeNewsModal()">Cancel</button>
+        <button class="btn-primary" onclick="saveNewsFromModal()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Save Story
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Toast container -->
+  <div id="toast-container"></div>
+
+
+  <script>
+  // ══════════════════════════════════════════════════════
+  //  STATE
+  // ══════════════════════════════════════════════════════
+  let jobsData  = [];
+  let newsData  = [];
+  let editJobIdx  = -1;  // -1 = new
+  let editNewsIdx = -1;
+  let jobsDirty  = false;
+  let newsDirty  = false;
+  let jobReqs  = [];
+  let newsTags = [];
+
+  const CATEGORY_THEME_MAP = {
+    'Innovation':    'blue',
+    'Mission Update':'green',
+    'Certification': 'gold',
+    'Community':     'violet',
+    'Product Update':'blue',
+    'Press Release': 'blue',
+    'Award':         'gold',
+  };
+
+  const THEME_COLORS = {
+    blue:   { dot:'cat-blue',   label:'#93c5fd' },
+    green:  { dot:'cat-green',  label:'#86efac' },
+    gold:   { dot:'cat-gold',   label:'#fde68a' },
+    violet: { dot:'cat-violet', label:'#c4b5fd' },
+  };
+
+  // ══════════════════════════════════════════════════════
+  //  INIT — fetch both JSON files
+  // ══════════════════════════════════════════════════════
+  async function init() {
+    try {
+      const jr = await fetch('jobs.json');
+      if (!jr.ok) throw new Error('jobs.json not found');
+      jobsData = await jr.json();
+    } catch(e) {
+      showToast('Could not load jobs.json — run python3 -m http.server 8080', 'error');
+      jobsData = [];
+    }
+
+    try {
+      const nr = await fetch('news.json');
+      if (!nr.ok) throw new Error('news.json not found');
+      newsData = await nr.json();
+    } catch(e) {
+      showToast('Could not load news.json', 'error');
+      newsData = [];
+    }
+
+    renderJobsList();
+    renderNewsList();
+    updateCounts();
+  }
+
+  // ══════════════════════════════════════════════════════
+  //  PANEL SWITCH
+  // ══════════════════════════════════════════════════════
+  function switchPanel(name) {
+    ['jobs','news'].forEach(p => {
+      document.getElementById('panel-' + p).classList.toggle('active', p === name);
+      document.getElementById('nav-' + p).classList.toggle('active', p === name);
+    });
+  }
+
+  // ══════════════════════════════════════════════════════
+  //  COUNTS
+  // ══════════════════════════════════════════════════════
+  function updateCounts() {
+    document.getElementById('jobs-count').textContent = jobsData.filter(j => j.status === 'active').length + '/' + jobsData.length;
+    document.getElementById('news-count').textContent = newsData.length;
+  }
+
+  // ══════════════════════════════════════════════════════
+  //  JOBS — render list
+  // ══════════════════════════════════════════════════════
+  function renderJobsList() {
+    const el = document.getElementById('jobs-list');
+    if (!jobsData.length) {
+      el.innerHTML = `<div style="text-align:center;padding:40px;color:#475569;font-family:'DM Sans',sans-serif;font-size:.875rem;">No roles yet. Click <strong style="color:#93c5fd;">Add New Role</strong> to get started.</div>`;
+      return;
+    }
+
+    const THEME_SWATCH = { blue:'#3b82f6', red:'#f87171', violet:'#a78bfa' };
+
+    el.innerHTML = jobsData.map((job, i) => `
+      <div class="record-card">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">
+            <div style="width:10px;height:10px;border-radius:3px;background:${THEME_SWATCH[job.theme]||'#3b82f6'};box-shadow:0 0 8px ${THEME_SWATCH[job.theme]||'#3b82f6'}66;flex-shrink:0;margin-top:2px;"></div>
+            <div style="min-width:0;">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;color:#e2e8f0;">${esc(job.title)}</span>
+                <span class="badge ${job.status==='active'?'badge-active':'badge-closed'}">
+                  ${job.status==='active'?'<span class="badge-dot badge-dot-g"></span>':''}${job.status}
+                </span>
+              </div>
+              <div style="font-family:'DM Sans',sans-serif;font-size:.78rem;color:#64748b;margin-top:2px;">${esc(job.department||'')} &nbsp;·&nbsp; ${esc(job.location||'')} &nbsp;·&nbsp; <span style="font-family:'JetBrains Mono',monospace;color:#60a5fa;">${esc(job.naics||'')}</span></div>
+              <div style="font-family:'DM Sans',sans-serif;font-size:.75rem;color:#475569;margin-top:4px;line-height:1.4;max-width:480px;">${esc((job.description||'').substring(0,120))}${(job.description||'').length>120?'…':''}</div>
+              ${job.requirements&&job.requirements.length ? `<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;">${job.requirements.map(r=>`<span style="font-family:'JetBrains Mono',monospace;font-size:.6rem;padding:2px 7px;border-radius:4px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.18);color:#64748b;">${esc(r)}</span>`).join('')}</div>` : ''}
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-shrink:0;">
+            <button class="btn-edit" onclick="openJobModal(${i})">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Edit
+            </button>
+            <button class="btn-danger" onclick="deleteJob(${i})">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+              Remove
+            </button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ══════════════════════════════════════════════════════
+  //  JOBS — modal open/close
+  // ══════════════════════════════════════════════════════
+  function openJobModal(idx) {
+    editJobIdx = (idx !== undefined) ? idx : -1;
+    jobReqs = [];
+
+    document.getElementById('job-modal-title').textContent = editJobIdx === -1 ? 'New Role' : 'Edit Role';
+    document.getElementById('job-modal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    if (editJobIdx === -1) {
+      // Clear form
+      ['j-title','j-id','j-dept','j-type','j-location','j-clearance'].forEach(id => { document.getElementById(id).value = ''; });
+      document.getElementById('j-status').value       = 'active';
+      document.getElementById('j-workstyle').value    = 'Remote';
+      document.getElementById('j-clearance-level').value = 'ts-sci';
+      document.getElementById('j-naics').value        = '541512';
+      document.getElementById('j-theme').value        = 'blue';
+      document.getElementById('j-icon').value         = 'network';
+      document.getElementById('j-desc').value         = '';
+    } else {
+      const job = jobsData[editJobIdx];
+      document.getElementById('j-title').value           = job.title || '';
+      document.getElementById('j-id').value              = job.id || '';
+      document.getElementById('j-dept').value            = job.department || '';
+      document.getElementById('j-status').value          = job.status || 'active';
+      document.getElementById('j-workstyle').value       = job.workStyle || 'Remote';
+      document.getElementById('j-type').value            = job.type || '';
+      document.getElementById('j-location').value        = job.location || '';
+      document.getElementById('j-clearance-level').value = job.clearanceLevel || 'ts-sci';
+      document.getElementById('j-clearance').value       = job.clearance || '';
+      document.getElementById('j-naics').value           = job.naics || '541512';
+      document.getElementById('j-theme').value           = job.theme || 'blue';
+      document.getElementById('j-icon').value            = job.icon || 'network';
+      document.getElementById('j-desc').value            = job.description || '';
+      jobReqs = [...(job.requirements || [])];
+    }
+
+    renderJobReqs();
+    document.getElementById('j-title').focus();
+  }
+
+  function closeJobModal(e) {
+    if (e && e.target !== document.getElementById('job-modal')) return;
+    document.getElementById('job-modal').style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  // ── requirements ──
+  function addJobReq() {
+    const inp = document.getElementById('j-req-input');
+    const val = inp.value.trim();
+    if (!val) return;
+    jobReqs.push(val);
+    inp.value = '';
+    renderJobReqs();
+  }
+
+  function removeJobReq(i) {
+    jobReqs.splice(i, 1);
+    renderJobReqs();
+  }
+
+  function renderJobReqs() {
+    const el = document.getElementById('j-req-chips');
+    el.innerHTML = jobReqs.map((r,i) =>
+      `<span class="req-chip">${esc(r)} <button onclick="removeJobReq(${i})" title="Remove">✕</button></span>`
+    ).join('');
+  }
+
+  // ── save from modal ──
+  function saveJobFromModal() {
+    const title = document.getElementById('j-title').value.trim();
+    const id    = document.getElementById('j-id').value.trim();
+    if (!title || !id) { showToast('Title and ID are required', 'error'); return; }
+
+    const job = {
+      id,
+      title,
+      department:    document.getElementById('j-dept').value.trim(),
+      status:        document.getElementById('j-status').value,
+      type:          document.getElementById('j-type').value.trim(),
+      workStyle:     document.getElementById('j-workstyle').value,
+      clearance:     document.getElementById('j-clearance').value.trim(),
+      clearanceLevel:document.getElementById('j-clearance-level').value,
+      location:      document.getElementById('j-location').value.trim(),
+      naics:         document.getElementById('j-naics').value,
+      theme:         document.getElementById('j-theme').value,
+      description:   document.getElementById('j-desc').value.trim(),
+      requirements:  [...jobReqs],
+      icon:          document.getElementById('j-icon').value,
+    };
+
+    if (editJobIdx === -1) {
+      jobsData.push(job);
+      showToast(`"${title}" added — remember to Save to jobs.json`, 'info');
+    } else {
+      jobsData[editJobIdx] = job;
+      showToast(`"${title}" updated — remember to Save to jobs.json`, 'info');
+    }
+
+    markDirty('jobs');
+    renderJobsList();
+    updateCounts();
+    document.getElementById('job-modal').style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  // ── delete ──
+  function deleteJob(i) {
+    const name = jobsData[i].title;
+    if (!confirm(`Remove "${name}" from jobs.json? This will hide it from careers.html after saving.`)) return;
+    jobsData.splice(i, 1);
+    markDirty('jobs');
+    renderJobsList();
+    updateCounts();
+    showToast(`"${name}" removed — save to apply`, 'info');
+  }
+
+  // ══════════════════════════════════════════════════════
+  //  NEWS — render list
+  // ══════════════════════════════════════════════════════
+  function renderNewsList() {
+    const el = document.getElementById('news-list');
+    if (!newsData.length) {
+      el.innerHTML = `<div style="text-align:center;padding:40px;color:#475569;font-family:'DM Sans',sans-serif;font-size:.875rem;">No stories yet. Click <strong style="color:#93c5fd;">Add News Story</strong> to get started.</div>`;
+      return;
+    }
+
+    el.innerHTML = newsData.map((story, i) => {
+      const tc = THEME_COLORS[story.categoryTheme] || THEME_COLORS.blue;
+      return `
+      <div class="record-card">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:flex-start;gap:12px;flex:1;min-width:0;">
+            <div class="cat-dot ${tc.dot}" style="margin-top:3px;flex-shrink:0;"></div>
+            <div style="min-width:0;">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px;">
+                <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:.92rem;color:#e2e8f0;">${esc(story.headline)}</span>
+                <span class="badge ${story.status==='featured'?'badge-featured':story.status==='published'?'badge-active':'badge-closed'}">${story.status}</span>
+              </div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:.65rem;color:${tc.label};margin-bottom:4px;">${esc(story.category)} &nbsp;·&nbsp; ${esc(story.date||'')}</div>
+              <div style="font-family:'DM Sans',sans-serif;font-size:.78rem;color:#64748b;line-height:1.4;max-width:480px;">${esc((story.subheading||'').substring(0,100))}${(story.subheading||'').length>100?'…':''}</div>
+              ${story.tags&&story.tags.length?`<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;">${story.tags.map(t=>`<span style="font-family:'JetBrains Mono',monospace;font-size:.6rem;padding:2px 7px;border-radius:4px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.18);color:#64748b;">${esc(t)}</span>`).join('')}</div>`:''}
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-shrink:0;">
+            <button class="btn-edit" onclick="openNewsModal(${i})">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Edit
+            </button>
+            <button class="btn-danger" onclick="deleteNews(${i})">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+              Remove
+            </button>
+          </div>
+        </div>
+      </div>
+    `}).join('');
+  }
+
+  // ══════════════════════════════════════════════════════
+  //  NEWS — modal open/close
+  // ══════════════════════════════════════════════════════
+  function openNewsModal(idx) {
+    editNewsIdx = (idx !== undefined) ? idx : -1;
+    newsTags = [];
+
+    document.getElementById('news-modal-title').textContent = editNewsIdx === -1 ? 'New Story' : 'Edit Story';
+    document.getElementById('news-modal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    if (editNewsIdx === -1) {
+      ['n-id','n-date','n-headline','n-sub','n-body'].forEach(id => { document.getElementById(id).value = ''; });
+      document.getElementById('n-category').value = 'Mission Update';
+      document.getElementById('n-theme').value    = 'green';
+      document.getElementById('n-status').value   = 'published';
+      document.getElementById('n-link').value     = 'index.html';
+    } else {
+      const s = newsData[editNewsIdx];
+      document.getElementById('n-id').value       = s.id || '';
+      document.getElementById('n-date').value     = s.date || '';
+      document.getElementById('n-category').value = s.category || 'Mission Update';
+      document.getElementById('n-theme').value    = s.categoryTheme || 'green';
+      document.getElementById('n-status').value   = s.status || 'published';
+      document.getElementById('n-link').value     = s.link || 'index.html';
+      document.getElementById('n-headline').value = s.headline || '';
+      document.getElementById('n-sub').value      = s.subheading || '';
+      document.getElementById('n-body').value     = s.body || '';
+      newsTags = [...(s.tags || [])];
+    }
+
+    renderNewsTags();
+    document.getElementById('n-headline').focus();
+  }
+
+  function closeNewsModal(e) {
+    if (e && e.target !== document.getElementById('news-modal')) return;
+    document.getElementById('news-modal').style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  function syncCategoryTheme() {
+    const cat   = document.getElementById('n-category').value;
+    const theme = CATEGORY_THEME_MAP[cat] || 'blue';
+    document.getElementById('n-theme').value = theme;
+  }
+
+  // ── tags ──
+  function addNewsTag() {
+    const inp = document.getElementById('n-tag-input');
+    const val = inp.value.trim().replace(/,/g,'');
+    if (!val) return;
+    if (!newsTags.includes(val)) { newsTags.push(val); renderNewsTags(); }
+    inp.value = '';
+  }
+  function removeNewsTag(i) { newsTags.splice(i,1); renderNewsTags(); }
+  function renderNewsTags() {
+    document.getElementById('n-tag-chips').innerHTML = newsTags.map((t,i) =>
+      `<span class="tag-chip">${esc(t)} <button onclick="removeNewsTag(${i})" title="Remove">✕</button></span>`
+    ).join('');
+  }
+
+  // ── save from modal ──
+  function saveNewsFromModal() {
+    const headline = document.getElementById('n-headline').value.trim();
+    const id       = document.getElementById('n-id').value.trim();
+    if (!headline || !id) { showToast('Headline and ID are required', 'error'); return; }
+
+    const story = {
+      id,
+      category:      document.getElementById('n-category').value,
+      categoryTheme: document.getElementById('n-theme').value,
+      status:        document.getElementById('n-status').value,
+      date:          document.getElementById('n-date').value.trim(),
+      headline,
+      subheading:    document.getElementById('n-sub').value.trim(),
+      body:          document.getElementById('n-body').value.trim(),
+      tags:          [...newsTags],
+      link:          document.getElementById('n-link').value,
+    };
+
+    if (editNewsIdx === -1) {
+      newsData.push(story);
+      showToast(`Story added — remember to Save to news.json`, 'info');
+    } else {
+      newsData[editNewsIdx] = story;
+      showToast(`Story updated — remember to Save to news.json`, 'info');
+    }
+
+    markDirty('news');
+    renderNewsList();
+    updateCounts();
+    document.getElementById('news-modal').style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  function deleteNews(i) {
+    const title = newsData[i].headline;
+    if (!confirm(`Remove this story from news.json? "${title}"`)) return;
+    newsData.splice(i,1);
+    markDirty('news');
+    renderNewsList();
+    updateCounts();
+    showToast('Story removed — save to apply', 'info');
+  }
+
+  // ══════════════════════════════════════════════════════
+  //  SAVE JSON (downloads the file)
+  // ══════════════════════════════════════════════════════
+  function saveJSON(type) {
+    const data     = type === 'jobs' ? jobsData : newsData;
+    const filename = type === 'jobs' ? 'jobs.json' : 'news.json';
+    const json     = JSON.stringify(data, null, 2);
+
+    const blob = new Blob([json], { type:'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    // Mark clean
+    if (type === 'jobs') {
+      jobsDirty = false;
+      document.getElementById('jobs-save-hint').textContent = '✓ Saved — replace the old file in your HITS folder';
+      document.getElementById('jobs-save-hint').style.color = 'rgba(74,222,128,.7)';
+    } else {
+      newsDirty = false;
+      document.getElementById('news-save-hint').textContent = '✓ Saved — replace the old file in your HITS folder';
+      document.getElementById('news-save-hint').style.color = 'rgba(74,222,128,.7)';
+    }
+
+    showToast(`${filename} downloaded! Move it into your HITS folder to replace the old file, then refresh the site.`, 'success');
+  }
+
+  function markDirty(type) {
+    if (type === 'jobs') {
+      jobsDirty = true;
+      document.getElementById('jobs-save-hint').textContent = '⚠ Unsaved changes — click Save to download';
+      document.getElementById('jobs-save-hint').style.color = 'rgba(251,191,36,.75)';
+    } else {
+      newsDirty = true;
+      document.getElementById('news-save-hint').textContent = '⚠ Unsaved changes — click Save to download';
+      document.getElementById('news-save-hint').style.color = 'rgba(251,191,36,.75)';
+    }
+  }
+
+  // ══════════════════════════════════════════════════════
+  //  TOAST
+  // ══════════════════════════════════════════════════════
+  function showToast(msg, type='info') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+
+    const icon = type === 'success'
+      ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>'
+      : type === 'error'
+      ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'
+      : '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+
+    toast.innerHTML = icon + `<span style="flex:1;">${msg}</span>`;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.animation = 'toastOut .3s ease forwards';
+      setTimeout(() => toast.remove(), 300);
+    }, type === 'success' ? 5000 : 3500);
+  }
+
+  // ══════════════════════════════════════════════════════
+  //  UTILS
+  // ══════════════════════════════════════════════════════
+  function esc(str) {
+    return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── boot ──
+  init();
+  </script>
+</body>
+</html>

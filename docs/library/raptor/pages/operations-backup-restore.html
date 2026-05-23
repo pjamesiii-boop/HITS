@@ -1,0 +1,130 @@
+<div class="docs-page">
+<h1>Backup and Restore</h1>
+<p class="docs-page-description">Database backup strategies, restore procedures, and post-restore verification for self-hosted and cloud Raptor deployments.</p>
+<h1 id="backup-and-restore">Backup and Restore</h1>
+
+<p>Raptor's governance data lives in PostgreSQL. The backup strategy depends on your deployment model. Both paths converge on the same post-restore verification process.</p>
+
+<p><strong>Critical rule:</strong> Immutable governance tables (events, attestations, hash chain entries) must never be modified in place. If data is corrupted or missing, restore from backup. Manual edits to immutable tables break the hash chain and invalidate the governance audit trail.</p>
+
+<h2 id="self-hosted-pg-dump">Self-Hosted: pg_dump</h2>
+
+<h3 id="full-backup">Full Backup</h3>
+
+<pre><code class="language-bash">pg_dump -h localhost -U raptor -d raptor_db \
+  --format=custom \
+  --file=raptor_backup_$(date +%Y%m%d_%H%M%S).dump</code></pre>
+
+<p>Use <code>--format=custom</code> for compressed, restorable output. Schedule this via cron to meet your RPO target (recommended: every hour or less).</p>
+
+<p>Example cron entry for hourly backups with 7-day retention:</p>
+
+<pre><code class="language-bash">0 <em> </em> <em> </em> pg_dump -h localhost -U raptor -d raptor_db \
+  --format=custom \
+  --file=/backups/raptor_$(date +\%Y\%m\%d_\%H\%M\%S).dump \
+  &amp;&amp; find /backups -name "raptor_<em>.dump" -mtime +7 -delete</code></pre>
+
+<h3 id="full-restore">Full Restore</h3>
+
+<pre><code class="language-bash"># Stop the control-panel to prevent writes during restore
+docker compose stop control-panel
+
+<h1 id="restore-from-backup">Restore from backup</h1>
+pg_restore -h localhost -U raptor -d raptor_db \
+  --clean --if-exists \
+  raptor_backup_20260521_120000.dump
+
+<h1 id="restart-services-migrations-run-automatically">Restart services (migrations run automatically)</h1>
+docker compose up -d</code></pre>
+
+<h3 id="table-level-restore">Table-Level Restore</h3>
+
+<p>If you need to restore a specific table (for example, to recover a dropped mutable configuration table):</p>
+
+<pre><code class="language-bash">pg_restore -h localhost -U raptor -d raptor_db \
+  --table=table_name \
+  --clean --if-exists \
+  raptor_backup_20260521_120000.dump</code></pre>
+
+<p>Do <strong>not</strong> use table-level restore on immutable governance tables. Restore the full database instead to preserve referential integrity and hash chain continuity.</p>
+
+<h2 id="cloud-neon-point-in-time-recovery">Cloud (Neon): Point-in-Time Recovery</h2>
+
+<p>Neon provides continuous WAL (Write-Ahead Log) archiving with hourly snapshots. Recovery uses Neon's built-in PITR.</p>
+
+<h3 id="how-it-works">How It Works</h3>
+
+<ul>
+<li><strong>Continuous WAL archiving:</strong> Every transaction is captured in real time.</li>
+<li><strong>Hourly snapshots:</strong> Full-state snapshots every hour for faster recovery.</li>
+<li><strong>RPO:</strong> Typically seconds to minutes (bounded by WAL flush interval).</li>
+</ul>
+
+<h3 id="recovery-procedure">Recovery Procedure</h3>
+
+<ol>
+<li>Open the Neon console and navigate to your project.</li>
+<li>Select <strong>Branches</strong> and click <strong>Create Branch</strong>.</li>
+<li>Choose <strong>Point in time</strong> and select the recovery target (timestamp or LSN).</li>
+<li>Neon creates a new branch with the database state at that point.</li>
+<li>Update your <code>DATABASE_URL</code> to point to the new branch.</li>
+<li>Redeploy the control-panel.</li>
+</ol>
+
+<pre><code class="language-bash"># After updating DATABASE_URL in your environment
+docker compose up -d
+<h1 id="or-for-railway-git-push-triggers-redeploy-with-new-env-var-code-pre">Or for Railway: git push triggers redeploy with new env var</code></pre></h1>
+
+<h3 id="branch-cleanup">Branch Cleanup</h3>
+
+<p>After confirming the recovery is good, delete the old branch in the Neon console to avoid billing for unused compute.</p>
+
+<h2 id="post-restore-verification">Post-Restore Verification</h2>
+
+<p>After any restore -- regardless of method -- run these checks before accepting traffic.</p>
+
+<h3 id="1-hash-chain-integrity">1. Hash Chain Integrity</h3>
+
+<pre><code class="language-bash">curl http://localhost:4000/api/runtime/integrity \
+  -H "X-Raptor-Token: your-access-token"</code></pre>
+
+<p>Verify that <code>chain_valid</code> is <code>true</code>. If the chain is broken, the restore is incomplete or corrupted. Restore again from a known-good backup.</p>
+
+<h3 id="2-governance-table-counts">2. Governance Table Counts</h3>
+
+<p>Connect to the database and verify row counts against your expected baseline:</p>
+
+<pre><code class="language-sql">SELECT 'events' AS table_name, COUNT(</em>) FROM governance_events
+UNION ALL
+SELECT 'attestations', COUNT(<em>) FROM attestations
+UNION ALL
+SELECT 'policies', COUNT(</em>) FROM policies
+UNION ALL
+SELECT 'tenants', COUNT(*) FROM tenants;</code></pre>
+
+<p>Compare with your last known-good counts. A significant drop indicates a partial restore.</p>
+
+<h3 id="3-active-policy-verification">3. Active Policy Verification</h3>
+
+<pre><code class="language-bash">curl http://localhost:4000/api/runtime/config \
+  -H "X-Raptor-Token: your-access-token"</code></pre>
+
+<p>Confirm the active policy matches what you expect. If the restore rolled back a recent policy change, you may need to re-apply it.</p>
+
+<h3 id="4-signer-trust-verification">4. Signer Trust Verification</h3>
+
+<pre><code class="language-bash">curl http://localhost:4000/api/runtime/integrity \
+  -H "X-Raptor-Token: your-access-token"</code></pre>
+
+<p>Confirm the <code>signer</code> field shows your expected Ed25519 public key. An <code>untrusted_signer</code> status after restore means the build attestation does not match the running binary.</p>
+
+<h3 id="5-health-check">5. Health Check</h3>
+
+<pre><code class="language-bash">curl http://localhost:4000/api/ready</code></pre>
+
+<p>Only route traffic to the instance after <code>/api/ready</code> returns <code>{"status": "ready"}</code>.</p>
+
+<h2 id="backup-strategy-recommendations">Backup Strategy Recommendations</h2>
+
+<p>| Concern | Recommendation |<br>|---|---|<br>| RPO target | < 1 hour for production |<br>| Backup storage | Off-host (S3, GCS, or equivalent). Never store backups only on the database host. |<br>| Encryption | Encrypt backups at rest. Use <code>gpg</code> or your cloud provider's encryption. |<br>| Testing | Restore from backup to a staging environment at least monthly. |<br>| Retention | 7 days minimum for hourly backups. 90 days for daily backups. |</p>
+</div>

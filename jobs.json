@@ -1,0 +1,71 @@
+[
+  {
+    "id": "SNA-001",
+    "title": "Senior Network Architect",
+    "department": "Transport · DISN · Enterprise WAN",
+    "status": "active",
+    "type": "Full-Time / Contract",
+    "workStyle": "Hybrid",
+    "clearance": "TS/SCI Required",
+    "clearanceLevel": "ts-sci",
+    "location": "Baltimore, MD / Remote",
+    "naics": "541512",
+    "theme": "blue",
+    "description": "Lead the design and implementation of DoD transport network architectures, with primary focus on DISN circuit engineering, MPLS/VPLS topology, and NIPRNet/SIPRNet segmentation. This role owns the full network design lifecycle from requirements analysis through acceptance testing and as-built documentation.",
+    "requirements": [
+      "8+ years enterprise network engineering",
+      "CCNP or CCIE (R&S or SP track)",
+      "Hands-on DISN / DoDNet experience",
+      "SONET, MPLS, VPLS, BGP proficiency",
+      "DISA STIG implementation experience",
+      "Active TS clearance — SCI eligible preferred"
+    ],
+    "icon": "network"
+  },
+  {
+    "id": "CSE-002",
+    "title": "Cybersecurity Engineer",
+    "department": "RMF · CMMC · NIST · Zero-Trust",
+    "status": "active",
+    "type": "Full-Time",
+    "workStyle": "Remote",
+    "clearance": "Secret (TS preferred)",
+    "clearanceLevel": "secret",
+    "location": "Remote / CONUS",
+    "naics": "541512",
+    "theme": "red",
+    "description": "Own the cybersecurity compliance posture for active federal programs. This role executes DoD RMF Authorization-to-Operate packages, drives CMMC Level 2 assessments, and implements NIST SP 800-171 controls across multi-system environments. You will work directly with the PM and CO to maintain ATO status under live government contracts.",
+    "requirements": [
+      "5+ years federal cybersecurity / IA",
+      "CISSP, Security+, or equivalent cert",
+      "DoD RMF & eMASS hands-on experience",
+      "CMMC Level 2 assessment experience",
+      "NIST 800-53 Rev 5 / 800-171 fluency",
+      "Nessus / SCC scanning proficiency"
+    ],
+    "icon": "shield"
+  },
+  {
+    "id": "STW-003",
+    "title": "SaaS Technical Writer",
+    "department": "PDLC · Proposal Writing · Harpy Talon",
+    "status": "active",
+    "type": "Full-Time / Part-Time",
+    "workStyle": "Remote",
+    "clearance": "Public Trust",
+    "clearanceLevel": "public-trust",
+    "location": "Fully Remote",
+    "naics": "541519",
+    "theme": "violet",
+    "description": "Create best-in-class technical documentation, user guides, and proposal content for the Harpy Talon PDLC platform. This role bridges the gap between complex federal acquisition processes and clear, evaluator-ready language. Ideal candidate has hands-on federal proposal writing experience and an appreciation for how government source selection actually works.",
+    "requirements": [
+      "3+ years federal proposal / technical writing",
+      "FAR / DFARS / CDRL documentation fluency",
+      "Experience with SaaS user documentation",
+      "Understanding of PDLC / proposal lifecycle",
+      "Section L/M / PWS/SOW writing experience",
+      "Markdown / Confluence / Git documentation"
+    ],
+    "icon": "document"
+  }
+]

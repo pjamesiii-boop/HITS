@@ -1,0 +1,117 @@
+[
+  {
+    "id": "NEWS-007",
+    "category": "Product Update",
+    "categoryTheme": "blue",
+    "status": "featured",
+    "date": "2026-Q2",
+    "headline": "Raptor Is Live: Deterministic Governance for AI Applications Now Generally Available",
+    "subheading": "Harpy IT Solutions launches Raptor \u2014 a deterministic governance layer that makes AI trustworthy, auditable, and policy-compliant from day one",
+    "body": "Harpy IT Solutions Inc. today announced general availability of Raptor, a deterministic governance layer for AI applications. Raptor sits between the AI and the user, enforcing trust boundaries, policy compliance, and evidence-grounded decision support on every response through a deterministic core \u2014 not probabilistic self-governance. Every claim is classified by how it was actually established. Policy is enforced before generation. Decisions surface their basis and risk assessment. Everything is recorded on a hash-chained, tamper-protected audit trail across 11 tables. Available as embeddable infrastructure via REST, MCP, and TypeScript SDK or as a managed workspace, Raptor ships with multi-provider AI orchestration, RBAC, full policy lifecycle management, GDPR/CCPA controls, SSO, and a 49-page documentation site. Details at raptor.harpyits.com.",
+    "tags": ["Raptor", "AI Governance", "Trust", "Audit", "MCP", "SDK", "GA"],
+    "link": "https://raptor.harpyits.com"
+  },
+  {
+    "id": "NEWS-001",
+    "category": "Innovation",
+    "categoryTheme": "blue",
+    "status": "published",
+    "date": "2025-Q1",
+    "headline": "Expanding the Frontier: Harpy I.T. Solutions Announces Q4 2026 Stealth SaaS Launch",
+    "subheading": "Next-generation infrastructure analytics platform to debut for federal enterprise clients",
+    "body": "Harpy I.T. Solutions INC. today announced the forthcoming Q4 2026 launch of its next proprietary SaaS platform \u2014 a next-generation infrastructure analytics product built on 30+ years of DoD operations data. The platform will deliver AI-driven network anomaly detection, predictive sustainment planning, and real-time STIG/RMF compliance dashboards purpose-built for federal enterprise environments. Founder Paul R. James III stated the platform addresses a critical gap commercial tools have consistently failed to fill for DoD operators.",
+    "tags": [
+      "SaaS",
+      "AI",
+      "FedRAMP",
+      "Q4 2026"
+    ],
+    "link": "products.html"
+  },
+  {
+    "id": "NEWS-002",
+    "category": "Mission Update",
+    "categoryTheme": "green",
+    "status": "published",
+    "date": "2025-Q1",
+    "headline": "HITS Submits GSA Multiple Award Schedule (MAS) Application",
+    "subheading": "IT Schedule 70 application positions HITS for direct federal civilian agency acquisition",
+    "body": "Harpy I.T. Solutions INC. has formally submitted its application to the GSA Multiple Award Schedule (MAS) program under IT Schedule 70, covering NAICS codes 541512, 541511, and 541519. The MAS contract vehicle will enable federal civilian agencies to procure HITS IT services, cybersecurity support, and Harpy Talon SaaS licenses without the overhead of full and open competition. Award is anticipated within 90 days of submission. This milestone broadens HITS's contract vehicle portfolio beyond DoD IDIQ vehicles and positions the company for direct civilian agency engagement.",
+    "tags": [
+      "GSA MAS",
+      "IT Schedule 70",
+      "Contract Vehicle",
+      "541512"
+    ],
+    "link": "government.html"
+  },
+  {
+    "id": "NEWS-003",
+    "category": "Community",
+    "categoryTheme": "violet",
+    "status": "published",
+    "date": "2024-Q4",
+    "headline": "Founder Paul R. James III Appointed to ITEOE Advisory Board \u2014 Maryland Chapter",
+    "subheading": "Appointment recognizes 30+ years of federal IT leadership and veteran entrepreneurship",
+    "body": "Paul R. James III, founder and CEO of Harpy I.T. Solutions INC., has been appointed to the IT Executives of the East (ITEOE) advisory board representing the Maryland chapter. His appointment recognizes three decades of federal IT leadership spanning DISN transport engineering, DoD cybersecurity compliance, and enterprise program management across CONUS, European, Pacific, and Southwest Asian theaters. James brings a veteran-operator perspective to the board's mission of advancing Maryland's technology ecosystem and expanding opportunities for cleared small businesses and SDVOSB-certified firms.",
+    "tags": [
+      "ITEOE",
+      "Maryland",
+      "Advisory Board",
+      "SDVOSB"
+    ],
+    "link": "about.html"
+  },
+  {
+    "id": "NEWS-004",
+    "category": "Mission Update",
+    "categoryTheme": "green",
+    "status": "published",
+    "date": "2024-Q3",
+    "headline": "Successful Support of DISA IE1 Transport TDM Elimination Program",
+    "subheading": "HITS engineers deliver critical circuit migrations ahead of schedule across CONUS sites",
+    "body": "HITS engineers provided critical transport engineering and circuit migration support during the DISA IE1 program's Time-Division Multiplexing elimination initiative. The team successfully transitioned legacy TDM circuits to IP-based transport across multiple CONUS sites, delivering all milestones ahead of schedule and within budget. Activities included SONET circuit decommissioning, IP transport provisioning, and acceptance testing coordination with DISA DITCO. This engagement reinforces HITS's position as a trusted DISN transport partner for DISA and DoD commands.",
+    "tags": [
+      "DISA",
+      "DISN",
+      "IE1",
+      "Transport",
+      "CONUS"
+    ],
+    "link": "government.html"
+  },
+  {
+    "id": "NEWS-005",
+    "category": "Certification",
+    "categoryTheme": "gold",
+    "status": "published",
+    "date": "2024-Q2",
+    "headline": "HITS Achieves CMMC Level 2 Readiness Status",
+    "subheading": "Full compliance with all 110 NIST SP 800-171 practices validated",
+    "body": "Following a comprehensive gap assessment and remediation effort, Harpy I.T. Solutions INC. has achieved CMMC Level 2 readiness status, validating full compliance with all 110 NIST SP 800-171 practices. The company is actively pursuing formal C3PAO assessment for certified Level 2 status. This milestone positions HITS to support CUI-handling contracts and strengthens its cybersecurity service delivery posture for federal clients requiring DFARS 252.204-7012 compliance.",
+    "tags": [
+      "CMMC",
+      "NIST 800-171",
+      "Compliance",
+      "CUI"
+    ],
+    "link": "government.html"
+  },
+  {
+    "id": "NEWS-006",
+    "category": "Product Update",
+    "categoryTheme": "blue",
+    "status": "published",
+    "date": "2025-Q1",
+    "headline": "Harpy Talon v2.4 Released \u2014 Gold Gate Module & PTW Recalibration Engine Now Live",
+    "subheading": "FedRAMP-ready baseline validated against NIST SP 800-53 Rev 5",
+    "body": "The v2.4 release delivers the full Gold Gate submission packaging module, an upgraded PTW recalibration engine drawing from over 12,000 USASpending.gov historical award records, and a rebuilt SSEB Deficiency Engine with live score animation and one-click remediation application. FedRAMP-Ready architecture has been validated against NIST SP 800-53 Rev 5 baseline. Early adopters report a 2.3x improvement in proposal win rates and 68% reduction in total proposal cycle time.",
+    "tags": [
+      "Harpy Talon",
+      "v2.4",
+      "FedRAMP",
+      "PDLC"
+    ],
+    "link": "product.html"
+  }
+]

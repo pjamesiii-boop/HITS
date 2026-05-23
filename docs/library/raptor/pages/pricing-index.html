@@ -1,0 +1,107 @@
+<div class="docs-page">
+<h1>Pricing</h1>
+<p class="docs-page-description">Raptor pricing: governed AI infrastructure and workspace tiers.</p>
+<h1 id="pricing">Pricing</h1>
+
+<p>Raptor is one product with two consumption modes. Both share the same governance substrate, audit chain, trust boundaries, multi-provider abstraction, and unified billing architecture.</p>
+
+<h2 id="governed-ai-infrastructure">Governed AI Infrastructure</h2>
+
+<p>For developers, integrators, and AI product builders who embed Raptor governance via API, MCP, or SDK.</p>
+
+<p>| Dimension | Price |<br>|-----------|-------|<br>| Governed response | $0.012 per response |<br>| Inference pass-through | Provider cost + 10% utility margin |<br>| Minimum credit purchase | $10 |<br>| Subscription floor | None |<br>| Credit expiration | None |</p>
+
+<p><strong>What you consume:</strong> REST API, MCP server (OAuth 2.1), TypeScript SDK, webhook subscriptions, API key self-service, programmatic policy management, hash-chained audit log access via API.</p>
+
+<p><strong>Evaluation:</strong> Purchase $10 in credits (~833 governed responses) and test against your real workload. No trial period, no auto-conversion, no card-required gate.</p>
+
+<h3 id="inference-pass-through-rates">Inference pass-through rates</h3>
+
+<p>When using Raptor's integrated providers, inference is billed at provider cost plus a 10% utility margin covering integration convenience, model selection, and failover management.</p>
+
+<p>| Provider | Provider cost | 10% margin | You pay per response |<br>|----------|-------------|------------|---------------------|<br>| Llama 3.3 70B (Together AI) | $0.0018 | $0.00018 | $0.00198 |<br>| Claude Sonnet 4 | $0.018 | $0.0018 | $0.0198 |<br>| GPT-5.5 | $0.013 | $0.0013 | $0.0143 |</p>
+
+<p>Customers bringing their own provider keys pay only the $0.012 governance fee per response.</p>
+
+<h2 id="governed-ai-workspace">Governed AI Workspace</h2>
+
+<p>For organizations doing managed governed AI workflows. Includes the substrate plus workspace UI, team management, and operational surfaces.</p>
+
+<h3 id="trial">Trial</h3>
+
+<p>14-day free trial on Team or Growth. Credit card required at signup. Auto-converts to your selected tier on day 15. Cancel anytime within 14 days, no charge.</p>
+
+<p>| Limit | Value |<br>|-------|-------|<br>| Governed responses | 500 total |<br>| Seats | 1 |<br>| API keys | 1 |<br>| Webhook deliveries | 100 total |<br>| Audit retention | 14 days |</p>
+
+<h3 id="team-250-month">Team — $250/month</h3>
+
+<p>For small organizations doing real governance work. The natural entry point for vertical AI startups, compliance-driven teams, and 3-12 person organizations.</p>
+
+<p>| Attribute | Value |<br>|-----------|-------|<br>| Governed responses included | 5,000/month |<br>| Past inclusion | Service pauses; opt in to credits at $0.009/response |<br>| Seats included | 3 |<br>| Additional seats | $35/seat (up to 12 total) |<br>| API keys | 3 |<br>| Webhook deliveries | 1,000/month |<br>| Audit retention | 1 year |<br>| RBAC | Owner + Member |<br>| SSO | Google, GitHub, Microsoft |<br>| Privacy controls | GDPR/CCPA, DSAR, export, deletion |</p>
+
+<h3 id="growth-999-month">Growth — $999/month</h3>
+
+<p>For multi-workload organizations, mid-market regulated-industry buyers, and 10-30 person teams with formalized governance workflows.</p>
+
+<p>| Attribute | Value |<br>|-----------|-------|<br>| Governed responses included | 30,000/month |<br>| Past inclusion | Service pauses; opt in to credits at $0.006/response |<br>| Seats included | 10 |<br>| Additional seats | $50/seat (up to 30 total) |<br>| API keys | 10 |<br>| Webhook deliveries | 10,000/month |<br>| Custom webhook event types | Included |<br>| Audit retention | Up to 5 years or indefinite |<br>| RBAC | Owner + Admin + Member (3-role, 10 permissions) |<br>| Admin analytics | Full dashboard |<br>| Direct engine consumption | Included |<br>| Custom policy import | Included |<br>| SSO | Google, GitHub, Microsoft + Enterprise SAML/OIDC |<br>| Privacy controls | GDPR/CCPA, DSAR, export, deletion |</p>
+
+<p>Enterprise SAML/OIDC is activated during Growth onboarding, typically within 24 hours of subscription.</p>
+
+<h3 id="enterprise">Enterprise</h3>
+
+<p>Enterprise tier is not currently available. When the substrate supports HA deployment, SOC 2 Type 2, HIPAA BAA, FedRAMP, BYOC, BYOK, PII redaction, data residency, and dedicated support, Enterprise pricing will be custom-quoted per buyer.</p>
+
+<h2 id="how-billing-works">How billing works</h2>
+
+<h3 id="unified-billing">Unified billing</h3>
+
+<p>One Raptor account per organization. Subscription billing and prepaid credit balance flow through a single Stripe Customer record. One bill, one audit domain, one set of access controls.</p>
+
+<h3 id="workspace-billing-cycle">Workspace billing cycle</h3>
+
+<ol>
+<li>Subscription billed at start of monthly cycle (base + seat add-ons only)</li>
+<li>Usage tracked throughout cycle against tier inclusion</li>
+<li>At tier inclusion limit: service pauses by default</li>
+<li>To continue: opt in to prepaid credits at your tier-discounted rate</li>
+<li>Credits decrement per governed response; no metered overage on subscription invoice</li>
+</ol>
+
+<h3 id="credit-balance">Credit balance</h3>
+
+<ul>
+<li>Purchase credits at any time ($10 minimum)</li>
+<li>Each governed response decrements balance at your applicable rate</li>
+<li>Inference pass-through decrements at provider cost + 10%</li>
+<li>Low-balance notification at 20% of last purchase</li>
+<li>At zero balance: service pauses or continues based on your API key configuration</li>
+<li>Auto-top-up available (threshold, amount, monthly ceiling — all customer-configured)</li>
+<li>Credits do not expire</li>
+<li>Credits are non-refundable</li>
+</ul>
+
+<h3 id="pause-vs-continue">Pause vs. continue</h3>
+
+<p>At API key creation, choose the key's behavior when credit balance reaches zero:</p>
+
+<ul>
+<li><strong>Pause at zero</strong> (default for production keys): governed responses pause until credits are added</li>
+<li><strong>Capped auto-continuation</strong> (default for non-production keys): auto-top-up within your monthly ceiling</li>
+</ul>
+
+<p>This choice is front-loaded at setup, not discovered at incident time. Change it anytime per key.</p>
+
+<h2 id="feature-comparison">Feature comparison</h2>
+
+<p>| Capability | Trial | Team | Growth | Infrastructure |<br>|------------|-------|------|--------|---------------|<br>| Governed AI Workspace | Yes | Yes | Yes | — |<br>| Governance API | Yes | Yes | Yes | Yes |<br>| MCP Server | Yes | Yes | Yes | Yes |<br>| TypeScript SDK | Yes | Yes | Yes | Yes |<br>| Direct engine consumption | — | — | Yes | Yes |<br>| Webhooks | 100 total | 1K/mo | 10K/mo | By org tier |<br>| Policy editor | Yes | Yes | Yes | Programmatic |<br>| Custom policy import | Yes | — | Yes | With tier |<br>| Audit timeline UI | Yes | Yes | Yes | API only |<br>| Audit export | 2 total | Yes | Yes | Via API |<br>| Admin analytics | Own usage | Own usage | Full dashboard | — |<br>| RBAC | Single user | Owner + Member | Owner + Admin + Member | Org-scoped |<br>| Seats | 1 | 3 + $35 to 12 | 10 + $50 to 30 | Org-scoped |<br>| API keys | 1 | 3 | 10 | By org tier |<br>| Audit retention | 14 days | 1 year | Up to 5 yrs | Multi-year via API |<br>| Privacy workflows | Limited | Yes | Yes | Programmatic |<br>| Basic SSO | Yes | Yes | Yes | Org-level |<br>| Enterprise SAML/OIDC | — | — | Yes | — |<br>| Email support | — | Best-effort | 1 business day | Per org tier |</p>
+
+<h2 id="design-partner-program">Design Partner program</h2>
+
+<p>Design Partner is a relationship designation, not a separate tier or pricing concession. Partners pay standard Team or Growth pricing.</p>
+
+<p><strong>What you provide:</strong> Real production traffic, continuous feedback, named reference status, willingness to be referenced in case studies.</p>
+
+<p><strong>What you receive:</strong><br><ul><br><li>Direct founder access for technical architecture decisions</li><br><li>Roadmap influence on substrate evolution</li><br><li>Co-development of features specific to your vertical</li><br><li>Named reference status with case study collaboration</li><br><li>Founding partner price-lock guarantee (24 months)</li><br><li>First access to new substrate capabilities</li><br></ul></p>
+
+<p>Three to five partners across distinct industries. Sequential recruitment.</p>
+</div>

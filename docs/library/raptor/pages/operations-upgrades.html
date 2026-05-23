@@ -1,0 +1,142 @@
+<div class="docs-page">
+<h1>Upgrades</h1>
+<p class="docs-page-description">Versioning, upgrade procedures, rollback, and API compatibility for Raptor.</p>
+<h1 id="upgrades">Upgrades</h1>
+
+<p>Raptor uses date-based versioning and automatic migrations. Upgrades are designed to be low-risk: pull the new image, restart, and verify health.</p>
+
+<h2 id="versioning">Versioning</h2>
+
+<p>Raptor versions follow a date-based scheme: <code>YYYY-MM-DD</code> (for example, <code>2026-05-09</code>). Each version corresponds to a tagged release and a container image.</p>
+
+<ul>
+<li><strong>Patch releases</strong> (same date, incremented suffix like <code>2026-05-09.1</code>) contain bug fixes only.</li>
+<li><strong>Minor releases</strong> (new date) may add features, endpoints, or configuration options. Existing behavior does not change.</li>
+<li><strong>Breaking releases</strong> are rare and announced in advance. See <a href="#breaking-changes-policy">Breaking Changes Policy</a> below.</li>
+</ul>
+
+<h2 id="upgrade-procedure">Upgrade Procedure</h2>
+
+<h3 id="docker-compose">Docker Compose</h3>
+
+<pre><code class="language-bash"># Pull the latest code
+git pull origin main
+
+<h1 id="rebuild-images">Rebuild images</h1>
+docker compose build
+
+<h1 id="restart-services-migrations-run-automatically">Restart services (migrations run automatically)</h1>
+docker compose up -d</code></pre>
+
+<h3 id="railway">Railway</h3>
+
+<p>Deploy via git push. Railway rebuilds the image and restarts the service automatically.</p>
+
+<pre><code class="language-bash">git push origin main</code></pre>
+
+<p>Do <strong>not</strong> use <code>railway up</code> or equivalent direct-deploy commands. They bypass build attestation and break provenance.</p>
+
+<h3 id="verify-after-upgrade">Verify After Upgrade</h3>
+
+<pre><code class="language-bash"># Check readiness
+curl http://localhost:4000/api/ready
+
+<h1 id="check-integrity-build-attestation-matches-new-version">Check integrity (build attestation matches new version)</h1>
+curl http://localhost:4000/api/runtime/integrity \
+  -H "X-Raptor-Token: your-access-token"
+
+<h1 id="check-dependency-health">Check dependency health</h1>
+curl http://localhost:4000/api/health/dependencies</code></pre>
+
+<p>Confirm:</p>
+
+<ul>
+<li><code>/api/ready</code> returns <code>{"status": "ready"}</code></li>
+<li><code>/api/runtime/integrity</code> shows <code>"status": "verified"</code> with the new build hash</li>
+<li>All dependencies are healthy</li>
+</ul>
+
+<h2 id="automatic-migrations">Automatic Migrations</h2>
+
+<p>The <code>migrate</code> container in Docker Compose runs before the control-panel starts. It applies any pending schema migrations and exits. You do not need to run migrations manually.</p>
+
+<p>If a migration fails, the control-panel will not start. Check the migrate container logs:</p>
+
+<pre><code class="language-bash">docker compose logs migrate</code></pre>
+
+<p>Fix the underlying issue (usually a database connection problem or permission error) and restart:</p>
+
+<pre><code class="language-bash">docker compose up -d</code></pre>
+
+<h2 id="rollback">Rollback</h2>
+
+<p>If an upgrade causes problems, roll back by restoring the previous database state and redeploying the prior image version.</p>
+
+<h3 id="step-1-restore-the-database">Step 1: Restore the Database</h3>
+
+<p>Point <code>DATABASE_URL</code> at your pre-upgrade backup:</p>
+
+<ul>
+<li><strong>Self-hosted:</strong> Restore using <code>pg_restore</code> from your most recent pre-upgrade backup. See <a href="/operations/backup-restore">Backup and Restore</a>.</li>
+<li><strong>Cloud (Neon):</strong> Create a PITR branch targeting a timestamp before the upgrade.</li>
+</ul>
+
+<h3 id="step-2-redeploy-the-previous-image">Step 2: Redeploy the Previous Image</h3>
+
+<pre><code class="language-bash"># Check out the previous release tag
+git checkout 2026-05-09
+
+<h1 id="rebuild-and-restart">Rebuild and restart</h1>
+docker compose build
+docker compose up -d</code></pre>
+
+<p>For Railway, push the previous tag to trigger a rebuild:</p>
+
+<pre><code class="language-bash">git push origin 2026-05-09:main --force-with-lease</code></pre>
+
+<h3 id="step-3-verify">Step 3: Verify</h3>
+
+<p>Run the same post-upgrade verification checks. Confirm health, integrity, and dependency status before routing traffic.</p>
+
+<h2 id="api-version-header">API Version Header</h2>
+
+<p>Raptor supports the <code>X-Raptor-API-Version</code> request header for forward compatibility. When a new API version introduces changes to response structure, you can pin your client to a specific version:</p>
+
+<pre><code class="language-bash">curl http://localhost:4000/api/chat \
+  -H "X-Raptor-Token: your-access-token" \
+  -H "X-Raptor-API-Version: 2026-05-09" \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Hello"}'</code></pre>
+
+<p>If the header is omitted, the server uses the latest API version. Pinning is recommended for production integrations to avoid unexpected changes during upgrades.</p>
+
+<h2 id="breaking-changes-policy">Breaking Changes Policy</h2>
+
+<p>Raptor follows these rules for breaking changes:</p>
+
+<ol>
+<li><strong>Advance notice.</strong> Breaking changes are announced at least 30 days before they take effect. Announcements appear in the changelog and are sent to the operator email on file.</li>
+<li><strong>Version header grace period.</strong> When a breaking change ships, the previous API version remains supported for at least 90 days via the <code>X-Raptor-API-Version</code> header.</li>
+<li><strong>Migration path.</strong> Every breaking change includes documentation for how to update client code.</li>
+<li><strong>No silent breaks.</strong> If a field is removed or renamed, the old field returns a deprecation warning in the response headers (<code>X-Raptor-Deprecated</code>) before removal.</li>
+</ol>
+
+<h3 id="what-counts-as-breaking">What Counts as Breaking</h3>
+
+<ul>
+<li>Removing or renaming a response field</li>
+<li>Changing the type of a response field</li>
+<li>Removing an endpoint</li>
+<li>Changing authentication requirements</li>
+</ul>
+
+<h3 id="what-does-not-count-as-breaking">What Does Not Count as Breaking</h3>
+
+<ul>
+<li>Adding new response fields</li>
+<li>Adding new endpoints</li>
+<li>Adding new optional request parameters</li>
+<li>Performance improvements</li>
+<li>Bug fixes that correct behavior to match documentation</li>
+</ul>
+</div>

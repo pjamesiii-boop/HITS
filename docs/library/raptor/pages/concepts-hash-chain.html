@@ -1,0 +1,68 @@
+<div class="docs-page">
+<h1>Hash Chain</h1>
+<p class="docs-page-description">How Raptor's immutable audit chain ensures every output is traceable and tamper-evident.</p>
+<h1 id="hash-chain">Hash Chain</h1>
+
+<p>Every governed operation in Raptor produces an execution event that is linked to the previous event via cryptographic hashing. This creates a tamper-evident chain — if any event is modified after the fact, the chain breaks.</p>
+
+<h2 id="how-it-works">How it works</h2>
+
+<ol>
+<li>Every chat turn, action execution, and governance decision creates an <code>execution_event</code></li>
+<li>Each event contains a <code>payload</code> (the full structured output) that is canonically hashed (SHA-256, deterministic JSON serialization, sorted keys)</li>
+<li>Each event's <code>event_hash</code> includes the <code>previous_event_hash</code>, creating a linked chain</li>
+<li>Database triggers prevent UPDATE and DELETE on the execution_events table</li>
+</ol>
+
+<h2 id="what-s-in-an-event">What's in an event</h2>
+
+<pre><code class="language-json">{
+  "id": "uuid",
+  "tenant_id": "uuid",
+  "nest_id": "uuid",
+  "event_type": "output_committed",
+  "event_hash": "sha256:abc123...",
+  "previous_event_hash": "sha256:def456...",
+  "payload": {
+    "trust_boundary": { "primary": "inferred", "route_type": "chat" },
+    "segments": [...],
+    "evidence_refs": [...]
+  },
+  "created_at": "2026-05-20T17:44:24Z"
+}</code></pre>
+
+<h2 id="verification">Verification</h2>
+
+<ul>
+<li><strong>Per-nest:</strong> <code>GET /api/nests/{id}/verification</code> checks chain integrity and returns claim-level freshness</li>
+<li><strong>Per-execution:</strong> <code>GET /api/executions/{id}/trace</code> returns the full event chain with hash verification</li>
+<li><strong>Tenant-wide:</strong> <code>GET /api/tenant/audit/export</code> exports the complete audit trail</li>
+</ul>
+
+<h2 id="immutability-guarantees">Immutability guarantees</h2>
+
+<p>11 tables in Raptor are protected by database-level triggers that prevent modification:</p>
+
+<ul>
+<li><code>execution_events</code> — the primary hash chain</li>
+<li><code>build_attestations</code> — Ed25519 signed build proofs</li>
+<li><code>transparency_log</code> — public transparency records</li>
+<li><code>authorization_events</code> — governance decision audit trail</li>
+<li><code>governance_policies</code> — append-only policy lifecycle</li>
+</ul>
+
+<p>This is not application-level protection — it's database-level enforcement that cannot be bypassed by application code.</p>
+
+<h2 id="canonical-hashing">Canonical hashing</h2>
+
+<p>Raptor uses canonical hashing to ensure identical inputs always produce identical hashes:</p>
+
+<ol>
+<li>JSON keys are sorted alphabetically</li>
+<li>No whitespace in serialized form</li>
+<li>Numbers use their canonical JSON representation</li>
+<li>Null values are preserved (not omitted)</li>
+</ol>
+
+<p>This means any system can independently verify a hash by re-serializing the payload with the same rules.</p>
+</div>

@@ -1,0 +1,286 @@
+<div class="docs-page">
+<h1>Troubleshooting</h1>
+<p class="docs-page-description">Common issues, their causes, and how to fix them.</p>
+<h1 id="troubleshooting">Troubleshooting</h1>
+
+<p>This guide covers the most common issues you will encounter when running Raptor, organized by category. Each issue includes the symptom, likely cause, and fix steps.</p>
+
+<h2 id="authentication">Authentication</h2>
+
+<h3 id="401-unauthorized-expired-jwt">401 Unauthorized — Expired JWT</h3>
+
+<p><strong>Symptom:</strong> API requests return <code>401</code> with <code>"error": "token_expired"</code>.</p>
+
+<p><strong>Cause:</strong> The Clerk session token has expired and the client has not refreshed it.</p>
+
+<p><strong>Fix:</strong></p>
+
+<ol>
+<li>If using the Control Panel UI, sign out and sign back in.</li>
+<li>If using a custom client, ensure your Clerk SDK is configured to refresh tokens automatically.</li>
+<li>Check that your server's clock is synchronized (NTP). JWT validation is time-sensitive.</li>
+</ol>
+
+<h3 id="401-unauthorized-missing-api-key">401 Unauthorized — Missing API Key</h3>
+
+<p><strong>Symptom:</strong> API requests return <code>401</code> with <code>"error": "missing_credentials"</code>.</p>
+
+<p><strong>Cause:</strong> The request does not include an authentication header.</p>
+
+<p><strong>Fix:</strong></p>
+
+<ol>
+<li>For API key authentication, include the header: <code>Authorization: Bearer rpt_your_key</code></li>
+<li>For Founder Key authentication, include the header: <code>X-Raptor-Token: your_access_token</code></li>
+<li>Verify the key exists and has not been revoked in Settings > API Keys.</li>
+</ol>
+
+<h3 id="401-unauthorized-clerk-misconfiguration">401 Unauthorized — Clerk Misconfiguration</h3>
+
+<p><strong>Symptom:</strong> All Clerk-authenticated requests return <code>401</code>. API key requests work fine.</p>
+
+<p><strong>Cause:</strong> Clerk environment variables are missing or incorrect.</p>
+
+<p><strong>Fix:</strong></p>
+
+<ol>
+<li>Verify these environment variables are set:</li>
+</ol>
+   - <code>CLERK_SECRET_KEY</code> — starts with <code>sk_live_</code> or <code>sk_test_</code>
+   - <code>CLERK_PUBLISHABLE_KEY</code> — starts with <code>pk_live_</code> or <code>pk_test_</code>
+   - <code>CLERK_DOMAIN</code> — your Clerk domain (e.g., <code>your-app.clerk.accounts.dev</code>)
+<ol>
+<li>Ensure the Clerk application's JWT template matches Raptor's expected claims.</li>
+<li>Restart the Raptor process after changing environment variables.</li>
+</ol>
+
+<h3 id="401-unauthorized-grace-period">401 Unauthorized — Grace Period</h3>
+
+<p><strong>Symptom:</strong> Requests return <code>401</code> intermittently during an authentication configuration change.</p>
+
+<p><strong>Cause:</strong> Raptor includes a grace period during authentication transitions. If you are seeing <code>401</code> errors during this window, the new configuration may be invalid.</p>
+
+<p><strong>Fix:</strong></p>
+
+<ol>
+<li>Check the application logs for grace-period authentication entries — these indicate which authentication method was attempted and why it failed.</li>
+<li>Verify the new authentication configuration is correct before the grace period expires.</li>
+<li>If locked out, use the Founder Key (<code>X-Raptor-Token</code>) to regain access.</li>
+</ol>
+
+<h3 id="403-forbidden-permission-denied">403 Forbidden — Permission Denied</h3>
+
+<p><strong>Symptom:</strong> API requests return <code>403</code> with <code>"error": "permission_denied"</code> and a <code>"required_permission"</code> field.</p>
+
+<p><strong>Cause:</strong> The authenticated user or API key does not have the required permission for this endpoint.</p>
+
+<p><strong>Fix:</strong></p>
+
+<ol>
+<li>Check the <code>required_permission</code> field in the error response (e.g., <code>"provider.manage"</code>).</li>
+<li>Verify the user's role in Settings > Team. Permissions are mapped to roles: Owner, Admin, Member.</li>
+<li>If using an API key, check the key's assigned permissions in Settings > API Keys.</li>
+<li>See the <a href="/security#permissions">permission matrix</a> for which roles grant which permissions.</li>
+</ol>
+
+<h3 id="403-forbidden-tenant-suspended">403 Forbidden — Tenant Suspended</h3>
+
+<p><strong>Symptom:</strong> All requests return <code>403</code> with <code>"error": "tenant_suspended"</code>.</p>
+
+<p><strong>Cause:</strong> The tenant has been suspended, typically due to billing issues or policy violations.</p>
+
+<p><strong>Fix:</strong></p>
+
+<ol>
+<li>Check your billing status in Settings > Billing.</li>
+<li>If billing is current, contact support with your tenant ID.</li>
+</ol>
+
+<h2 id="provider">Provider</h2>
+
+<h3 id="503-service-unavailable-no-provider-configured">503 Service Unavailable — No Provider Configured</h3>
+
+<p><strong>Symptom:</strong> Chat requests return <code>503</code> with <code>"error": "no_provider_available"</code>.</p>
+
+<p><strong>Cause:</strong> No AI provider API key has been configured for this tenant.</p>
+
+<p><strong>Fix:</strong></p>
+
+<ol>
+<li>Go to Settings > Providers and add at least one provider API key.</li>
+<li>Supported providers: Anthropic (<code>ANTHROPIC_API_KEY</code>), OpenAI (<code>OPENAI_API_KEY</code>), Google Gemini (<code>GEMINI_API_KEY</code>), Together AI (<code>TOGETHER_API_KEY</code>).</li>
+<li>For self-hosted deployments, set the provider key as an environment variable and restart.</li>
+</ol>
+
+<h3 id="slow-responses">Slow Responses</h3>
+
+<p><strong>Symptom:</strong> Chat requests take 10+ seconds to return.</p>
+
+<p><strong>Cause:</strong> Provider latency. Raptor adds minimal overhead (governance processing is typically under 50ms). Slow responses are almost always due to the upstream AI provider.</p>
+
+<p><strong>Fix:</strong></p>
+
+<ol>
+<li>Check your provider's status page for ongoing incidents.</li>
+<li>Try a different provider if you have multiple configured.</li>
+<li>For self-hosted deployments, verify network connectivity to the provider's API endpoint.</li>
+<li>Check if your provider account has been rate-limited or throttled.</li>
+</ol>
+
+<h3 id="provider-errors-quota-exceeded">Provider Errors — Quota Exceeded</h3>
+
+<p><strong>Symptom:</strong> Chat requests return an error with <code>"provider_error": "rate_limit_exceeded"</code> or <code>"quota_exceeded"</code>.</p>
+
+<p><strong>Cause:</strong> Your provider API key has exceeded its usage limits.</p>
+
+<p><strong>Fix:</strong></p>
+
+<ol>
+<li>Check your provider dashboard for current usage and limits.</li>
+<li>Upgrade your provider plan if you have hit a spending cap.</li>
+<li>Configure multiple providers in Raptor for automatic failover.</li>
+</ol>
+
+<h3 id="provider-errors-invalid-key">Provider Errors — Invalid Key</h3>
+
+<p><strong>Symptom:</strong> Chat requests return an error with <code>"provider_error": "authentication_failed"</code>.</p>
+
+<p><strong>Cause:</strong> The provider API key is invalid, expired, or revoked.</p>
+
+<p><strong>Fix:</strong></p>
+
+<ol>
+<li>Verify the API key in your provider's dashboard.</li>
+<li>Generate a new key if the current one has been revoked.</li>
+<li>Update the key in Settings > Providers (cloud) or the environment variable (self-hosted).</li>
+</ol>
+
+<h2 id="database">Database</h2>
+
+<h3 id="connection-failures">Connection Failures</h3>
+
+<p><strong>Symptom:</strong> Raptor fails to start with <code>"error": "database_connection_failed"</code> or requests return <code>500</code> errors.</p>
+
+<p><strong>Cause:</strong> The PostgreSQL database is unreachable.</p>
+
+<p><strong>Fix:</strong></p>
+
+<ol>
+<li>Verify <code>DATABASE_URL</code> is set correctly. Format: <code>postgresql://user:password@host:port/database</code></li>
+<li>Confirm the database server is running and accepting connections.</li>
+<li>Check firewall rules — the Raptor process must be able to reach the database host and port.</li>
+<li>For Docker deployments, ensure the database container is healthy: <code>docker compose ps</code></li>
+</ol>
+
+<h3 id="migration-errors">Migration Errors</h3>
+
+<p><strong>Symptom:</strong> Raptor fails to start with a migration error referencing a specific migration number.</p>
+
+<p><strong>Cause:</strong> A database migration failed to apply, often due to a schema conflict or interrupted previous migration.</p>
+
+<p><strong>Fix:</strong></p>
+
+<ol>
+<li>Check the migration error message for the specific failure.</li>
+<li>Verify the database user has <code>CREATE TABLE</code>, <code>ALTER TABLE</code>, and <code>CREATE TRIGGER</code> permissions.</li>
+<li>If a migration was interrupted, check the <code>schema_migrations</code> table for a dirty state.</li>
+<li>For self-hosted deployments, ensure you are running the version of Raptor that matches your database schema.</li>
+</ol>
+
+<h3 id="pool-exhaustion">Pool Exhaustion</h3>
+
+<p><strong>Symptom:</strong> Intermittent <code>500</code> errors with <code>"error": "pool_exhausted"</code> or <code>"connection_timeout"</code>.</p>
+
+<p><strong>Cause:</strong> All database connections in the pool are in use.</p>
+
+<p><strong>Fix:</strong></p>
+
+<ol>
+<li>Check for long-running queries: <code>SELECT * FROM pg_stat_activity WHERE state = 'active' ORDER BY query_start;</code></li>
+<li>Increase the connection pool size if your workload requires it.</li>
+<li>Verify that no external process is holding connections open against the same database.</li>
+</ol>
+
+<h2 id="hash-chain">Hash Chain</h2>
+
+<h3 id="integrity-verification-failure">Integrity Verification Failure</h3>
+
+<p><strong>Symptom:</strong> <code>GET /api/nests/{id}/verification</code> returns <code>"chain_valid": false</code>.</p>
+
+<p><strong>Cause:</strong> A hash in the chain does not match the expected value. This indicates either data corruption or tampering.</p>
+
+<p><strong>Fix:</strong></p>
+
+<ol>
+<li>This is a serious condition. Do not ignore it.</li>
+<li>Identify the specific event where the chain breaks — the verification response includes the <code>break_point</code> event ID.</li>
+<li>Compare the stored <code>event_hash</code> against a recomputed hash of the payload using Raptor's canonical hashing rules (sorted keys, no whitespace, deterministic serialization).</li>
+<li>If the mismatch is due to a known schema migration, check the migration notes for hash recomputation instructions.</li>
+<li>If tampering is suspected, export the full chain via <code>GET /api/tenant/audit/export</code> and preserve it for forensic analysis.</li>
+</ol>
+
+<h3 id="attestation-missing">Attestation Missing</h3>
+
+<p><strong>Symptom:</strong> <code>GET /.well-known/raptor/attestation</code> returns <code>404</code> or an empty response.</p>
+
+<p><strong>Cause:</strong> No build attestation has been recorded for the current deployment.</p>
+
+<p><strong>Fix:</strong></p>
+
+<ol>
+<li>Build attestations are created during the deployment process. If you built from source without the attestation step, no attestation exists.</li>
+<li>For Docker deployments, verify the image was built from a tagged release that includes attestation.</li>
+<li>A missing attestation does not affect governance functionality — it means the build provenance cannot be independently verified.</li>
+</ol>
+
+<h2 id="deployment">Deployment</h2>
+
+<h3 id="docker-health-check-failures">Docker Health Check Failures</h3>
+
+<p><strong>Symptom:</strong> <code>docker compose ps</code> shows the Raptor container as <code>unhealthy</code>.</p>
+
+<p><strong>Cause:</strong> The health check endpoint (<code>/api/health</code>) is not responding.</p>
+
+<p><strong>Fix:</strong></p>
+
+<ol>
+<li>Check container logs: <code>docker compose logs raptor</code></li>
+<li>Verify the <code>CONTROL_HOST</code> is set to <code>0.0.0.0</code> (not <code>localhost</code>) for containerized deployments.</li>
+<li>Verify the <code>CONTROL_PORT</code> matches the port exposed in your Docker Compose file.</li>
+<li>Ensure the database is reachable from the container — the health check verifies database connectivity.</li>
+</ol>
+
+<h3 id="port-conflicts">Port Conflicts</h3>
+
+<p><strong>Symptom:</strong> Raptor fails to start with <code>EADDRINUSE</code> or similar port-binding error.</p>
+
+<p><strong>Cause:</strong> Another process is already using the configured port.</p>
+
+<p><strong>Fix:</strong></p>
+
+<ol>
+<li>Check what is using the port: <code>lsof -i :4000</code> (or your configured port).</li>
+<li>Change the port via <code>CONTROL_PORT</code> environment variable.</li>
+<li>For Docker deployments, change the host port mapping in your Docker Compose file.</li>
+</ol>
+
+<h3 id="environment-variable-misconfiguration">Environment Variable Misconfiguration</h3>
+
+<p><strong>Symptom:</strong> Raptor starts but specific features do not work (e.g., Clerk auth, billing, providers).</p>
+
+<p><strong>Cause:</strong> One or more environment variables are missing or incorrect.</p>
+
+<p><strong>Fix:</strong></p>
+
+<ol>
+<li>Required variables for basic operation:</li>
+</ol>
+   - <code>DATABASE_URL</code> — PostgreSQL connection string
+   - <code>RAPTOR_ACCESS_TOKEN</code> — Founder Key for bootstrap authentication
+   - At least one provider key (<code>ANTHROPIC_API_KEY</code>, <code>OPENAI_API_KEY</code>, etc.)
+<ol>
+<li>Check the <a href="/self-hosted/environment-variables">environment variables reference</a> for the full list.</li>
+<li>For Docker deployments, ensure variables are set in your <code>.env</code> file or Docker Compose environment section.</li>
+<li>Restart the Raptor process after any environment variable change.</li>
+</ol>
+</div>

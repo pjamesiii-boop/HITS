@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="hits_logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>News & Updates | Harpy I.T. Solutions INC.</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'deep-slate':    '#020617',
+            'electric-blue': '#3b82f6',
+            'blue-glow':     '#60a5fa',
+          },
+          fontFamily: {
+            'display': ['Syne',          'sans-serif'],
+            'body':    ['DM Sans',        'sans-serif'],
+            'mono':    ['JetBrains Mono', 'monospace'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root { --blue:#3b82f6; --bg:#020617; --card-bg:rgba(15,23,42,0.75); }
+    *, *::before, *::after { box-sizing:border-box; }
+    body { background-color:var(--bg); font-family:'DM Sans',sans-serif; overflow-x:hidden; }
+
+    /* Grain */
+    body::before {
+      content:''; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.4;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    }
+
+    /* ── Nav ── */
+    .nav-glass {
+      background:rgba(2,6,23,.65);
+      backdrop-filter:blur(20px) saturate(180%);
+      -webkit-backdrop-filter:blur(20px) saturate(180%);
+      border-bottom:1px solid rgba(59,130,246,.12);
+    }
+    .nav-link {
+      position:relative; color:rgba(203,213,225,.85);
+      font-size:.875rem; font-weight:500; letter-spacing:.02em; transition:color .2s;
+    }
+    .nav-link::after {
+      content:''; position:absolute; bottom:-3px; left:0;
+      width:0; height:1px; background:var(--blue); transition:width .25s ease;
+    }
+    .nav-link:hover { color:#93c5fd; }
+    .nav-link:hover::after, .nav-link.active::after { width:100%; }
+    .nav-link.active { color:#93c5fd; }
+    .btn-contact {
+      background:linear-gradient(135deg,#2563eb,#3b82f6);
+      box-shadow:0 0 20px rgba(59,130,246,.4);
+      transition:box-shadow .3s, transform .2s;
+    }
+    .btn-contact:hover { box-shadow:0 0 32px rgba(59,130,246,.65); transform:translateY(-1px); }
+
+    /* ── Dropdown ── */
+    .dropdown-wrap { position:relative; }
+    .dropdown-btn {
+      display:flex; align-items:center; gap:5px;
+      color:rgba(203,213,225,.85); font-size:.875rem; font-weight:500;
+      letter-spacing:.02em; cursor:pointer; background:none; border:none;
+      padding:0; transition:color .2s; font-family:'DM Sans',sans-serif; position:relative;
+    }
+    .dropdown-btn::after {
+      content:''; position:absolute; bottom:-3px; left:0;
+      width:0; height:1px; background:var(--blue); transition:width .25s ease;
+    }
+    .dropdown-btn:hover, .dropdown-btn.active { color:#93c5fd; }
+    .dropdown-btn:hover::after, .dropdown-btn.active::after { width:calc(100% - 16px); }
+    .dropdown-btn svg { transition:transform .25s ease; flex-shrink:0; }
+    .dropdown-wrap:hover .dropdown-btn svg,
+    .dropdown-wrap.open .dropdown-btn svg { transform:rotate(180deg); }
+    .dropdown-menu {
+      position:absolute; top:100%; left:50%; padding-top:12px;
+      transform:translateX(-50%) scale(0.95);
+      min-width:230px; z-index:100;
+      background:transparent;
+      opacity:0; pointer-events:none;
+      transform-origin:top center;
+      transition:opacity .22s ease, transform .22s ease;
+    }
+    .dropdown-menu-inner {
+      background:rgba(7,12,28,.92);
+      backdrop-filter:blur(24px) saturate(180%);
+      -webkit-backdrop-filter:blur(24px) saturate(180%);
+      border:1px solid rgba(59,130,246,.22); border-radius:14px;
+      box-shadow:0 20px 60px rgba(0,0,0,.6), 0 0 0 1px rgba(59,130,246,.08);
+      padding:8px;
+    }
+    .dropdown-wrap:hover .dropdown-menu,
+    .dropdown-wrap.open .dropdown-menu { opacity:1; pointer-events:auto; transform:translateX(-50%) scale(1); }
+    .dropdown-item {
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px; border-radius:8px;
+      font-family:'DM Sans',sans-serif; font-size:.85rem; font-weight:500;
+      color:rgba(203,213,225,.85); text-decoration:none;
+      transition:background .18s, color .18s; white-space:nowrap;
+    }
+    .dropdown-item:hover { background:rgba(59,130,246,.1); color:#93c5fd; }
+    .dropdown-item .d-icon {
+      width:28px; height:28px; border-radius:7px; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      background:rgba(59,130,246,.12); border:1px solid rgba(59,130,246,.22);
+    }
+    .dropdown-item.coming-soon { cursor:default; opacity:.42; pointer-events:none; }
+    .dropdown-divider { height:1px; background:rgba(59,130,246,.1); margin:6px 4px; }
+    .coming-tag {
+      margin-left:auto; font-size:.6rem; font-family:'JetBrains Mono',monospace;
+      font-weight:600; letter-spacing:.08em; text-transform:uppercase;
+      padding:2px 6px; border-radius:4px;
+      background:rgba(148,163,184,.1); border:1px solid rgba(148,163,184,.2);
+      color:rgba(148,163,184,.6);
+    }
+    .mob-dropdown-items { display:none; padding-left:14px; margin-top:4px; }
+    .mob-dropdown-items.open { display:flex; flex-direction:column; gap:2px; }
+    .mob-dropdown-btn {
+      display:flex; align-items:center; justify-content:space-between;
+      color:rgba(203,213,225,.85); font-size:1rem; font-weight:500;
+      background:none; border:none; padding:0; cursor:pointer;
+      font-family:'DM Sans',sans-serif; width:100%;
+    }
+    .mob-dropdown-btn svg { transition:transform .25s; }
+    .mob-dropdown-btn.open svg { transform:rotate(180deg); }
+
+    /* ── Shared utilities ── */
+    .gradient-headline {
+      background:linear-gradient(135deg,#fff 0%,#e2eeff 35%,#93c5fd 65%,#3b82f6 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .blue-line { width:48px; height:2px; background:linear-gradient(90deg,var(--blue),transparent); border-radius:2px; }
+    .tag {
+      display:inline-flex; align-items:center; padding:3px 10px;
+      background:rgba(59,130,246,.12); border:1px solid rgba(59,130,246,.3);
+      border-radius:999px; font-size:.68rem; font-weight:600;
+      letter-spacing:.08em; color:#93c5fd; text-transform:uppercase;
+    }
+    .glow-bullet {
+      width:7px; height:7px; background:var(--blue); border-radius:50%; flex-shrink:0;
+      box-shadow:0 0 8px 2px rgba(59,130,246,.65);
+    }
+
+    /* ── Hero grid ── */
+    .hero-grid {
+      background-image:
+        linear-gradient(rgba(59,130,246,.04) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(59,130,246,.04) 1px,transparent 1px);
+      background-size:64px 64px;
+    }
+
+    /* ── Live status indicator ── */
+    @keyframes livePulse {
+      0%,100% { box-shadow:0 0 0 0 rgba(74,222,128,.7); }
+      70%      { box-shadow:0 0 0 8px rgba(74,222,128,0); }
+    }
+    .live-dot {
+      width:9px; height:9px; border-radius:50%;
+      background:#4ade80;
+      animation:livePulse 2s ease-in-out infinite;
+    }
+
+    /* ── Ticker ── */
+    @keyframes tickerScroll {
+      from { transform:translateX(0); }
+      to   { transform:translateX(-50%); }
+    }
+    .ticker-track {
+      display:flex; gap:0; width:max-content;
+      animation:tickerScroll 35s linear infinite;
+    }
+    .ticker-track:hover { animation-play-state:paused; }
+    .ticker-wrap {
+      overflow:hidden;
+      mask-image:linear-gradient(90deg,transparent,black 6%,black 94%,transparent);
+      -webkit-mask-image:linear-gradient(90deg,transparent,black 6%,black 94%,transparent);
+    }
+    .ticker-item {
+      display:flex; align-items:center; gap:8px;
+      padding:0 28px; white-space:nowrap;
+      font-family:'JetBrains Mono',monospace; font-size:.72rem;
+      color:rgba(148,163,184,.55);
+      border-right:1px solid rgba(59,130,246,.1);
+    }
+    .ticker-item .t-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+
+    /* ── Featured card ── */
+    .featured-card {
+      background:rgba(8,14,30,.9);
+      border:1px solid rgba(59,130,246,.25);
+      border-radius:20px; overflow:hidden;
+      position:relative;
+      transition:border-color .3s, box-shadow .3s;
+    }
+    .featured-card::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:2px;
+      background:linear-gradient(90deg,transparent,#3b82f6 40%,#60a5fa 60%,transparent);
+    }
+    .featured-card:hover {
+      border-color:rgba(59,130,246,.45);
+      box-shadow:0 0 60px rgba(59,130,246,.12), 0 24px 64px rgba(0,0,0,.5);
+    }
+
+    /* Featured image placeholder */
+    .featured-img {
+      background:linear-gradient(135deg,rgba(15,23,42,.9) 0%,rgba(20,37,80,.6) 100%);
+      position:relative; overflow:hidden;
+      min-height:240px;
+    }
+    .featured-img-grid {
+      position:absolute; inset:0;
+      background-image:
+        linear-gradient(rgba(59,130,246,.07) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(59,130,246,.07) 1px,transparent 1px);
+      background-size:40px 40px;
+    }
+    .featured-img-glow {
+      position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      width:320px; height:200px;
+      background:radial-gradient(ellipse,rgba(59,130,246,.2) 0%,transparent 65%);
+    }
+
+    /* ── News feed cards ── */
+    .news-card {
+      background:rgba(10,18,36,.8);
+      border:1px solid rgba(59,130,246,.14);
+      border-radius:16px; overflow:hidden;
+      transition:border-color .3s, transform .25s, box-shadow .25s;
+      position:relative;
+    }
+    .news-card::after {
+      content:''; position:absolute; bottom:0; left:0; right:0; height:1px;
+      background:linear-gradient(90deg,transparent,rgba(59,130,246,.35),transparent);
+      opacity:0; transition:opacity .3s;
+    }
+    .news-card:hover {
+      border-color:rgba(59,130,246,.35);
+      transform:translateY(-3px);
+      box-shadow:0 12px 40px rgba(0,0,0,.4), 0 0 30px rgba(59,130,246,.08);
+    }
+    .news-card:hover::after { opacity:1; }
+
+    /* Category badge colours */
+    .cat-announcement  { background:rgba(59,130,246,.12); border:1px solid rgba(59,130,246,.3);  color:#93c5fd; }
+    .cat-performance   { background:rgba(34,197,94,.12);  border:1px solid rgba(34,197,94,.3);   color:#86efac; }
+    .cat-certification { background:rgba(251,191,36,.1);  border:1px solid rgba(251,191,36,.3);  color:#fde68a; }
+    .cat-community     { background:rgba(167,139,250,.12);border:1px solid rgba(167,139,250,.3); color:#c4b5fd; }
+    .cat-ops           { background:rgba(20,184,166,.1);  border:1px solid rgba(20,184,166,.3);  color:#5eead4; }
+
+    /* ── Subscribe panel ── */
+    .subscribe-card {
+      background:rgba(8,14,30,.92);
+      border:1px solid rgba(59,130,246,.2);
+      border-radius:20px; overflow:hidden; position:relative;
+    }
+    .subscribe-glow {
+      position:absolute; top:-80px; right:-80px;
+      width:360px; height:360px;
+      background:radial-gradient(circle,rgba(59,130,246,.14) 0%,transparent 65%);
+      pointer-events:none;
+    }
+    .subscribe-glow-2 {
+      position:absolute; bottom:-60px; left:-40px;
+      width:260px; height:260px;
+      background:radial-gradient(circle,rgba(59,130,246,.08) 0%,transparent 65%);
+      pointer-events:none;
+    }
+
+    .input-field {
+      width:100%; background:rgba(2,6,23,.8);
+      border:1px solid rgba(59,130,246,.22);
+      border-radius:10px; padding:13px 18px;
+      font-family:'DM Sans',sans-serif; font-size:.9rem;
+      color:#e2e8f0; outline:none;
+      transition:border-color .25s, box-shadow .25s;
+    }
+    .input-field::placeholder { color:rgba(148,163,184,.4); }
+    .input-field:focus {
+      border-color:rgba(59,130,246,.55);
+      box-shadow:0 0 0 3px rgba(59,130,246,.1);
+    }
+
+    .btn-subscribe {
+      background:linear-gradient(135deg,#1d4ed8,#2563eb,#3b82f6);
+      box-shadow:0 0 30px rgba(59,130,246,.45), 0 0 60px rgba(59,130,246,.18);
+      border-radius:10px; padding:13px 28px;
+      font-family:'Syne',sans-serif; font-size:.9rem; font-weight:700;
+      color:#fff; cursor:pointer; border:none;
+      transition:box-shadow .3s, transform .2s;
+      white-space:nowrap;
+      animation:subscribePulse 3s ease-in-out infinite;
+    }
+    .btn-subscribe:hover {
+      box-shadow:0 0 50px rgba(59,130,246,.7), 0 0 90px rgba(59,130,246,.3);
+      transform:translateY(-1px);
+    }
+    @keyframes subscribePulse {
+      0%,100%{box-shadow:0 0 28px rgba(59,130,246,.4),0 0 56px rgba(59,130,246,.15);}
+      50%{box-shadow:0 0 44px rgba(59,130,246,.65),0 0 80px rgba(59,130,246,.28);}
+    }
+
+    /* Success state */
+    .subscribe-success {
+      display:none;
+      background:rgba(34,197,94,.1); border:1px solid rgba(34,197,94,.3);
+      border-radius:10px; padding:13px 18px;
+      color:#86efac; font-family:'DM Sans',sans-serif; font-size:.88rem;
+      align-items:center; gap:8px;
+    }
+
+    /* Animations */
+    .anim-1{opacity:0;animation:fadeUp .65s ease .1s forwards;}
+    .anim-2{opacity:0;animation:fadeUp .65s ease .22s forwards;}
+    .anim-3{opacity:0;animation:fadeUp .65s ease .34s forwards;}
+    .anim-4{opacity:0;animation:fadeUp .65s ease .46s forwards;}
+    .anim-5{opacity:0;animation:fadeUp .65s ease .58s forwards;}
+    @keyframes fadeUp { from{opacity:0;transform:translateY(22px);} to{opacity:1;transform:translateY(0);} }
+    .scroll-reveal{opacity:0;transform:translateY(28px);transition:opacity .65s ease,transform .65s ease;}
+    .scroll-reveal.visible{opacity:1;transform:translateY(0);}
+
+    #mobile-menu{display:none;}
+    #mobile-menu.open{display:block;}
+
+    /* Read more link */
+    .read-more {
+      display:inline-flex; align-items:center; gap:5px;
+      font-family:'DM Sans',sans-serif; font-size:.82rem; font-weight:500;
+      color:rgba(96,165,250,.7);
+      transition:color .2s, gap .2s;
+    }
+    .read-more:hover { color:#93c5fd; gap:8px; }
+  </style>
+</head>
+
+<body class="text-slate-100 relative">
+
+  <!-- ══════════════════════════════
+       NAV
+  ══════════════════════════════ -->
+  <header class="nav-glass fixed top-0 inset-x-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-16">
+
+      <a href="index.html" class="flex items-center gap-2.5 group">
+        <!-- HITS logo — Smart Card badge housing -->
+        <div class="relative flex items-center justify-center" style="width:36px;height:36px;">
+          <!-- Outer cyber-glow bloom -->
+          <div style="position:absolute;inset:-7px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,0.28) 0%,transparent 68%);pointer-events:none;z-index:0;"></div>
+          <!-- Secure housing ring -->
+          <div style="position:absolute;inset:-1px;border-radius:10px;border:1px solid rgba(96,165,250,0.55);background:transparent;pointer-events:none;z-index:3;box-shadow:0 0 14px rgba(59,130,246,0.3);"></div>
+          <div style="position:relative;z-index:2;
+                      border-radius:7px;overflow:hidden;
+                      width:32px;height:32px;
+                      display:flex;align-items:center;justify-content:center;
+                      background:#dbeafe;
+                      box-shadow:inset 0 0 0 1px rgba(147,197,253,0.6);">
+            <img src="hits_logo.png" alt="HITS"
+                 class="h-7 w-auto"
+                 style="border-radius:5px;"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+          </div>
+          <!-- Text fallback -->
+          <div style="display:none;position:relative;z-index:2;" class="w-8 h-8 rounded-md bg-electric-blue items-center justify-center shadow-[0_0_14px_rgba(59,130,246,0.7)]">
+            <span class="font-display font-800 text-white text-sm">H</span>
+          </div>
+        </div>
+        <span class="font-display font-700 text-white text-lg tracking-tight">HITS</span>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-7 font-body">
+        <a href="index.html" class="nav-link">Home</a>
+
+        <div class="dropdown-wrap">
+          <button class="dropdown-btn">
+            Products
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="dropdown-menu"><div class="dropdown-menu-inner">
+            <a href="products.html" class="dropdown-item">
+              <span class="d-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+              Product Hub
+            </a>
+            <div class="dropdown-divider"></div>
+            <a href="product.html" class="dropdown-item">
+              <span class="d-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></span>
+              Harpy Talon
+            </a>
+            <a href="https://raptor.harpyits.com" class="dropdown-item">
+              <span class="d-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span>
+              Raptor
+            </a>
+            <span class="dropdown-item coming-soon">
+              <span class="d-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+              CrestView PDS
+              <span class="coming-tag">Soon</span>
+            </span>
+          </div></div>
+        </div>
+
+        <a href="services.html"   class="nav-link">Services</a>
+        <a href="government.html" class="nav-link">Government</a>
+        <a href="about.html"      class="nav-link">About</a>
+        <a href="careers.html"    class="nav-link">Careers</a>
+        <a href="news.html"       class="nav-link active">News</a>
+        <a href="docs.html"       class="nav-link">Docs</a>
+      </nav>
+
+      <div class="hidden md:flex">
+        <a href="contact.html" class="btn-contact px-5 py-2 rounded-lg text-sm font-display font-600 text-white tracking-wide">
+          Contact Us
+        </a>
+      </div>
+
+      <button id="menu-toggle" class="md:hidden flex flex-col gap-1.5 p-1" aria-label="Toggle menu">
+        <span class="w-5 h-0.5 bg-slate-300 block"></span>
+        <span class="w-5 h-0.5 bg-slate-300 block"></span>
+        <span class="w-5 h-0.5 bg-slate-300 block"></span>
+      </button>
+    </div>
+
+    <div id="mobile-menu" class="md:hidden px-6 pb-5 pt-2 flex flex-col gap-4 font-body border-t border-white/5">
+      <a href="index.html" class="nav-link text-base">Home</a>
+      <div>
+        <button class="mob-dropdown-btn" id="mob-prod-btn">
+          Products
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="mob-dropdown-items" id="mob-prod-items">
+          <a href="products.html" class="dropdown-item" style="padding:8px 10px;font-size:.9rem;">Product Hub</a>
+          <a href="product.html"  class="dropdown-item" style="padding:8px 10px;font-size:.9rem;">Harpy Talon</a>
+          <a href="https://raptor.harpyits.com" class="dropdown-item" style="padding:8px 10px;font-size:.9rem;">Raptor</a>
+          <span class="dropdown-item coming-soon" style="padding:8px 10px;font-size:.9rem;">CrestView PDS <span class="coming-tag">Soon</span></span>
+        </div>
+      </div>
+      <a href="services.html"   class="nav-link text-base">Services</a>
+      <a href="government.html" class="nav-link text-base">Government</a>
+      <a href="about.html"      class="nav-link text-base">About</a>
+      <a href="careers.html"    class="nav-link text-base">Careers</a>
+      <a href="news.html"       class="nav-link active text-base">News</a>
+      <a href="docs.html"       class="nav-link text-base">Docs</a>
+      <a href="contact.html" class="btn-contact px-5 py-2.5 rounded-lg text-sm font-display font-600 text-white text-center">Contact Us</a>
+    </div>
+  </header>
+
+
+  <!-- ══════════════════════════════
+       NEWS HERO
+  ══════════════════════════════ -->
+  <section class="relative min-h-[70vh] flex flex-col justify-center px-6 pt-28 pb-16 overflow-hidden hero-grid">
+
+    <div class="absolute inset-0 pointer-events-none"
+         style="background:radial-gradient(ellipse 75% 50% at 50% 30%,rgba(59,130,246,.1) 0%,transparent 70%);">
+    </div>
+
+    <div class="relative z-10 max-w-7xl mx-auto w-full">
+
+      <!-- Live status row -->
+      <div class="anim-1 flex flex-wrap items-center gap-4 mb-6">
+        <!-- Live indicator -->
+        <div class="flex items-center gap-2.5 px-4 py-2 rounded-full"
+             style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);">
+          <div class="live-dot"></div>
+          <span class="font-mono text-xs font-600 text-green-400 uppercase tracking-wider">Live Status — Operational</span>
+        </div>
+        <span class="tag">Corporate Intelligence</span>
+        <span class="font-mono text-xs text-slate-600">Last updated: 2025</span>
+      </div>
+
+      <h1 class="anim-2 font-display font-800 text-5xl sm:text-6xl lg:text-[3.5rem] leading-[1.04] tracking-tight mb-5 max-w-4xl">
+        <span class="gradient-headline">Corporate Intelligence</span><br />
+        <span class="text-white">&amp; Mission </span><span class="text-electric-blue">Updates.</span>
+      </h1>
+
+      <p class="anim-3 font-body text-lg text-slate-400 leading-relaxed max-w-2xl mb-10">
+        Announcements, contract milestones, certifications, and thought leadership from the team
+        at Harpy I.T. Solutions INC. — the frontline of secure infrastructure intelligence.
+      </p>
+
+      <!-- Category filter chips -->
+      <div class="anim-4 flex flex-wrap gap-2" id="filter-row">
+        <button class="filter-chip active" data-cat="all">All Updates</button>
+        <button class="filter-chip" data-cat="announcement">Announcements</button>
+        <button class="filter-chip" data-cat="performance">Past Performance</button>
+        <button class="filter-chip" data-cat="certification">Certifications</button>
+        <button class="filter-chip" data-cat="community">Community</button>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .filter-chip {
+      padding:6px 16px; border-radius:999px; cursor:pointer;
+      font-family:'DM Sans',sans-serif; font-size:.78rem; font-weight:600;
+      letter-spacing:.04em; border:1px solid rgba(59,130,246,.2);
+      color:rgba(148,163,184,.65); background:transparent;
+      transition:all .2s;
+    }
+    .filter-chip:hover { border-color:rgba(59,130,246,.45); color:#93c5fd; }
+    .filter-chip.active {
+      background:rgba(59,130,246,.15); border-color:rgba(59,130,246,.45);
+      color:#93c5fd; box-shadow:0 0 16px rgba(59,130,246,.15);
+    }
+  </style>
+
+
+  <!-- ══════════════════════════════
+       BREAKING TICKER
+  ══════════════════════════════ -->
+  <div class="relative z-10 border-y border-slate-800/50 py-3 my-0"
+       style="background:rgba(2,6,23,.8);">
+    <div class="ticker-wrap">
+      <div class="ticker-track">
+        <!-- Set 1 -->
+        <div class="ticker-item"><div class="t-dot" style="background:#4ade80;box-shadow:0 0 6px rgba(74,222,128,.7);"></div>HITS ACHIEVES CMMC LEVEL 2 READINESS STATUS</div>
+        <div class="ticker-item"><div class="t-dot" style="background:#3b82f6;box-shadow:0 0 6px rgba(59,130,246,.7);"></div>Q4 2026: NEXT-GEN INFRASTRUCTURE ANALYTICS PLATFORM LAUNCH CONFIRMED</div>
+        <div class="ticker-item"><div class="t-dot" style="background:#fbbf24;box-shadow:0 0 6px rgba(251,191,36,.7);"></div>PAUL R. JAMES III JOINS ITEOE BOARD — MARYLAND</div>
+        <div class="ticker-item"><div class="t-dot" style="background:#4ade80;box-shadow:0 0 6px rgba(74,222,128,.7);"></div>SUCCESSFUL SUPPORT: DISA IE1 TRANSPORT TDM ELIMINATION</div>
+        <div class="ticker-item"><div class="t-dot" style="background:#a78bfa;box-shadow:0 0 6px rgba(167,139,250,.7);"></div>HARPY TALON v2.4 — GOLD GATE MODULE NOW LIVE</div>
+        <div class="ticker-item"><div class="t-dot" style="background:#3b82f6;box-shadow:0 0 6px rgba(59,130,246,.7);"></div>CAGE: 9M2N1 &nbsp;|&nbsp; UEI: UJ5VCLDTKK87 &nbsp;|&nbsp; SDVOSB VERIFIED</div>
+        <!-- Set 2 — duplicate for seamless loop -->
+        <div class="ticker-item"><div class="t-dot" style="background:#4ade80;box-shadow:0 0 6px rgba(74,222,128,.7);"></div>HITS ACHIEVES CMMC LEVEL 2 READINESS STATUS</div>
+        <div class="ticker-item"><div class="t-dot" style="background:#3b82f6;box-shadow:0 0 6px rgba(59,130,246,.7);"></div>Q4 2026: NEXT-GEN INFRASTRUCTURE ANALYTICS PLATFORM LAUNCH CONFIRMED</div>
+        <div class="ticker-item"><div class="t-dot" style="background:#fbbf24;box-shadow:0 0 6px rgba(251,191,36,.7);"></div>PAUL R. JAMES III JOINS ITEOE BOARD — MARYLAND</div>
+        <div class="ticker-item"><div class="t-dot" style="background:#4ade80;box-shadow:0 0 6px rgba(74,222,128,.7);"></div>SUCCESSFUL SUPPORT: DISA IE1 TRANSPORT TDM ELIMINATION</div>
+        <div class="ticker-item"><div class="t-dot" style="background:#a78bfa;box-shadow:0 0 6px rgba(167,139,250,.7);"></div>HARPY TALON v2.4 — GOLD GATE MODULE NOW LIVE</div>
+        <div class="ticker-item"><div class="t-dot" style="background:#3b82f6;box-shadow:0 0 6px rgba(59,130,246,.7);"></div>CAGE: 9M2N1 &nbsp;|&nbsp; UEI: UJ5VCLDTKK87 &nbsp;|&nbsp; SDVOSB VERIFIED</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════
+       FEATURED STORY — dynamic
+  ══════════════════════════════ -->
+  <section class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 py-16 scroll-reveal">
+    <div class="flex items-center gap-4 mb-8">
+      <div class="blue-line"></div>
+      <span class="font-display font-600 text-slate-500 text-sm tracking-widest uppercase">Featured Story</span>
+    </div>
+    <!-- Featured card injected by JS -->
+    <div id="featured-skeleton" class="featured-card" style="min-height:320px;background:rgba(10,18,36,.8);">
+      <div class="p-10 flex flex-col gap-4" style="animation:skeletonPulse 1.5s ease-in-out infinite;">
+        <div style="height:14px;width:20%;background:rgba(59,130,246,.1);border-radius:4px;"></div>
+        <div style="height:28px;width:70%;background:rgba(59,130,246,.08);border-radius:4px;"></div>
+        <div style="height:14px;width:90%;background:rgba(59,130,246,.05);border-radius:4px;"></div>
+        <div style="height:14px;width:80%;background:rgba(59,130,246,.04);border-radius:4px;"></div>
+      </div>
+    </div>
+    <div id="featured-container" style="display:none;"></div>
+  </section>
+
+
+  <!-- ══════════════════════════════
+       NEWS FEED GRID — dynamic
+  ══════════════════════════════ -->
+  <section class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pb-20 scroll-reveal">
+    <div class="flex items-center gap-4 mb-8">
+      <div class="blue-line"></div>
+      <span class="font-display font-600 text-slate-500 text-sm tracking-widest uppercase">Recent Updates</span>
+    </div>
+
+    <!-- Skeleton grid -->
+    <div id="grid-skeleton" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div class="news-card" style="min-height:200px;background:rgba(10,18,36,.5);">
+        <div class="h-1.5 w-full" style="background:rgba(59,130,246,.15);"></div>
+        <div class="p-6 flex flex-col gap-3" style="animation:skeletonPulse 1.5s ease-in-out infinite .1s;">
+          <div style="height:12px;width:30%;background:rgba(59,130,246,.1);border-radius:4px;"></div>
+          <div style="height:16px;width:80%;background:rgba(59,130,246,.07);border-radius:4px;"></div>
+          <div style="height:12px;width:95%;background:rgba(59,130,246,.05);border-radius:4px;"></div>
+          <div style="height:12px;width:70%;background:rgba(59,130,246,.04);border-radius:4px;"></div>
+        </div>
+      </div>
+      <div class="news-card" style="min-height:200px;background:rgba(10,18,36,.5);">
+        <div class="h-1.5 w-full" style="background:rgba(34,197,94,.12);"></div>
+        <div class="p-6 flex flex-col gap-3" style="animation:skeletonPulse 1.5s ease-in-out infinite .25s;">
+          <div style="height:12px;width:35%;background:rgba(34,197,94,.08);border-radius:4px;"></div>
+          <div style="height:16px;width:75%;background:rgba(34,197,94,.05);border-radius:4px;"></div>
+          <div style="height:12px;width:90%;background:rgba(34,197,94,.04);border-radius:4px;"></div>
+        </div>
+      </div>
+      <div class="news-card" style="min-height:200px;background:rgba(10,18,36,.5);">
+        <div class="h-1.5 w-full" style="background:rgba(251,191,36,.1);"></div>
+        <div class="p-6 flex flex-col gap-3" style="animation:skeletonPulse 1.5s ease-in-out infinite .4s;">
+          <div style="height:12px;width:28%;background:rgba(251,191,36,.08);border-radius:4px;"></div>
+          <div style="height:16px;width:85%;background:rgba(251,191,36,.05);border-radius:4px;"></div>
+          <div style="height:12px;width:60%;background:rgba(251,191,36,.04);border-radius:4px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live grid -->
+    <div id="news-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" style="display:none;"></div>
+
+    <!-- Error state -->
+    <div id="news-error" style="display:none;" class="news-card p-8 text-center">
+      <p class="font-mono text-xs text-slate-500 mb-2 uppercase tracking-widest">Could not load news.json</p>
+      <p class="font-body text-sm text-slate-600">Run <code class="font-mono text-electric-blue/70">python3 -m http.server 8080</code> from the HITS directory.</p>
+    </div>
+  </section>
+
+  <style>
+    @keyframes skeletonPulse { 0%,100%{opacity:.6;} 50%{opacity:1;} }
+    @keyframes ringExpand { 0%{transform:scale(1);opacity:.6;} 100%{transform:scale(1.5);opacity:0;} }
+  </style>
+
+  <script>
+  // ── news.json renderer ──────────────────────────────────────────────────────
+  (function () {
+
+    // ── Category theme palette ────────────────────────────────────────────────
+    const CAT_THEMES = {
+      blue:   { bar:'linear-gradient(90deg,#1e3a8a,#2563eb,#60a5fa)', tagBg:'rgba(59,130,246,.12)',  tagBorder:'rgba(59,130,246,.3)',  tagClr:'#93c5fd',  iconBg:'rgba(59,130,246,.1)',  iconBorder:'rgba(59,130,246,.25)',  iconClr:'#60a5fa', tagBgH:'rgba(59,130,246,.08)', tagBorderH:'rgba(59,130,246,.2)', tagClrH:'rgba(147,197,253,.7)' },
+      green:  { bar:'linear-gradient(90deg,#166534,#22c55e,#4ade80)', tagBg:'rgba(34,197,94,.12)',   tagBorder:'rgba(34,197,94,.3)',   tagClr:'#86efac',  iconBg:'rgba(34,197,94,.1)',   iconBorder:'rgba(34,197,94,.25)',   iconClr:'#4ade80', tagBgH:'rgba(34,197,94,.08)',  tagBorderH:'rgba(34,197,94,.2)',  tagClrH:'rgba(134,239,172,.7)' },
+      gold:   { bar:'linear-gradient(90deg,#92400e,#f59e0b,#fde68a)', tagBg:'rgba(251,191,36,.1)',   tagBorder:'rgba(251,191,36,.3)',  tagClr:'#fde68a',  iconBg:'rgba(251,191,36,.1)',  iconBorder:'rgba(251,191,36,.25)',  iconClr:'#fbbf24', tagBgH:'rgba(251,191,36,.08)', tagBorderH:'rgba(251,191,36,.2)', tagClrH:'rgba(253,230,138,.7)' },
+      violet: { bar:'linear-gradient(90deg,#4c1d95,#7c3aed,#c4b5fd)', tagBg:'rgba(167,139,250,.12)', tagBorder:'rgba(167,139,250,.3)', tagClr:'#c4b5fd',  iconBg:'rgba(167,139,250,.1)', iconBorder:'rgba(167,139,250,.25)', iconClr:'#a78bfa', tagBgH:'rgba(167,139,250,.08)',tagBorderH:'rgba(167,139,250,.2)',tagClrH:'rgba(196,181,253,.7)' },
+    };
+
+    // ── Category SVG icons ────────────────────────────────────────────────────
+    const CAT_ICONS = {
+      blue:   '<path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>',
+      green:  '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+      gold:   '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/>',
+      violet: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+    };
+
+    // ── Build featured card ───────────────────────────────────────────────────
+    function buildFeatured(item) {
+      const t = CAT_THEMES[item.categoryTheme] || CAT_THEMES.blue;
+      const tagsHtml = (item.tags||[]).map(tag =>
+        `<span class="font-mono text-xs px-2.5 py-1 rounded" style="background:${t.tagBg};border:1px solid ${t.tagBorder};color:${t.tagClr};">${tag}</span>`
+      ).join('');
+
+      const div = document.createElement('div');
+      div.className = 'featured-card';
+      div.style.cssText = 'opacity:0;transition:opacity .5s ease;';
+      div.innerHTML = `
+        <div class="featured-img">
+          <div class="featured-img-grid"></div>
+          <div class="featured-img-glow"></div>
+          <div class="relative z-10 flex items-center justify-center py-14 px-8">
+            <div class="flex flex-col items-center gap-4">
+              <div class="relative flex items-center justify-center" style="width:110px;height:110px;">
+                <div class="absolute inset-0 rounded-full border border-electric-blue/20" style="animation:ringExpand 3s ease-out infinite;"></div>
+                <div class="absolute inset-3 rounded-full border border-electric-blue/30" style="animation:ringExpand 3s ease-out infinite .5s;"></div>
+                <div class="w-14 h-14 rounded-full flex items-center justify-center" style="background:${t.iconBg};border:1px solid ${t.iconBorder};box-shadow:0 0 30px ${t.tagBg};">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${t.iconClr}" stroke-width="1.6">${CAT_ICONS[item.categoryTheme]||CAT_ICONS.blue}</svg>
+                </div>
+              </div>
+              <div class="text-center">
+                <p class="font-mono text-xs uppercase tracking-widest" style="color:${t.tagClr};opacity:.7;">${item.category}</p>
+                <p class="font-mono text-xs" style="color:${t.tagClr};opacity:.4;">${item.date}</p>
+              </div>
+            </div>
+          </div>
+          <div class="absolute top-5 left-6 flex items-center gap-2 px-3 py-1.5 rounded-lg" style="background:rgba(2,6,23,.8);border:1px solid rgba(59,130,246,.25);">
+            <span class="font-mono text-xs text-electric-blue">PRESS RELEASE</span>
+          </div>
+          <div class="absolute top-5 right-6">
+            <span class="tag" style="background:${t.tagBg};border-color:${t.tagBorder};color:${t.tagClr};">${item.category}</span>
+          </div>
+        </div>
+        <div class="p-8 lg:p-10">
+          <div class="flex flex-wrap items-center gap-3 mb-4">
+            <span class="font-mono text-xs text-slate-500">${item.date} · Harpy I.T. Solutions INC.</span>
+            <span class="font-mono text-xs" style="color:${t.tagClr};opacity:.5;">— Baltimore, MD</span>
+          </div>
+          <h2 class="font-display font-800 text-2xl lg:text-3xl text-white mb-4 leading-snug">${item.headline}</h2>
+          <p class="font-body text-slate-400 leading-relaxed mb-6 max-w-3xl">${item.body}</p>
+          <div class="flex flex-wrap items-center gap-4">
+            <a href="${item.link}" class="btn-contact px-6 py-2.5 rounded-xl font-display font-700 text-white text-sm">
+              Read Full Story
+            </a>
+            <div class="flex flex-wrap gap-2 ml-auto">${tagsHtml}</div>
+          </div>
+        </div>`;
+      return div;
+    }
+
+    // ── Build a feed card ─────────────────────────────────────────────────────
+    function buildCard(item) {
+      const t = CAT_THEMES[item.categoryTheme] || CAT_THEMES.blue;
+      const icon = CAT_ICONS[item.categoryTheme] || CAT_ICONS.blue;
+      const tagsHtml = (item.tags||[]).map(tag =>
+        `<span class="font-mono text-xs px-2 py-0.5 rounded" style="background:${t.tagBgH};border:1px solid ${t.tagBorderH};color:${t.tagClrH};">${tag}</span>`
+      ).join('');
+
+      const div = document.createElement('div');
+      div.className = 'news-card';
+      div.dataset.category = item.categoryTheme;
+      div.style.cssText = 'opacity:0;transform:translateY(14px);transition:opacity .45s ease,transform .45s ease;';
+      div.innerHTML = `
+        <div class="h-1.5" style="background:${t.bar};"></div>
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-4">
+            <span class="tag text-xs" style="background:${t.tagBg};border-color:${t.tagBorder};color:${t.tagClr};">${item.category}</span>
+            <span class="font-mono text-xs text-slate-600">${item.date}</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:${t.iconBg};border:1px solid ${t.iconBorder};">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${t.iconClr}" stroke-width="1.8">${icon}</svg>
+          </div>
+          <h3 class="font-display font-700 text-base text-white mb-2 leading-snug">${item.headline}</h3>
+          <p class="font-body text-sm text-slate-500 leading-relaxed mb-5">${item.subheading}</p>
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div class="flex flex-wrap gap-1.5">${tagsHtml}</div>
+            <a href="${item.link}" class="read-more">Read more
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>`;
+      return div;
+    }
+
+    // ── Render all ────────────────────────────────────────────────────────────
+    function renderNews(items) {
+      // Featured = first item with status 'featured', else first item
+      const featured = items.find(i => i.status === 'featured') || items[0];
+      const feed     = items.filter(i => i.id !== featured.id);
+
+      // Featured
+      const featSkel = document.getElementById('featured-skeleton');
+      const featCont = document.getElementById('featured-container');
+      featSkel.style.display = 'none';
+      featCont.style.display = 'block';
+      const fc = buildFeatured(featured);
+      featCont.appendChild(fc);
+      requestAnimationFrame(() => { fc.style.opacity = '1'; });
+
+      // Feed grid
+      const gridSkel = document.getElementById('grid-skeleton');
+      const grid     = document.getElementById('news-grid');
+      gridSkel.style.display = 'none';
+      grid.style.display     = 'grid';
+
+      feed.forEach((item, i) => {
+        const card = buildCard(item);
+        grid.appendChild(card);
+        setTimeout(() => {
+          card.style.opacity   = '1';
+          card.style.transform = 'translateY(0)';
+        }, 80 + i * 110);
+      });
+
+      // Wire up filter chips to the live grid
+      document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          const cat = chip.dataset.cat;
+          grid.querySelectorAll('.news-card').forEach(card => {
+            if (cat === 'all' || card.dataset.category === cat) {
+              card.style.display = '';
+              requestAnimationFrame(() => { card.style.opacity='1'; card.style.transform='translateY(0)'; });
+            } else {
+              card.style.opacity='0';
+              setTimeout(() => { card.style.display='none'; }, 220);
+            }
+          });
+        });
+      });
+    }
+
+    // ── Fetch ─────────────────────────────────────────────────────────────────
+    fetch('news.json')
+      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(renderNews)
+      .catch(err => {
+        console.warn('news.json fetch failed:', err.message);
+        document.getElementById('featured-skeleton').style.display = 'none';
+        document.getElementById('grid-skeleton').style.display     = 'none';
+        document.getElementById('news-error').style.display        = 'block';
+      });
+  })();
+  </script>
+
+  <!-- ══════════════════════════════
+       SUBSCRIBE — BRIEFING SIGNUP
+  ══════════════════════════════ -->
+  <section class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pb-28 scroll-reveal">
+
+    <div class="subscribe-card">
+      <div class="subscribe-glow"></div>
+      <div class="subscribe-glow-2"></div>
+
+      <!-- Top accent line -->
+      <div style="height:2px;background:linear-gradient(90deg,transparent,rgba(59,130,246,.6) 40%,rgba(96,165,250,.8) 60%,transparent);"></div>
+
+      <div class="relative z-10 p-8 lg:p-14">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+
+          <!-- Left: copy -->
+          <div>
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center"
+                   style="background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.3);box-shadow:0 0 20px rgba(59,130,246,.2);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.9 13.5a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.81 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+              </div>
+              <span class="tag">Corporate Briefing List</span>
+            </div>
+
+            <h2 class="font-display font-800 text-3xl lg:text-4xl text-white mb-4 leading-tight">
+              Mission Intelligence.<br />
+              <span class="text-electric-blue">Delivered to You.</span>
+            </h2>
+            <p class="font-body text-slate-400 leading-relaxed mb-6 max-w-md">
+              Join our corporate mailing list for quarterly capability briefings, contract announcements,
+              product updates, and clearance-relevant cybersecurity intelligence from the HITS team.
+            </p>
+
+            <!-- Trust signals -->
+            <div class="flex flex-col gap-2">
+              <div class="flex items-center gap-2.5 text-sm font-body text-slate-500">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                No spam — one briefing per quarter, maximum
+              </div>
+              <div class="flex items-center gap-2.5 text-sm font-body text-slate-500">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                Unsubscribe instantly at any time
+              </div>
+              <div class="flex items-center gap-2.5 text-sm font-body text-slate-500">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                Your data never shared with third parties
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: form -->
+          <div>
+            <div class="bento-card p-6 lg:p-8" style="background:rgba(7,12,28,.8);">
+              <p class="font-mono text-xs text-slate-500 uppercase tracking-widest mb-5">Join the Briefing List</p>
+
+              <div class="flex flex-col gap-4" id="subscribe-form">
+                <!-- Name -->
+                <div>
+                  <label class="font-mono text-xs text-slate-500 uppercase tracking-wider mb-2 block">Full Name</label>
+                  <input type="text" id="sub-name" class="input-field" placeholder="Your Name" />
+                </div>
+
+                <!-- Email -->
+                <div>
+                  <label class="font-mono text-xs text-slate-500 uppercase tracking-wider mb-2 block">Work Email</label>
+                  <input type="email" id="sub-email" class="input-field" placeholder="you@agency.gov" />
+                </div>
+
+                <!-- Organization -->
+                <div>
+                  <label class="font-mono text-xs text-slate-500 uppercase tracking-wider mb-2 block">Organization (Optional)</label>
+                  <input type="text" id="sub-org" class="input-field" placeholder="DISA, DoD, Federal Contractor..." />
+                </div>
+
+                <!-- Interest selector -->
+                <div>
+                  <label class="font-mono text-xs text-slate-500 uppercase tracking-wider mb-2 block">Primary Interest</label>
+                  <select id="sub-interest" class="input-field" style="appearance:none;cursor:pointer;">
+                    <option value="" style="background:#0f172a;">Select an area...</option>
+                    <option value="harpy-talon" style="background:#0f172a;">Harpy Talon SaaS Platform</option>
+                    <option value="government" style="background:#0f172a;">Government Contracting</option>
+                    <option value="cybersecurity" style="background:#0f172a;">Cybersecurity Services</option>
+                    <option value="careers" style="background:#0f172a;">Careers &amp; Opportunities</option>
+                    <option value="all" style="background:#0f172a;">All Updates</option>
+                  </select>
+                </div>
+
+                <!-- Submit -->
+                <button class="btn-subscribe w-full mt-1" onclick="handleSubscribe()">
+                  Join the Briefing List
+                </button>
+              </div>
+
+              <!-- Success state -->
+              <div class="subscribe-success" id="subscribe-success">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                <div>
+                  <p class="font-display font-700 text-sm text-green-300">You're on the list.</p>
+                  <p class="font-body text-xs text-green-500/70 mt-0.5">Expect your first briefing within the quarter. Welcome to HITS.</p>
+                </div>
+              </div>
+
+              <!-- Entity reference -->
+              <div class="mt-5 pt-4 border-t border-slate-800/60">
+                <p class="font-mono text-xs text-slate-700 text-center">
+                  CAGE: 9M2N1 &nbsp;·&nbsp; UEI: UJ5VCLDTKK87 &nbsp;·&nbsp; Harpy I.T. Solutions INC.
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════
+       FOOTER
+  ══════════════════════════════ -->
+  <footer class="relative z-10 border-t border-slate-800/60 py-10 px-6 lg:px-10">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="flex items-center gap-2.5">
+        <span style="display:inline-flex;align-items:center;justify-content:center;background:#dbeafe;border-radius:6px;padding:2px;box-shadow:0 0 10px rgba(59,130,246,0.3),inset 0 0 0 1px rgba(147,197,253,0.5);"><img src="hits_logo.png" alt="HITS" class="h-7 w-auto" style="border-radius:4px;display:block;" onerror="this.parentElement.style.display='none';this.nextElementSibling.style.display='flex';" /></span>
+        <div style="display:none;" class="items-center gap-2">
+          <div class="w-7 h-7 rounded-md bg-electric-blue flex items-center justify-center shadow-[0_0_10px_rgba(59,130,246,0.5)]">
+            <span class="font-display font-800 text-white text-xs">H</span>
+          </div>
+          <span class="font-display font-600 text-white text-base tracking-tight">HITS</span>
+        </div>
+      </div>
+      <p class="font-body text-slate-600 text-sm">&copy; 2023 Harpy I.T. Solutions INC. All rights reserved.</p>
+      <div class="flex items-center gap-5">
+        <a href="about.html"   class="text-slate-600 hover:text-slate-400 text-sm transition-colors">About</a>
+        <a href="careers.html" class="text-slate-600 hover:text-slate-400 text-sm transition-colors">Careers</a>
+        <a href="contact.html" class="text-slate-600 hover:text-slate-400 text-sm transition-colors">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+
+  <script>
+    // Mobile menu
+    document.getElementById('menu-toggle').addEventListener('click', () => {
+      document.getElementById('mobile-menu').classList.toggle('open');
+    });
+
+    // Products mobile accordion
+    const mobBtn = document.getElementById('mob-prod-btn');
+    if (mobBtn) {
+      mobBtn.addEventListener('click', () => {
+        mobBtn.classList.toggle('open');
+        document.getElementById('mob-prod-items').classList.toggle('open');
+      });
+    }
+
+    // Category filter
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        const cat = chip.dataset.cat;
+        document.querySelectorAll('#news-grid .news-card').forEach(card => {
+          if (cat === 'all' || card.dataset.category === cat) {
+            card.style.display = '';
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(10px)';
+            requestAnimationFrame(() => {
+              card.style.transition = 'opacity .35s ease, transform .35s ease';
+              card.style.opacity = '1';
+              card.style.transform = 'translateY(0)';
+            });
+          } else {
+            card.style.transition = 'opacity .2s ease';
+            card.style.opacity = '0';
+            setTimeout(() => { card.style.display = 'none'; }, 200);
+          }
+        });
+      });
+    });
+
+    // Subscribe handler
+    function handleSubscribe() {
+      const name  = document.getElementById('sub-name').value.trim();
+      const email = document.getElementById('sub-email').value.trim();
+      if (!name || !email) {
+        document.getElementById('sub-email').style.borderColor = 'rgba(239,68,68,.6)';
+        document.getElementById('sub-email').focus();
+        return;
+      }
+      document.getElementById('subscribe-form').style.display = 'none';
+      document.getElementById('subscribe-success').style.display = 'flex';
+    }
+
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.07 });
+    document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

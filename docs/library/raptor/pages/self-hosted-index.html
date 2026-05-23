@@ -1,0 +1,121 @@
+<div class="docs-page">
+<h1>Self-Hosted Deployment</h1>
+<p class="docs-page-description">Deploy Raptor on your own infrastructure with Docker Compose or a standalone binary.</p>
+<h1 id="self-hosted-deployment">Self-Hosted Deployment</h1>
+
+<p>Raptor ships as a single Go binary (<code>control-panel</code>) backed by PostgreSQL 16+. The Docker Compose bundle is the fastest path to a running instance. For production, you can run the binary directly, use the provided container images, or deploy behind your own orchestration layer.</p>
+
+<h2 id="prerequisites">Prerequisites</h2>
+
+<p>| Requirement | Minimum |<br>|---|---|<br>| Docker Engine | 24+ with Compose v2 |<br>| PostgreSQL | 16+ (included in Compose bundle) |<br>| AI provider key | At least one: Anthropic, OpenAI, Gemini, or Together AI |<br>| Memory | 512 MB (control-panel), 256 MB (MCP server) |<br>| Disk | 1 GB base + database growth |</p>
+
+<p>Optional:</p>
+
+<ul>
+<li><strong>Clerk account</strong> for SSO/OAuth in production</li>
+<li><strong>Stripe account</strong> for usage-based billing</li>
+<li><strong>Ed25519 signing key</strong> for build attestation</li>
+</ul>
+
+<h2 id="architecture">Architecture</h2>
+
+<pre><code>┌──────────────────────────────────────────────────────────┐
+│  Docker Compose                                          │
+│                                                          │
+│  ┌────────────────┐   ┌─────────────────┐               │
+│  │  PostgreSQL 16  │◄──│  migrate         │               │
+│  │  :5432          │   │  (runs on start) │               │
+│  └───────▲─────────┘   └─────────────────┘               │
+│          │                                               │
+│  ┌───────┴─────────┐   ┌─────────────────┐               │
+│  │  control-panel   │◄──│  mcp-server      │               │
+│  │  :4000           │   │  :4001           │               │
+│  │  Go binary +     │   │  MCP protocol    │               │
+│  │  Preact frontend │   │  endpoint        │               │
+│  └──────────────────┘   └─────────────────┘               │
+│                                                          │
+│  Volume: pgdata (persistent)                             │
+└──────────────────────────────────────────────────────────┘</code></pre>
+
+<p><strong>Startup order:</strong> PostgreSQL starts first. The <code>migrate</code> container applies schema migrations automatically once Postgres is healthy. <code>control-panel</code> starts after migrations complete. <code>mcp-server</code> starts after <code>control-panel</code> passes its health check.</p>
+
+<h2 id="quick-start">Quick Start</h2>
+
+<pre><code class="language-bash"># Clone and configure
+git clone https://github.com/pjamesiii/raptor.git &amp;&amp; cd raptor
+cp .env.example .env
+
+<h1 id="edit-env-set-at-minimum">Edit .env — set at minimum:</h1>
+<h1 id="raptor-access-token-operator-token-for-api-access">RAPTOR_ACCESS_TOKEN   (operator token for API access)</h1>
+<h1 id="anthropic-api-key-or-another-provider-key">ANTHROPIC_API_KEY     (or another provider key)</h1>
+
+<h1 id="start-all-services">Start all services</h1>
+docker compose up -d</code></pre>
+
+<p>Services start on:</p>
+
+<p>| Service | URL | Purpose |<br>|---|---|---|<br>| Control Panel | <code>http://localhost:4000</code> | API + web interface |<br>| MCP Server | <code>http://localhost:4001</code> | MCP protocol endpoint |<br>| PostgreSQL | <code>localhost:5432</code> | Database (internal) |</p>
+
+<h2 id="verify-health">Verify Health</h2>
+
+<p>After startup, confirm all services are running:</p>
+
+<pre><code class="language-bash"># Liveness — is the process up?
+curl http://localhost:4000/api/health
+
+<h1 id="readiness-is-the-database-connected-and-migrations-applied">Readiness — is the database connected and migrations applied?</h1>
+curl http://localhost:4000/api/ready
+
+<h1 id="dependency-health-per-dependency-breakdown">Dependency health — per-dependency breakdown</h1>
+curl http://localhost:4000/api/health/dependencies</code></pre>
+
+<p>Expected response from <code>/api/health</code>:</p>
+
+<pre><code class="language-json">{"status": "ok"}</code></pre>
+
+<p>Expected response from <code>/api/ready</code>:</p>
+
+<pre><code class="language-json">{"status": "ready", "database": "connected"}</code></pre>
+
+<h2 id="updating">Updating</h2>
+
+<pre><code class="language-bash">git pull
+docker compose build
+docker compose up -d</code></pre>
+
+<p>Migrations run automatically on startup. The <code>migrate</code> container applies any new migrations before the control-panel starts.</p>
+
+<h2 id="stopping-and-removing">Stopping and Removing</h2>
+
+<pre><code class="language-bash"># Stop services (preserves data)
+docker compose down
+
+<h1 id="stop-and-remove-all-data-destructive">Stop and remove all data (destructive)</h1>
+docker compose down -v</code></pre>
+
+<h2 id="production-checklist">Production Checklist</h2>
+
+<p>Before exposing Raptor to traffic, confirm:</p>
+
+<ul>
+<li>[ ] <code>RAPTOR_ENV=production</code> is set</li>
+<li>[ ] <code>RAPTOR_ACCESS_TOKEN</code> is a strong, unique token</li>
+<li>[ ] At least one AI provider key is configured</li>
+<li>[ ] TLS terminates before Raptor (reverse proxy or load balancer)</li>
+<li>[ ] Health endpoints are monitored (<code>/api/health</code>, <code>/api/ready</code>)</li>
+<li>[ ] Database backups are scheduled</li>
+<li>[ ] Clerk SSO or Founder Key authentication is configured</li>
+<li>[ ] Secrets are stored in a secret manager, not in <code>.env</code> files on disk</li>
+</ul>
+
+<p>See the <a href="/self-hosted/production">Production Hardening</a> guide for full details.</p>
+
+<h2 id="next-steps">Next Steps</h2>
+
+<ul>
+<li><a href="/self-hosted/environment-variables">Environment Variables</a> — complete configuration reference</li>
+<li><a href="/self-hosted/database">Database</a> — PostgreSQL setup, migrations, backup/restore, retention</li>
+<li><a href="/self-hosted/providers">Providers</a> — AI provider configuration and failover</li>
+<li><a href="/self-hosted/production">Production</a> — TLS, auth, monitoring, disaster recovery</li>
+</ul>
+</div>

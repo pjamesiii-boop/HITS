@@ -1,0 +1,181 @@
+<div class="docs-page">
+<h1>Files API</h1>
+<p class="docs-page-description">Upload, manage, and revoke files within governed conversation nests.</p>
+<h1 id="files-api">Files API</h1>
+
+<p>The Files API manages file uploads within nests. Uploaded files are available as context for governed interactions. Images are processed with OCR automatically.</p>
+
+<h2 id="post-api-nests-nest-id-files">POST /api/nests/{nest_id}/files</h2>
+
+<p>Upload a file to a nest via multipart form data. Maximum file size is 10 MB. Image files (PNG, JPG, TIFF, PDF) are processed with OCR and the extracted text is made available as context.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p>| Parameter | Type | Description |<br>|-----------|------|-------------|<br>| <code>nest_id</code> | string | Target nest ID |</p>
+
+<h3 id="request">Request</h3>
+
+<p>Multipart form data with a <code>file</code> field.</p>
+
+<pre><code class="language-bash">curl -X POST \
+  -H "X-Raptor-Key: rpt_live_abc123def456" \
+  -F "file=@report.pdf" \
+  https://raptor.harpyits.com/api/nests/nest_f7a2c9e1/files</code></pre>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "file": {
+    "id": "file_abc123",
+    "nest_id": "nest_f7a2c9e1",
+    "filename": "report.pdf",
+    "content_type": "application/pdf",
+    "size_bytes": 245760,
+    "ocr_available": true,
+    "created_at": "2026-05-21T18:00:00Z"
+  }
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 400 | <code>validation_error</code> | No file provided or invalid format |<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 404 | <code>not_found</code> | Nest does not exist |<br>| 413 | <code>payload_too_large</code> | File exceeds 10 MB limit |</p>
+
+<hr>
+
+<h2 id="get-api-nests-nest-id-files">GET /api/nests/{nest_id}/files</h2>
+
+<p>List files uploaded to a nest.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p>| Parameter | Type | Description |<br>|-----------|------|-------------|<br>| <code>nest_id</code> | string | Nest ID |</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "files": [
+    {
+      "id": "file_abc123",
+      "nest_id": "nest_f7a2c9e1",
+      "filename": "report.pdf",
+      "content_type": "application/pdf",
+      "size_bytes": 245760,
+      "ocr_available": true,
+      "created_at": "2026-05-21T18:00:00Z"
+    },
+    {
+      "id": "file_def456",
+      "nest_id": "nest_f7a2c9e1",
+      "filename": "screenshot.png",
+      "content_type": "image/png",
+      "size_bytes": 89200,
+      "ocr_available": true,
+      "created_at": "2026-05-21T17:50:00Z"
+    }
+  ]
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 404 | <code>not_found</code> | Nest does not exist |</p>
+
+<hr>
+
+<h2 id="get-api-files-file-id">GET /api/files/{file_id}</h2>
+
+<p>Get metadata for a specific file.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p>| Parameter | Type | Description |<br>|-----------|------|-------------|<br>| <code>file_id</code> | string | File ID |</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "file": {
+    "id": "file_abc123",
+    "nest_id": "nest_f7a2c9e1",
+    "filename": "report.pdf",
+    "content_type": "application/pdf",
+    "size_bytes": 245760,
+    "ocr_available": true,
+    "ocr_text_length": 12480,
+    "created_at": "2026-05-21T18:00:00Z",
+    "revoked": false
+  }
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 404 | <code>not_found</code> | File does not exist |</p>
+
+<hr>
+
+<h2 id="delete-api-files-file-id">DELETE /api/files/{file_id}</h2>
+
+<p>Revoke a file. This is a soft-delete: the file is no longer available as context for new interactions, but the audit record of its upload and usage is retained for governance compliance.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p>| Parameter | Type | Description |<br>|-----------|------|-------------|<br>| <code>file_id</code> | string | File ID |</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "revoked_at": "2026-05-21T19:00:00Z"
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 404 | <code>not_found</code> | File does not exist |<br>| 409 | <code>conflict</code> | File already revoked |</p>
+
+<hr>
+
+<h2 id="post-api-files-content">POST /api/files/content</h2>
+
+<p>Upload a file via JSON with base64-encoded content. Designed for MCP integrations and SDK usage where multipart form data is not convenient.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="request-body">Request Body</h3>
+
+<p>| Field | Type | Required | Description |<br>|-------|------|----------|-------------|<br>| <code>nest_id</code> | string | Yes | Target nest ID |<br>| <code>filename</code> | string | Yes | Original filename |<br>| <code>content_type</code> | string | Yes | MIME type |<br>| <code>content</code> | string | Yes | Base64-encoded file content |</p>
+
+<pre><code class="language-json">{
+  "nest_id": "nest_f7a2c9e1",
+  "filename": "data.csv",
+  "content_type": "text/csv",
+  "content": "bmFtZSxhbW91bnQKQWxwaGEsMTAwCkJldGEsMjAw..."
+}</code></pre>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "file": {
+    "id": "file_ghi789",
+    "nest_id": "nest_f7a2c9e1",
+    "filename": "data.csv",
+    "content_type": "text/csv",
+    "size_bytes": 1024,
+    "ocr_available": false,
+    "created_at": "2026-05-21T18:10:00Z"
+  }
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 400 | <code>validation_error</code> | Missing required fields or invalid base64 |<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 404 | <code>not_found</code> | Nest does not exist |<br>| 413 | <code>payload_too_large</code> | Decoded content exceeds 10 MB limit |</p>
+</div>

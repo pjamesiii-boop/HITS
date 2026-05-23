@@ -1,0 +1,132 @@
+<div class="docs-page">
+<h1>REST API Integration</h1>
+<p class="docs-page-description">Authenticate, send governed messages, read trust boundaries, and query audit trails via the Raptor REST API.</p>
+<h1 id="rest-api-integration">REST API Integration</h1>
+
+<p>Connect any backend or frontend to Raptor's governance substrate over HTTP. This guide walks through authentication, your first governed message, interpreting trust boundaries, and querying the audit trail.</p>
+
+<h2 id="prerequisites">Prerequisites</h2>
+
+<ul>
+<li>A running Raptor instance (cloud at <code>https://raptor.harpyits.com</code> or self-hosted at <code>http://localhost:4000</code>)</li>
+<li>An API key (created via Settings UI or the <code>/api/keys</code> endpoint)</li>
+</ul>
+
+<h2 id="1-authenticate">1. Authenticate</h2>
+
+<p>Raptor API keys use the <code>rpt_</code> prefix. Pass them in the <code>Authorization</code> header or the <code>X-Raptor-Key</code> header:</p>
+
+<pre><code class="language-bash"># Option A: Bearer token
+curl -H "Authorization: Bearer rpt_a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6" \
+  https://raptor.harpyits.com/api/nests
+
+<h1 id="option-b-x-raptor-key-header">Option B: X-Raptor-Key header</h1>
+curl -H "X-Raptor-Key: rpt_a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6" \
+  https://raptor.harpyits.com/api/nests</code></pre>
+
+<p>Include the API version header on every request:</p>
+
+<pre><code class="language-bash">-H "X-Raptor-API-Version: 2026-05-09"</code></pre>
+
+<h2 id="2-send-your-first-governed-message">2. Send your first governed message</h2>
+
+<pre><code class="language-bash">curl -X POST https://raptor.harpyits.com/api/chat \
+  -H "Authorization: Bearer rpt_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{"message": "What are the risks of deploying on Friday?"}'</code></pre>
+
+<pre><code class="language-javascript">const res = await fetch("https://raptor.harpyits.com/api/chat", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer rpt_your_key",
+    "Content-Type": "application/json",
+    "X-Raptor-API-Version": "2026-05-09",
+  },
+  body: JSON.stringify({ message: "What are the risks of deploying on Friday?" }),
+});
+const data = await res.json();</code></pre>
+
+<p>The response includes the AI reply, trust boundary, segments, decision type, and audit trail.</p>
+
+<h2 id="3-read-trust-boundaries">3. Read trust boundaries</h2>
+
+<p>Every response carries a <code>trust_boundary</code> object that tells you how much to trust the content:</p>
+
+<pre><code class="language-javascript">const { reply, trust_boundary, segments, decision_type } = data;
+
+<p>switch (trust_boundary.primary) {<br>  case "confirmed":   // backed by cryptographic verification<br>  case "executed":    // result of a completed action<br>    actOnResponse(reply);<br>    break;<br>  case "retrieved":   // sourced from known data<br>  case "inferred":    // model-generated reasoning<br>    showWithCaveat(reply, trust_boundary);<br>    break;<br>  case "unknown":     // insufficient basis for trust<br>    escalateToHuman(reply);<br>    break;<br>}</code></pre></p>
+
+<p>Individual <code>segments</code> may carry different trust levels within a single response. Always check segment-level boundaries when mixing verified facts with model reasoning.</p>
+
+<h2 id="4-handle-decision-types">4. Handle decision types</h2>
+
+<p>The <code>decision_type</code> field tells you what the decision engine determined:</p>
+
+<p>| Decision Type | Meaning | Your action |<br>|---|---|---|<br>| <code>respond</code> | Informational response | Display to user |<br>| <code>ask</code> | Engine needs clarification | Prompt user for more input |<br>| <code>propose_action</code> | Action proposed, awaiting confirmation | Show proposal, ask user to confirm |<br>| <code>execute_confirmed_action</code> | Confirmed action executed | Show result with execution status |</p>
+
+<pre><code class="language-javascript">if (data.decision_type === "propose_action") {
+  const confirmed = await askUser("Proceed with this action?", data.reply);
+  if (confirmed) {
+    await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Authorization": "Bearer rpt_your_key", "Content-Type": "application/json" },
+      body: JSON.stringify({ message: "proceed", conversation_id: nestId }),
+    });
+  }
+}</code></pre>
+
+<h2 id="5-query-the-audit-trail">5. Query the audit trail</h2>
+
+<pre><code class="language-bash"># Governance decisions for a nest
+curl -H "Authorization: Bearer rpt_your_key" \
+  https://raptor.harpyits.com/api/nests/{nestId}/governance
+
+<h1 id="full-execution-trace">Full execution trace</h1>
+curl -H "Authorization: Bearer rpt_your_key" \
+  https://raptor.harpyits.com/api/executions/{id}/trace
+
+<h1 id="tenant-wide-audit-export">Tenant-wide audit export</h1>
+curl -H "Authorization: Bearer rpt_your_key" \
+  https://raptor.harpyits.com/api/tenant/audit/export</code></pre>
+
+<p>The audit export returns four tables: <code>authorization_events</code>, <code>capability_grants</code>, <code>governance_policies</code>, and <code>tenant_events</code>.</p>
+
+<h2 id="6-error-handling">6. Error handling</h2>
+
+<p>All errors follow a consistent envelope:</p>
+
+<pre><code class="language-json">{
+  "ok": false,
+  "error": "authorization_denied",
+  "message": "This operation is not permitted by the active governance policy.",
+  "correlation_id": "req_abc123"
+}</code></pre>
+
+<p>Handle the key error codes:</p>
+
+<pre><code class="language-javascript">if (!res.ok) {
+  const err = await res.json();
+  switch (res.status) {
+    case 403:
+      if (err.error === "governance_denied") {
+        // Policy blocked this operation — check active policy rules
+      }
+      break;
+    case 429:
+      // Rate limited — read Retry-After header
+      const retryAfter = res.headers.get("Retry-After");
+      break;
+    case 401:
+      // Key invalid, expired, or revoked
+      break;
+  }
+}</code></pre>
+
+<h2 id="next-steps">Next steps</h2>
+
+<ul>
+<li><a href="/guides/webhooks">Webhook integration</a> — receive governance events in real time</li>
+<li><a href="/guides/typescript-sdk">TypeScript SDK</a> — typed client with trust-boundary types preserved end-to-end</li>
+<li><a href="/guides/policy-authoring">Policy authoring</a> — control what operations are allowed</li>
+</ul>
+</div>

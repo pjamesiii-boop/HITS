@@ -1,0 +1,62 @@
+<div class="docs-page">
+<h1>Multi-Tenant Isolation</h1>
+<p class="docs-page-description">How Raptor enforces tenant boundaries — row-level security, scoped resources, and the guarantee that data never crosses organizations.</p>
+<h1 id="multi-tenant-isolation">Multi-Tenant Isolation</h1>
+
+<p>Every Raptor account maps to one organization. Tenant isolation is enforced at the database level, not the application level. Data never crosses tenant boundaries.</p>
+
+<h2 id="row-level-security">Row-level security</h2>
+
+<p>Every table that holds tenant data includes a <code>tenant_id</code> column. PostgreSQL row-level security (RLS) policies ensure that queries can only access rows belonging to the authenticated tenant.</p>
+
+<p>This is not application-level filtering (a WHERE clause that could be forgotten). RLS is enforced by the database engine itself. Even if application code contains a bug that omits the tenant filter, the database rejects the query.</p>
+
+<pre><code class="language-sql">CREATE POLICY tenant_isolation ON execution_events
+  USING (tenant_id = current_setting('app.current_tenant_id')::uuid);</code></pre>
+
+<p>Every API request sets the tenant context before executing any query. The database enforces the boundary from that point forward.</p>
+
+<h2 id="tenant-scoped-resources">Tenant-scoped resources</h2>
+
+<p>The following resources are scoped to a single tenant and cannot be accessed across boundaries:</p>
+
+<p>| Resource | Scope |<br>|----------|-------|<br>| <strong>Nests</strong> | Conversations, memory, governance state |<br>| <strong>Execution events</strong> | The complete hash-chained audit trail |<br>| <strong>Governance policies</strong> | Active and historical policy versions |<br>| <strong>API keys</strong> | Authentication credentials |<br>| <strong>Webhooks</strong> | Event notification endpoints |<br>| <strong>Artifacts</strong> | Files, documents, generated outputs |<br>| <strong>Billing</strong> | Usage tracking, provider costs, invoices |<br>| <strong>RBAC assignments</strong> | Role and permission grants |</p>
+
+<h2 id="identity-mapping">Identity mapping</h2>
+
+<p>Raptor uses Clerk for authentication and organization management. Each Clerk organization maps to exactly one Raptor tenant:</p>
+
+<ul>
+<li>Clerk handles user authentication, SSO, and session management</li>
+<li>Raptor maps the Clerk organization ID to a <code>tenant_id</code></li>
+<li>Users belong to a Clerk organization and inherit the corresponding tenant context</li>
+<li>A user in multiple Clerk organizations accesses each as a separate Raptor tenant</li>
+</ul>
+
+<p>Identity is externalized. Governance is internal. Raptor never stores passwords or manages authentication flows directly.</p>
+
+<h2 id="rbac-within-tenant">RBAC within tenant</h2>
+
+<p>Each tenant has three roles with 10 permissions:</p>
+
+<p>| Role | Capabilities |<br>|------|-------------|<br>| <strong>Owner</strong> | Full control — policies, billing, member management, all operations |<br>| <strong>Admin</strong> | Policy management, member management, all operational permissions |<br>| <strong>Member</strong> | Operational use — chat, actions, file access, read governance events |</p>
+
+<p>Permissions are evaluated per-request by the governance middleware. Role assignments are tenant-scoped and recorded in the audit trail.</p>
+
+<h2 id="tenant-suspension">Tenant suspension</h2>
+
+<p>A tenant can be suspended (billing failure, policy violation, administrative action). Suspended tenants:</p>
+
+<ul>
+<li>Cannot execute any governed operations</li>
+<li>Cannot create or modify nests</li>
+<li>Cannot invoke provider calls</li>
+<li>Retain read access to existing audit trails and governance history</li>
+</ul>
+
+<p>Suspension is immediate and enforced at the governance middleware layer. Reactivation restores full access. Both events are recorded in the hash chain.</p>
+
+<h2 id="the-guarantee">The guarantee</h2>
+
+<p>No query, API call, webhook, or background job can access data belonging to another tenant. This is enforced by the database, verified by the governance layer, and auditable through the hash chain.</p>
+</div>

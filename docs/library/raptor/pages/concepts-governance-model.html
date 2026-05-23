@@ -1,0 +1,70 @@
+<div class="docs-page">
+<h1>Governance Model</h1>
+<p class="docs-page-description">How Raptor governs AI — from user input through classification, policy enforcement, proposal, and commit.</p>
+<h1 id="governance-model">Governance Model</h1>
+
+<p>Raptor interposes a deterministic governance layer between the user and AI execution. AI proposes. The governance core disposes. Nothing reaches the user or an external system without passing through deterministic checks.</p>
+
+<h2 id="request-lifecycle">Request lifecycle</h2>
+
+<p>Every user message follows the same path:</p>
+
+<ol>
+<li><strong>Classify</strong> — the classifier receives user input and categorizes intent into one of four types:</li>
+</ol>
+   - <code>respond</code> — conversational reply, no side effects
+   - <code>ask</code> — clarification needed before proceeding
+   - <code>propose_action</code> — AI recommends an action that requires human confirmation
+   - <code>execute_confirmed_action</code> — human has confirmed, execute the action
+
+<ol>
+<li><strong>Enforce</strong> — governance middleware evaluates the classified request against:</li>
+</ol>
+   - <strong>Capabilities</strong> — does the tenant's active policy grant this operation?
+   - <strong>Policies</strong> — do the rules allow this specific action?
+   - <strong>Budgets</strong> — has the tenant exceeded step, provider call, or artifact limits?
+   - <strong>Rate limits</strong> — is the request within per-tenant API thresholds?
+   - <strong>Suspension</strong> — is the tenant currently suspended?
+
+<p>If any check fails, the request is blocked and an <code>authorization_event</code> is recorded to the hash chain.</p>
+
+<ol>
+<li><strong>Propose</strong> — the AI generates a response in the proposal layer. At this stage, the output is structured but uncommitted. The AI handles language, reasoning, and recommendation — it does not handle authorization or execution.</li>
+</ol>
+
+<ol>
+<li><strong>Commit</strong> — the deterministic commit layer takes the proposal and:</li>
+</ol>
+   - Assigns trust boundaries to every segment (Confirmed, Executed, Retrieved, Likely, Uncertain)
+   - Applies the weakest-link rule for the response-level boundary
+   - Generates decision support metadata (confidence, recommendation, basis, risk)
+   - Hashes the payload and chains it to the previous event
+   - Records the execution event to the immutable audit log
+
+<ol>
+<li><strong>Deliver</strong> — the committed, classified, hash-chained response reaches the user.</li>
+</ol>
+
+<h2 id="what-makes-this-deterministic">What makes this deterministic</h2>
+
+<p>The governance layer does not use AI to make governance decisions. Classification is deterministic pattern matching. Policy enforcement is rule evaluation. Trust boundary assignment follows defined rules. Hash chaining is cryptographic.</p>
+
+<p>AI is used for exactly one thing: generating the content of the response. Everything around that content — authorization, classification, trust labeling, audit — is deterministic.</p>
+
+<h2 id="governance-surfaces">Governance surfaces</h2>
+
+<p>The governance model is visible to operators through four surfaces on every nest:</p>
+
+<ul>
+<li><strong>Actions</strong> — proposed and executed actions with confirmation state</li>
+<li><strong>Files</strong> — artifacts and documents with provenance</li>
+<li><strong>Governance</strong> — policy evaluations, authorization events, trust boundary assignments</li>
+<li><strong>Verification</strong> — hash chain integrity, claim freshness, audit export</li>
+</ul>
+
+<h2 id="why-this-architecture">Why this architecture</h2>
+
+<p>Most AI systems treat governance as a filter: run the AI, then check the output. Raptor inverts this. Governance wraps the AI — it controls what the AI is asked to do, what the AI is permitted to propose, and what happens after the AI responds.</p>
+
+<p>The result: every AI output has provenance (where it came from), classification (how much to trust it), and an audit trail (what happened and when). This is not post-hoc compliance. It is the operational architecture.</p>
+</div>

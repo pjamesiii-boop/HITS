@@ -1,0 +1,113 @@
+<div class="docs-page">
+<h1>Billing API</h1>
+<p class="docs-page-description">Stripe-powered billing: checkout sessions, portal access, and usage tracking.</p>
+<h1 id="billing-api">Billing API</h1>
+
+<p>The Billing API manages subscription checkout, customer portal access, and usage tracking. Billing is powered by Stripe.</p>
+
+<h2 id="post-api-billing-checkout">POST /api/billing/checkout</h2>
+
+<p>Create a Stripe Checkout session for a new subscription or tier upgrade. Returns a URL to redirect the user to Stripe's hosted checkout page.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="request-body">Request Body</h3>
+
+<p>| Field | Type | Required | Description |<br>|-------|------|----------|-------------|<br>| <code>tier</code> | string | Yes | Subscription tier: <code>team</code> or <code>growth</code> |</p>
+
+<pre><code class="language-json">{
+  "tier": "team"
+}</code></pre>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "checkout_url": "https://checkout.stripe.com/c/pay/cs_live_abc123...",
+  "session_id": "cs_live_abc123"
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 400 | <code>validation_error</code> | Invalid tier value |<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 409 | <code>conflict</code> | Tenant already on requested tier |</p>
+
+<hr>
+
+<h2 id="get-api-billing-portal">GET /api/billing/portal</h2>
+
+<p>Get a Stripe Customer Portal URL. Redirects the user to manage their subscription, payment methods, and invoices.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "portal_url": "https://billing.stripe.com/p/session/bps_abc123..."
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 404 | <code>not_found</code> | No Stripe customer record for this tenant |</p>
+
+<hr>
+
+<h2 id="get-api-billing-usage">GET /api/billing/usage</h2>
+
+<p>Get usage summary for the current billing period.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "usage": {
+    "tier": "team",
+    "period_start": "2026-05-01T00:00:00Z",
+    "period_end": "2026-06-01T00:00:00Z",
+    "responses": {
+      "count": 1247,
+      "limit": 5000
+    },
+    "files_uploaded": {
+      "count": 34,
+      "storage_bytes": 52428800
+    },
+    "executions": {
+      "count": 89
+    }
+  }
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |</p>
+
+<hr>
+
+<h2 id="post-api-billing-webhook">POST /api/billing/webhook</h2>
+
+<p>Stripe webhook handler. This endpoint receives events from Stripe to synchronize subscription state. It is not called directly by API consumers.</p>
+
+<p><strong>Authentication:</strong> Stripe signature verification (via <code>Stripe-Signature</code> header)</p>
+
+<h3 id="handled-events">Handled Events</h3>
+
+<p>| Stripe Event | Raptor Action |<br>|--------------|---------------|<br>| <code>checkout.session.completed</code> | Activate subscription |<br>| <code>customer.subscription.updated</code> | Sync tier changes |<br>| <code>customer.subscription.deleted</code> | Deactivate subscription |<br>| <code>invoice.payment_failed</code> | Flag payment issue |</p>
+
+<h3 id="request-body">Request Body</h3>
+
+<p>Standard Stripe webhook event payload. See <a href="https://stripe.com/docs/webhooks">Stripe webhook documentation</a>.</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "received": true
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 400 | <code>validation_error</code> | Invalid Stripe signature |</p>
+</div>

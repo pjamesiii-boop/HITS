@@ -1,0 +1,298 @@
+{
+  "product": "raptor",
+  "name": "Raptor",
+  "tagline": "Deterministic governance for AI applications",
+  "icon": "assets/raptor-icon.png",
+  "groups": [
+    {
+      "name": "Getting Started",
+      "pages": [
+        {
+          "slug": "quickstart-index",
+          "title": "Quickstart",
+          "description": "Get your first governed AI response in under 5 minutes."
+        },
+        {
+          "slug": "quickstart-installation",
+          "title": "Installation",
+          "description": "Install Raptor via Docker Compose, build from source, or sign up for cloud."
+        },
+        {
+          "slug": "quickstart-first-response",
+          "title": "Understanding Your First Response",
+          "description": "Anatomy of a governed AI response — trust boundaries, segments, and audit trail."
+        },
+        {
+          "slug": "quickstart-authentication",
+          "title": "Authentication",
+          "description": "Authenticate with Raptor using Clerk SSO, API keys, or the Founder Key."
+        }
+      ]
+    },
+    {
+      "name": "Concepts",
+      "pages": [
+        {
+          "slug": "concepts-governance-model",
+          "title": "Governance Model",
+          "description": "How Raptor governs AI — from user input through classification, policy enforcement, proposal, and commit."
+        },
+        {
+          "slug": "concepts-trust-boundaries",
+          "title": "Trust Boundaries",
+          "description": "The five trust levels that classify every segment of every Raptor response."
+        },
+        {
+          "slug": "concepts-hash-chain",
+          "title": "Hash Chain",
+          "description": "How Raptor's immutable audit chain ensures every output is traceable and tamper-evident."
+        },
+        {
+          "slug": "concepts-decision-support",
+          "title": "Decision Support",
+          "description": "How Raptor provides structured guidance — confidence levels, recommendations, risk assessment."
+        },
+        {
+          "slug": "concepts-policies",
+          "title": "Governance Policies",
+          "description": "How Raptor policies control what AI can do — signed, versioned, deterministic enforcement."
+        },
+        {
+          "slug": "concepts-proposal-commit",
+          "title": "Proposal/Commit Architecture",
+          "description": "Why Raptor separates AI proposals from deterministic commits — and why that separation is the safety model."
+        },
+        {
+          "slug": "concepts-nests",
+          "title": "Nests",
+          "description": "The primary object in Raptor — a governed conversation session holding memory, governance, provenance, and execution state."
+        },
+        {
+          "slug": "concepts-temporal-trust",
+          "title": "Temporal Trust",
+          "description": "How Raptor tracks claim freshness — because a verified fact from last week is not the same as a verified fact from five minutes ago."
+        },
+        {
+          "slug": "concepts-multi-provider",
+          "title": "Multi-Provider Architecture",
+          "description": "How Raptor abstracts AI providers behind a unified interface — provider-agnostic governance with built-in failover."
+        },
+        {
+          "slug": "concepts-multi-tenant",
+          "title": "Multi-Tenant Isolation",
+          "description": "How Raptor enforces tenant boundaries — row-level security, scoped resources, and the guarantee that data never crosses organizations."
+        }
+      ]
+    },
+    {
+      "name": "Integration Guides",
+      "pages": [
+        {
+          "slug": "guides-rest-api",
+          "title": "REST API Integration",
+          "description": "Authenticate, send governed messages, read trust boundaries, and query audit trails via the Raptor REST API."
+        },
+        {
+          "slug": "guides-governance-wrapper",
+          "title": "Pattern 1: Governance Wrapper",
+          "description": "Add Raptor governance around your existing AI application with minimal code changes."
+        },
+        {
+          "slug": "guides-orchestration",
+          "title": "Pattern 2: Orchestration",
+          "description": "Use Raptor as the decision layer in a multi-agent AI system."
+        },
+        {
+          "slug": "guides-substrate",
+          "title": "Pattern 3: Substrate",
+          "description": "Build your entire AI application on Raptor's governed platform."
+        },
+        {
+          "slug": "guides-mcp",
+          "title": "MCP Server",
+          "description": "Connect Claude Desktop, Cursor, or any MCP client to Raptor's governed capabilities."
+        },
+        {
+          "slug": "guides-typescript-sdk",
+          "title": "TypeScript SDK",
+          "description": "Install the Raptor SDK, send governed messages, and consume trust-boundary types end-to-end in TypeScript."
+        },
+        {
+          "slug": "guides-webhooks",
+          "title": "Webhook Integration",
+          "description": "Receive real-time governance events from Raptor via HMAC-signed webhook deliveries."
+        },
+        {
+          "slug": "guides-api-keys",
+          "title": "API Key Management",
+          "description": "Create, scope, rotate, and revoke Raptor API keys for backend and CI integrations."
+        },
+        {
+          "slug": "guides-policy-authoring",
+          "title": "Policy Authoring",
+          "description": "Write, validate, sign, activate, simulate, and rollback governance policies in Raptor."
+        },
+        {
+          "slug": "guides-audit-export",
+          "title": "Audit and Compliance",
+          "description": "Export audit trails, verify hash chain integrity, and implement compliance patterns with Raptor."
+        }
+      ]
+    },
+    {
+      "name": "Self-Hosted Deployment",
+      "pages": [
+        {
+          "slug": "self-hosted-index",
+          "title": "Self-Hosted Deployment",
+          "description": "Deploy Raptor on your own infrastructure with Docker Compose or a standalone binary."
+        },
+        {
+          "slug": "self-hosted-environment-variables",
+          "title": "Environment Variables",
+          "description": "Complete reference for all Raptor configuration variables, organized by category."
+        },
+        {
+          "slug": "self-hosted-database",
+          "title": "Database",
+          "description": "PostgreSQL setup, schema migrations, backup/restore, and data retention for self-hosted Raptor."
+        },
+        {
+          "slug": "self-hosted-providers",
+          "title": "Providers",
+          "description": "Configure AI providers, failover behavior, and understand inference pricing in Raptor."
+        },
+        {
+          "slug": "self-hosted-production",
+          "title": "Production Hardening",
+          "description": "TLS, authentication, monitoring, disaster recovery, and scaling for production Raptor deployments."
+        }
+      ]
+    },
+    {
+      "name": "Operations",
+      "pages": [
+        {
+          "slug": "operations-index",
+          "title": "Operations",
+          "description": "Day-to-day operational guidance for monitoring, deploying, backing up, and scaling Raptor."
+        },
+        {
+          "slug": "operations-monitoring",
+          "title": "Monitoring",
+          "description": "Health endpoints, operational metrics, provider monitoring, and integrity verification for Raptor in production."
+        },
+        {
+          "slug": "operations-backup-restore",
+          "title": "Backup and Restore",
+          "description": "Database backup strategies, restore procedures, and post-restore verification for self-hosted and cloud Raptor deployments."
+        },
+        {
+          "slug": "operations-upgrades",
+          "title": "Upgrades",
+          "description": "Versioning, upgrade procedures, rollback, and API compatibility for Raptor."
+        },
+        {
+          "slug": "operations-runbooks",
+          "title": "Runbooks",
+          "description": "Step-by-step operational procedures for tenant management, policy rollback, provider failover, integrity incidents, and data recovery."
+        }
+      ]
+    },
+    {
+      "name": "Security",
+      "pages": [
+        {
+          "slug": "security-index",
+          "title": "Security Architecture",
+          "description": "Authentication, authorization, data isolation, cryptographic integrity, and privacy controls in Raptor."
+        },
+        {
+          "slug": "security-compliance",
+          "title": "Compliance Posture",
+          "description": "What Raptor implements today for regulatory compliance and what is on the roadmap."
+        },
+        {
+          "slug": "security-threat-model",
+          "title": "Threat Model",
+          "description": "Attack surfaces, trust boundaries, and mitigations in Raptor's security architecture."
+        }
+      ]
+    },
+    {
+      "name": "API Reference",
+      "pages": [
+        {
+          "slug": "api-reference-index",
+          "title": "API Reference",
+          "description": "Complete REST API documentation for the Raptor governance substrate."
+        },
+        {
+          "slug": "api-reference-chat",
+          "title": "Chat API",
+          "description": "Send governed messages and retrieve trust-boundary-annotated conversation history."
+        },
+        {
+          "slug": "api-reference-nests",
+          "title": "Nests API",
+          "description": "Create and manage governed conversation containers with full lifecycle operations."
+        },
+        {
+          "slug": "api-reference-files",
+          "title": "Files API",
+          "description": "Upload, manage, and revoke files within governed conversation nests."
+        },
+        {
+          "slug": "api-reference-policy",
+          "title": "Policy API",
+          "description": "Manage the governance policy lifecycle: validate, sign, activate, rollback, and simulate."
+        },
+        {
+          "slug": "api-reference-webhooks",
+          "title": "Webhooks API",
+          "description": "Subscribe to governance events with authenticated webhook delivery."
+        },
+        {
+          "slug": "api-reference-billing",
+          "title": "Billing API",
+          "description": "Stripe-powered billing: checkout sessions, portal access, and usage tracking."
+        },
+        {
+          "slug": "api-reference-privacy",
+          "title": "Privacy API",
+          "description": "GDPR-compliant data export, erasure, consent management, and retention policies."
+        },
+        {
+          "slug": "api-reference-system",
+          "title": "System & Runtime API",
+          "description": "Health checks, runtime configuration, version info, and public attestation endpoints."
+        }
+      ]
+    },
+    {
+      "name": "Pricing",
+      "pages": [
+        {
+          "slug": "pricing-index",
+          "title": "Pricing",
+          "description": "Raptor pricing: governed AI infrastructure and workspace tiers."
+        }
+      ]
+    },
+    {
+      "name": "Troubleshooting",
+      "pages": [
+        {
+          "slug": "troubleshooting-index",
+          "title": "Troubleshooting",
+          "description": "Common issues, their causes, and how to fix them."
+        },
+        {
+          "slug": "troubleshooting-faq",
+          "title": "FAQ",
+          "description": "Frequently asked questions about Raptor's capabilities, requirements, and operational details."
+        }
+      ]
+    }
+  ]
+}

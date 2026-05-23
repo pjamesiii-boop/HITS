@@ -1,0 +1,60 @@
+<div class="docs-page">
+<h1>Pattern 1: Governance Wrapper</h1>
+<p class="docs-page-description">Add Raptor governance around your existing AI application with minimal code changes.</p>
+<h1 id="pattern-1-governance-wrapper">Pattern 1: Governance Wrapper</h1>
+
+<p>The simplest integration — wrap your existing AI calls with Raptor's governance layer.</p>
+
+<h2 id="when-to-use">When to use</h2>
+
+<ul>
+<li>You have an existing AI application that works</li>
+<li>You need governance, audit trails, and trust boundaries</li>
+<li>You don't want to change your AI orchestration logic</li>
+</ul>
+
+<h2 id="architecture">Architecture</h2>
+
+<pre><code>Your App → Raptor API → Your AI Provider
+                ↓
+         Governance check
+         Trust boundary assignment
+         Hash-chained audit event
+                ↓
+         Structured response back to your app</code></pre>
+
+<h2 id="integration">Integration</h2>
+
+<h3 id="1-route-your-ai-calls-through-raptor">1. Route your AI calls through Raptor</h3>
+
+<p>Instead of calling your provider directly:</p>
+
+<pre><code class="language-javascript">// Before: direct to provider
+const response = await anthropic.messages.create({ ... });
+
+<p>// After: through Raptor<br>const response = await fetch('https://your-raptor.com/api/chat', {<br>  method: 'POST',<br>  headers: {<br>    'Authorization': 'Bearer rpt_your_api_key',<br>    'Content-Type': 'application/json'<br>  },<br>  body: JSON.stringify({ message: userInput })<br>});</code></pre></p>
+
+<h3 id="2-read-the-trust-boundary">2. Read the trust boundary</h3>
+
+<pre><code class="language-javascript">const data = await response.json();
+
+<p>// Every response tells you how much to trust it<br>if (data.trust_boundary.actionability.level === 'safe') {<br>  // Safe to act on<br>  showToUser(data.reply);<br>} else if (data.trust_boundary.actionability.level === 'blocked') {<br>  // Needs review<br>  escalateToHuman(data.reply, data.trust_boundary);<br>}</code></pre></p>
+
+<h3 id="3-use-the-audit-trail">3. Use the audit trail</h3>
+
+<p>Every response is automatically logged in the hash-chained event store. Query it:</p>
+
+<pre><code class="language-bash">GET /api/nests/{nestId}/governance    # Governance decisions
+GET /api/executions/{id}/trace        # Full execution chain
+GET /api/tenant/audit/export          # Complete audit export</code></pre>
+
+<h2 id="what-you-get">What you get</h2>
+
+<ul>
+<li>Trust boundaries on every response (no code changes to your AI logic)</li>
+<li>Hash-chained audit trail (every response traceable)</li>
+<li>Governance enforcement (policies control what AI can do)</li>
+<li>Decision support (confidence levels, recommendations)</li>
+<li>Billing metering (per governed response)</li>
+</ul>
+</div>

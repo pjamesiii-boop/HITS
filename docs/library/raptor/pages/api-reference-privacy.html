@@ -1,0 +1,252 @@
+<div class="docs-page">
+<h1>Privacy API</h1>
+<p class="docs-page-description">GDPR-compliant data export, erasure, consent management, and retention policies.</p>
+<h1 id="privacy-api">Privacy API</h1>
+
+<p>The Privacy API provides GDPR-compliant data governance: portable data export, right-to-erasure, consent management, and configurable retention policies.</p>
+
+<h2 id="get-api-privacy-export">GET /api/privacy/export</h2>
+
+<p>Export all personal data associated with the authenticated user in a portable JSON format. Implements GDPR Article 20 (right to data portability). The export covers 12 data tables.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "export": {
+    "format": "json",
+    "generated_at": "2026-05-21T18:00:00Z",
+    "subject": {
+      "user_id": "user_abc123",
+      "tenant_id": "tenant_abc123"
+    },
+    "tables": {
+      "profile": {
+        "email": "user@example.com",
+        "created_at": "2026-01-15T10:00:00Z"
+      },
+      "nests": [
+        {
+          "id": "nest_f7a2c9e1",
+          "name": "Q2 Revenue Analysis",
+          "created_at": "2026-05-21T17:44:22Z",
+          "message_count": 24
+        }
+      ],
+      "messages": [
+        {
+          "id": "msg_abc123",
+          "nest_id": "nest_f7a2c9e1",
+          "role": "user",
+          "content": "What was Q2 revenue?",
+          "timestamp": "2026-05-21T17:44:22Z"
+        }
+      ],
+      "files": [],
+      "artifacts": [],
+      "executions": [],
+      "governance_events": [],
+      "api_keys": [],
+      "webhooks": [],
+      "consent_history": [],
+      "billing": {},
+      "audit_log": []
+    }
+  }
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 429 | <code>rate_limited</code> | Export already in progress or requested too recently |</p>
+
+<hr>
+
+<h2 id="post-api-privacy-delete">POST /api/privacy/delete</h2>
+
+<p>Request right-to-erasure (GDPR Article 17). Requires a typed confirmation string to prevent accidental deletion.</p>
+
+<p>Personal data is deleted. Immutable governance records (audit trail, hash chain entries) are anonymized rather than deleted to preserve system integrity.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="request-body">Request Body</h3>
+
+<p>| Field | Type | Required | Description |<br>|-------|------|----------|-------------|<br>| <code>confirmation</code> | string | Yes | Must be exactly <code>"DELETE MY DATA"</code> |</p>
+
+<pre><code class="language-json">{
+  "confirmation": "DELETE MY DATA"
+}</code></pre>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "deletion": {
+    "status": "processing",
+    "requested_at": "2026-05-21T18:00:00Z",
+    "estimated_completion": "2026-05-21T18:05:00Z",
+    "scope": {
+      "deleted": [
+        "profile",
+        "messages",
+        "files",
+        "artifacts",
+        "api_keys",
+        "webhooks",
+        "consent_records"
+      ],
+      "anonymized": [
+        "governance_events",
+        "audit_log",
+        "hash_chain_entries",
+        "execution_records",
+        "billing_records"
+      ]
+    }
+  }
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 400 | <code>validation_error</code> | Confirmation string does not match |<br>| 401 | <code>unauthorized</code> | No valid authentication |</p>
+
+<hr>
+
+<h2 id="get-api-privacy-consent">GET /api/privacy/consent</h2>
+
+<p>Get the current consent state for the authenticated user.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "consent": {
+    "required": {
+      "terms_of_service": { "granted": true, "granted_at": "2026-01-15T10:00:00Z" },
+      "privacy_policy": { "granted": true, "granted_at": "2026-01-15T10:00:00Z" },
+      "data_processing": { "granted": true, "granted_at": "2026-01-15T10:00:00Z" }
+    },
+    "optional": {
+      "analytics": { "granted": true, "granted_at": "2026-01-15T10:00:00Z" },
+      "marketing": { "granted": false, "granted_at": null },
+      "model_training": { "granted": false, "granted_at": null }
+    }
+  }
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |</p>
+
+<hr>
+
+<h2 id="post-api-privacy-consent">POST /api/privacy/consent</h2>
+
+<p>Update consent preferences. Required consents (TOS, privacy policy, data processing) must be <code>true</code> for continued platform access. Optional consents can be toggled freely.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="request-body">Request Body</h3>
+
+<p>| Field | Type | Required | Description |<br>|-------|------|----------|-------------|<br>| <code>terms_of_service</code> | boolean | No | TOS consent (must be <code>true</code> to use platform) |<br>| <code>privacy_policy</code> | boolean | No | Privacy policy consent (must be <code>true</code> to use platform) |<br>| <code>data_processing</code> | boolean | No | Data processing consent (must be <code>true</code> to use platform) |<br>| <code>analytics</code> | boolean | No | Analytics data collection |<br>| <code>marketing</code> | boolean | No | Marketing communications |<br>| <code>model_training</code> | boolean | No | Allow data use for model training |</p>
+
+<pre><code class="language-json">{
+  "analytics": true,
+  "marketing": false,
+  "model_training": false
+}</code></pre>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "consent": {
+    "required": {
+      "terms_of_service": { "granted": true, "granted_at": "2026-01-15T10:00:00Z" },
+      "privacy_policy": { "granted": true, "granted_at": "2026-01-15T10:00:00Z" },
+      "data_processing": { "granted": true, "granted_at": "2026-01-15T10:00:00Z" }
+    },
+    "optional": {
+      "analytics": { "granted": true, "granted_at": "2026-05-21T18:00:00Z" },
+      "marketing": { "granted": false, "granted_at": null },
+      "model_training": { "granted": false, "granted_at": null }
+    }
+  }
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 400 | <code>validation_error</code> | Required consent set to <code>false</code> |<br>| 401 | <code>unauthorized</code> | No valid authentication |</p>
+
+<hr>
+
+<h2 id="get-api-privacy-retention">GET /api/privacy/retention</h2>
+
+<p>Get current data retention policies for the tenant.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "retention": {
+    "messages": "1y",
+    "files": "90d",
+    "audit_log": "5y",
+    "governance_events": "indefinite",
+    "executions": "2y",
+    "artifacts": "1y"
+  }
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |</p>
+
+<hr>
+
+<h2 id="put-api-privacy-retention">PUT /api/privacy/retention</h2>
+
+<p>Update data retention policies. Governance events cannot be set below the regulatory minimum.</p>
+
+<p><strong>Authentication:</strong> Required (Founder Key or admin)</p>
+
+<h3 id="request-body">Request Body</h3>
+
+<p>| Field | Type | Required | Description |<br>|-------|------|----------|-------------|<br>| <code>messages</code> | string | No | Retention period for chat messages |<br>| <code>files</code> | string | No | Retention period for uploaded files |<br>| <code>audit_log</code> | string | No | Retention period for audit log entries |<br>| <code>governance_events</code> | string | No | Retention period for governance events (minimum: <code>5y</code>) |<br>| <code>executions</code> | string | No | Retention period for execution records |<br>| <code>artifacts</code> | string | No | Retention period for artifacts |</p>
+
+<p>Valid retention values: <code>30d</code>, <code>90d</code>, <code>1y</code>, <code>2y</code>, <code>3y</code>, <code>5y</code>, <code>indefinite</code></p>
+
+<pre><code class="language-json">{
+  "messages": "2y",
+  "files": "1y",
+  "audit_log": "5y",
+  "governance_events": "indefinite",
+  "executions": "3y",
+  "artifacts": "2y"
+}</code></pre>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "retention": {
+    "messages": "2y",
+    "files": "1y",
+    "audit_log": "5y",
+    "governance_events": "indefinite",
+    "executions": "3y",
+    "artifacts": "2y"
+  },
+  "updated_at": "2026-05-21T18:00:00Z"
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 400 | <code>validation_error</code> | Invalid retention value or governance_events below minimum |<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 403 | <code>forbidden</code> | Not an admin user |</p>
+</div>

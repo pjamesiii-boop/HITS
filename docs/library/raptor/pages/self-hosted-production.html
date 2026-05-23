@@ -1,0 +1,254 @@
+<div class="docs-page">
+<h1>Production Hardening</h1>
+<p class="docs-page-description">TLS, authentication, monitoring, disaster recovery, and scaling for production Raptor deployments.</p>
+<h1 id="production-hardening">Production Hardening</h1>
+
+<p>This guide covers everything required to run Raptor in production. Work through each section before exposing the deployment to real traffic.</p>
+
+<h2 id="environment">Environment</h2>
+
+<p>Set <code>RAPTOR_ENV=production</code>. This enables:</p>
+
+<ul>
+<li>Strict authentication enforcement</li>
+<li>Reduced error verbosity in API responses</li>
+<li>Production-appropriate logging levels</li>
+<li>Security headers on all responses</li>
+</ul>
+
+<h2 id="tls-termination">TLS Termination</h2>
+
+<p>Raptor listens on plain HTTP. Terminate TLS at a reverse proxy or load balancer in front of the control-panel and MCP server.</p>
+
+<h3 id="recommended-setup">Recommended Setup</h3>
+
+<pre><code>Internet ──► TLS termination (nginx / Caddy / ALB) ──► Raptor :4000
+                                                   ──► MCP    :4001</code></pre>
+
+<p><strong>Nginx example:</strong></p>
+
+<pre><code class="language-nginx">server {
+    listen 443 ssl http2;
+    server_name raptor.example.com;
+
+<p>ssl_certificate     /etc/ssl/certs/raptor.pem;<br>    ssl_certificate_key /etc/ssl/private/raptor.key;</p>
+
+<p>location / {<br>        proxy_pass http://127.0.0.1:4000;<br>        proxy_set_header Host $host;<br>        proxy_set_header X-Real-IP $remote_addr;<br>        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;<br>        proxy_set_header X-Forwarded-Proto $scheme;<br>    }<br>}</code></pre></p>
+
+<p><strong>Caddy example:</strong></p>
+
+<pre><code>raptor.example.com {
+    reverse_proxy localhost:4000
+}</code></pre>
+
+<p>Caddy handles TLS certificate provisioning automatically via Let's Encrypt.</p>
+
+<h2 id="authentication">Authentication</h2>
+
+<p>Production deployments must use at least one of:</p>
+
+<h3 id="option-1-clerk-sso-recommended">Option 1: Clerk SSO (Recommended)</h3>
+
+<p>Clerk provides managed authentication with SSO, OAuth, and multi-factor support.</p>
+
+<ol>
+<li>Create a Clerk application at <a href="https://clerk.com">clerk.com</a></li>
+<li>Configure OAuth providers (Google, GitHub, etc.) in the Clerk dashboard</li>
+<li>Set environment variables:</li>
+</ol>
+
+<pre><code class="language-bash">CLERK_SECRET_KEY=sk_live_...
+CLERK_PUBLISHABLE_KEY=pk_live_...
+CLERK_DOMAIN=your-app.clerk.accounts.dev</code></pre>
+
+<ol>
+<li>Optionally disable token fallback:</li>
+</ol>
+
+<pre><code class="language-bash">RAPTOR_ALLOW_TOKEN_FALLBACK=false</code></pre>
+
+<p>When Clerk is active, the Control Panel UI uses Clerk's embedded sign-in flow. API requests can authenticate via Clerk session tokens or the <code>RAPTOR_ACCESS_TOKEN</code> (if fallback is enabled).</p>
+
+<h3 id="option-2-founder-key">Option 2: Founder Key</h3>
+
+<p>For deployments that do not need multi-user SSO, a Founder Key provides single-operator authentication.</p>
+
+<ol>
+<li>Choose a strong key (32+ characters)</li>
+<li>Hash it with SHA-256:</li>
+</ol>
+
+<pre><code class="language-bash">echo -n "your-founder-key" | sha256sum</code></pre>
+
+<ol>
+<li>Set the hash:</li>
+</ol>
+
+<pre><code class="language-bash">RAPTOR_FOUNDER_KEY_HASH=&lt;sha256-hash&gt;</code></pre>
+
+<ol>
+<li>Authenticate via the <code>/api/auth/founder</code> endpoint with the raw key.</li>
+</ol>
+
+<h3 id="token-auth-always-active">Token Auth (Always Active)</h3>
+
+<p><code>RAPTOR_ACCESS_TOKEN</code> is always required and always accepted for API access. Use it for:</p>
+
+<ul>
+<li>Machine-to-machine integrations</li>
+<li>CI/CD pipelines</li>
+<li>Monitoring and health checks</li>
+</ul>
+
+<p>Pass it as <code>X-Raptor-Token: <token></code> or <code>Authorization: Bearer <token></code>.</p>
+
+<h2 id="secret-management">Secret Management</h2>
+
+<p>Never store secrets in <code>.env</code> files on production hosts. Use your platform's secret manager:</p>
+
+<p>| Platform | Secret Manager |<br>|---|---|<br>| AWS | Secrets Manager or Parameter Store |<br>| GCP | Secret Manager |<br>| Azure | Key Vault |<br>| Railway | Environment variables (encrypted at rest) |<br>| Docker Swarm | Docker secrets |<br>| Kubernetes | Kubernetes secrets (with external-secrets-operator for rotation) |</p>
+
+<p>Secrets to manage:</p>
+
+<ul>
+<li><code>RAPTOR_ACCESS_TOKEN</code></li>
+<li><code>DATABASE_URL</code> (contains credentials)</li>
+<li><code>CLERK_SECRET_KEY</code></li>
+<li><code>RAPTOR_FOUNDER_KEY_HASH</code></li>
+<li>All provider API keys (<code>ANTHROPIC_API_KEY</code>, <code>OPENAI_API_KEY</code>, etc.)</li>
+<li><code>STRIPE_SECRET_KEY</code>, <code>STRIPE_WEBHOOK_SECRET</code></li>
+<li><code>RAPTOR_SIGNING_PRIVATE_KEY</code></li>
+</ul>
+
+<h2 id="health-monitoring">Health Monitoring</h2>
+
+<h3 id="endpoints">Endpoints</h3>
+
+<p>| Endpoint | Purpose | Use For |<br>|---|---|---|<br>| <code>GET /api/health</code> | Liveness check | Load balancer health probe |<br>| <code>GET /api/ready</code> | Readiness check (includes DB) | Deployment rollout gate |<br>| <code>GET /api/health/dependencies</code> | Per-dependency status | Monitoring dashboard |</p>
+
+<h3 id="alerting">Alerting</h3>
+
+<p>Configure alerts for:</p>
+
+<ul>
+<li><code>/api/health</code> returning non-200 for more than 30 seconds</li>
+<li><code>/api/ready</code> returning non-200 for more than 60 seconds</li>
+<li>Any dependency in <code>/api/health/dependencies</code> reporting unhealthy</li>
+<li>API response latency exceeding p95 SLO (1 second)</li>
+</ul>
+
+<h3 id="suggested-monitoring-stack">Suggested Monitoring Stack</h3>
+
+<ul>
+<li><strong>Metrics:</strong> Prometheus scraping health endpoints, or your APM tool</li>
+<li><strong>Logs:</strong> Structured JSON logs to stdout, collected by your log aggregator</li>
+<li><strong>Uptime:</strong> External uptime monitor hitting <code>/api/health</code> every 30 seconds</li>
+</ul>
+
+<h2 id="log-management">Log Management</h2>
+
+<p>Raptor logs to stdout in structured JSON format. In Docker Compose, access logs with:</p>
+
+<pre><code class="language-bash">docker compose logs -f control-panel
+docker compose logs -f mcp-server</code></pre>
+
+<p>For production, route logs to a centralized system (Datadog, Grafana Loki, CloudWatch, etc.) using your container runtime's log driver.</p>
+
+<h2 id="slo-targets">SLO Targets</h2>
+
+<p>| Metric | Target |<br>|---|---|<br>| Availability | 99.5% (measured at <code>/api/health</code>) |<br>| API latency p50 | < 200 ms |<br>| API latency p95 | < 1 second |<br>| RPO (Recovery Point Objective) | < 1 hour |<br>| RTO (Recovery Time Objective) | < 15 minutes |</p>
+
+<p>These targets assume a properly configured deployment with database backups, health monitoring, and a tested recovery procedure.</p>
+
+<h2 id="disaster-recovery">Disaster Recovery</h2>
+
+<h3 id="recovery-point-objective-rpo-1-hour">Recovery Point Objective (RPO < 1 hour)</h3>
+
+<p>Achieve sub-hour RPO with:</p>
+
+<ul>
+<li><strong>Managed database PITR:</strong> Neon, RDS, or Cloud SQL with continuous WAL archiving</li>
+<li><strong>Logical backups:</strong> Scheduled <code>pg_dump</code> every hour (see <a href="/self-hosted/database">Database</a>)</li>
+<li><strong>Immutable tables:</strong> Cannot be lost to application-level errors. Only a database-level disaster requires restore.</li>
+</ul>
+
+<h3 id="recovery-time-objective-rto-15-minutes">Recovery Time Objective (RTO < 15 minutes)</h3>
+
+<p>Achieve 15-minute RTO with:</p>
+
+<ol>
+<li><strong>Pre-built container images:</strong> Keep the latest image available in your registry. Do not build from source during recovery.</li>
+<li><strong>Database restore:</strong> Restore from PITR or latest backup. Managed databases restore in under 5 minutes.</li>
+<li><strong>Configuration in secret manager:</strong> No manual <code>.env</code> assembly during recovery.</li>
+<li><strong>Documented runbook:</strong> Practice the recovery procedure quarterly.</li>
+</ol>
+
+<h3 id="recovery-procedure">Recovery Procedure</h3>
+
+<pre><code class="language-bash"># 1. Restore database (example: Neon branch restore)
+<h1 id="or-psql-lt-backup-sql">Or: psql &lt; backup.sql</h1>
+
+<h1 id="2-start-services">2. Start services</h1>
+docker compose up -d
+
+<h1 id="3-verify-health">3. Verify health</h1>
+curl http://localhost:4000/api/ready
+
+<h1 id="4-verify-data-integrity">4. Verify data integrity</h1>
+curl http://localhost:4000/api/health/dependencies</code></pre>
+
+<h2 id="deployment">Deployment</h2>
+
+<p>Production deploys happen via <code>git push</code> only. Never use direct deploy commands (<code>railway up</code> or equivalents). Direct deploys break provenance tracking because they bypass the git commit SHA that Raptor embeds in build attestations.</p>
+
+<pre><code class="language-bash"># Correct: deploy via git push
+git push origin main
+
+<h1 id="wrong-direct-deploy-breaks-provenance">Wrong: direct deploy breaks provenance</h1>
+<h1 id="railway-up-lt-never-do-this-code-pre">railway up  &lt;-- never do this</code></pre></h1>
+
+<h2 id="scaling">Scaling</h2>
+
+<h3 id="vertical-scaling">Vertical Scaling</h3>
+
+<p>A single control-panel instance handles most workloads. Scale vertically by increasing CPU and memory allocation. The Go runtime efficiently uses available cores.</p>
+
+<h3 id="horizontal-scaling">Horizontal Scaling</h3>
+
+<p>To run multiple control-panel replicas:</p>
+
+<ol>
+<li>Use an external PostgreSQL instance (not the bundled container)</li>
+<li>Place a load balancer in front of all replicas</li>
+<li>Configure health checks on the load balancer using <code>/api/ready</code></li>
+<li>Ensure all replicas share the same <code>RAPTOR_ACCESS_TOKEN</code> and provider keys</li>
+</ol>
+
+<p>The MCP server is stateless and can be scaled independently.</p>
+
+<h3 id="database-scaling">Database Scaling</h3>
+
+<ul>
+<li><strong>Connection pooling:</strong> Use PgBouncer or your provider's built-in pooler for high-replica counts</li>
+<li><strong>Read replicas:</strong> Not currently supported (all queries go to the primary)</li>
+<li><strong>Storage:</strong> Immutable tables grow indefinitely. Plan storage based on inference volume (see <a href="/self-hosted/database">Database</a>)</li>
+</ul>
+
+<h2 id="build-attestation">Build Attestation</h2>
+
+<p>For supply-chain security, sign builds with an Ed25519 key:</p>
+
+<pre><code class="language-bash"># Generate a signing key
+raptor-sign keygen
+
+<h1 id="set-during-docker-build">Set during docker build</h1>
+docker build \
+  --build-arg RAPTOR_SIGNING_PRIVATE_KEY="$(cat signing.key)" \
+  -f Dockerfile.control-panel \
+  -t raptor-cp .
+
+<h1 id="verify-a-signed-image">Verify a signed image</h1>
+docker run --rm raptor-cp ./raptor-verify</code></pre>
+
+<p>The attestation embeds the git commit SHA, build time, builder version, and binary hash. It is written to <code>.attestation.json</code> inside the container image.</p>
+</div>

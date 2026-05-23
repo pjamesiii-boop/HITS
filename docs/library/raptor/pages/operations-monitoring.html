@@ -1,0 +1,162 @@
+<div class="docs-page">
+<h1>Monitoring</h1>
+<p class="docs-page-description">Health endpoints, operational metrics, provider monitoring, and integrity verification for Raptor in production.</p>
+<h1 id="monitoring">Monitoring</h1>
+
+<p>Raptor exposes structured health, metrics, and integrity endpoints. This guide covers what to monitor, what each endpoint returns, and how to set up alerting.</p>
+
+<h2 id="health-endpoints">Health Endpoints</h2>
+
+<h3 id="liveness-code-api-health-code">Liveness: <code>/api/health</code></h3>
+
+<p>Returns <code>200 OK</code> if the control-panel process is running.</p>
+
+<pre><code class="language-bash">curl http://localhost:4000/api/health</code></pre>
+
+<pre><code class="language-json">{"status": "ok"}</code></pre>
+
+<p>Use this for container orchestration liveness probes. A non-200 response means the process should be restarted.</p>
+
+<h3 id="readiness-code-api-ready-code">Readiness: <code>/api/ready</code></h3>
+
+<p>Returns <code>200 OK</code> if the database is connected and migrations are applied. Returns <code>503</code> otherwise.</p>
+
+<pre><code class="language-bash">curl http://localhost:4000/api/ready</code></pre>
+
+<pre><code class="language-json">{"status": "ready", "database": "connected"}</code></pre>
+
+<p>Use this as your load balancer health check. An instance that fails readiness should be removed from the traffic pool until it recovers.</p>
+
+<h3 id="dependency-health-code-api-health-dependencies-code">Dependency Health: <code>/api/health/dependencies</code></h3>
+
+<p>Returns per-dependency status for database, AI providers, and optional integrations.</p>
+
+<pre><code class="language-bash">curl http://localhost:4000/api/health/dependencies</code></pre>
+
+<pre><code class="language-json">{
+  "status": "ok",
+  "dependencies": {
+    "database": {"status": "ok", "latency_ms": 2},
+    "anthropic": {"status": "ok", "latency_ms": 145},
+    "openai": {"status": "degraded", "latency_ms": 980}
+  }
+}</code></pre>
+
+<h2 id="operational-health-metrics">Operational Health Metrics</h2>
+
+<h3 id="code-api-runtime-health-operational-code"><code>/api/runtime/health/operational</code></h3>
+
+<p>Returns real-time operational metrics for the running instance.</p>
+
+<pre><code class="language-bash">curl http://localhost:4000/api/runtime/health/operational \
+  -H "X-Raptor-Token: your-access-token"</code></pre>
+
+<p>Key fields in the response:</p>
+
+<p>| Field | Description |<br>|---|---|<br>| <code>pool_utilization</code> | PostgreSQL connection pool usage (percentage) |<br>| <code>request_rate</code> | Requests per second over the last 60 seconds |<br>| <code>error_rate</code> | Error percentage over the last 60 seconds |<br>| <code>provider_health</code> | Per-provider status and latency |<br>| <code>uptime_seconds</code> | Time since last process start |</p>
+
+<p><strong>Alert thresholds:</strong></p>
+
+<p>| Metric | Warning | Critical |<br>|---|---|---|<br>| Pool utilization | > 70% | > 90% |<br>| Error rate | > 1% | > 5% |<br>| Request latency (p95) | > 500 ms | > 1 s |</p>
+
+<h2 id="provider-monitoring">Provider Monitoring</h2>
+
+<h3 id="code-api-runtime-config-code"><code>/api/runtime/config</code></h3>
+
+<p>Returns the active provider configuration (keys are redacted).</p>
+
+<pre><code class="language-bash">curl http://localhost:4000/api/runtime/config \
+  -H "X-Raptor-Token: your-access-token"</code></pre>
+
+<p>Use this to verify which providers are configured and which is currently primary. Multi-provider failover is automatic -- Raptor routes to the next healthy provider when the primary fails.</p>
+
+<h3 id="code-api-runtime-network-code"><code>/api/runtime/network</code></h3>
+
+<p>Returns network-level diagnostics: provider reachability, DNS resolution, and TLS status.</p>
+
+<pre><code class="language-bash">curl http://localhost:4000/api/runtime/network \
+  -H "X-Raptor-Token: your-access-token"</code></pre>
+
+<p>This endpoint is useful for diagnosing connectivity issues in restricted network environments.</p>
+
+<h2 id="integrity-monitoring">Integrity Monitoring</h2>
+
+<p>Integrity monitoring verifies that the running binary matches its build attestation and that the governance hash chain is intact.</p>
+
+<h3 id="code-api-runtime-integrity-code"><code>/api/runtime/integrity</code></h3>
+
+<p>Returns the current integrity status of the running instance.</p>
+
+<pre><code class="language-bash">curl http://localhost:4000/api/runtime/integrity \
+  -H "X-Raptor-Token: your-access-token"</code></pre>
+
+<pre><code class="language-json">{
+  "status": "verified",
+  "build_hash": "sha256:abc123...",
+  "signer": "ed25519:pubkey...",
+  "chain_head": "evt_20260521_00042",
+  "chain_valid": true
+}</code></pre>
+
+<p>A <code>status</code> of anything other than <code>"verified"</code> requires investigation. See the <a href="/operations/runbooks#integrity-failure-response">Integrity Failure Response runbook</a> for procedures.</p>
+
+<h3 id="code-api-runtime-integrity-events-code"><code>/api/runtime/integrity/events</code></h3>
+
+<p>Returns recent integrity-related events: attestation checks, chain validations, and any anomalies.</p>
+
+<pre><code class="language-bash">curl http://localhost:4000/api/runtime/integrity/events \
+  -H "X-Raptor-Token: your-access-token"</code></pre>
+
+<h3 id="public-transparency-endpoints">Public Transparency Endpoints</h3>
+
+<p>These endpoints are unauthenticated and intended for external verification:</p>
+
+<p>| Endpoint | Purpose |<br>|---|---|<br>| <code>/.well-known/raptor/attestation</code> | Ed25519 build attestation (signature, commit hash, build timestamp) |<br>| <code>/.well-known/raptor/transparency</code> | Hash chain transparency log for independent audit |</p>
+
+<h2 id="suggested-alerting-configuration">Suggested Alerting Configuration</h2>
+
+<h3 id="critical-alerts-page-immediately">Critical Alerts (page immediately)</h3>
+
+<ul>
+<li><code>/api/ready</code> returns non-200 for > 30 seconds</li>
+<li><code>/api/runtime/integrity</code> status is not <code>"verified"</code></li>
+<li>Error rate exceeds 5% over a 5-minute window</li>
+<li>Hash chain validation fails (<code>chain_valid: false</code>)</li>
+</ul>
+
+<h3 id="warning-alerts-notify-during-business-hours">Warning Alerts (notify during business hours)</h3>
+
+<ul>
+<li><code>/api/health/dependencies</code> shows any provider as <code>"degraded"</code> for > 5 minutes</li>
+<li>Pool utilization exceeds 70% sustained over 10 minutes</li>
+<li>Request latency (p95) exceeds 500 ms over a 5-minute window</li>
+<li>Integrity event log shows <code>attestation_missing</code> or <code>untrusted_signer</code></li>
+</ul>
+
+<h3 id="informational-log-and-review">Informational (log and review)</h3>
+
+<ul>
+<li>Provider failover events (automatic, but worth tracking frequency)</li>
+<li>Migration events on startup</li>
+<li>Configuration changes detected via <code>/api/runtime/config</code></li>
+</ul>
+
+<h2 id="integration-examples">Integration Examples</h2>
+
+<h3 id="prometheus-grafana">Prometheus / Grafana</h3>
+
+<p>If you expose Raptor metrics to Prometheus, scrape <code>/api/runtime/health/operational</code> at 15-second intervals. Key metric names follow the <code>raptor_</code> prefix convention.</p>
+
+<h3 id="uptime-monitors-pingdom-uptimerobot-checkly">Uptime Monitors (Pingdom, UptimeRobot, Checkly)</h3>
+
+<p>Point your HTTP check at:</p>
+
+<pre><code>GET /api/ready
+Expected status: 200
+Expected body contains: "ready"
+Interval: 30 seconds</code></pre>
+
+<h3 id="pagerduty-opsgenie">PagerDuty / Opsgenie</h3>
+
+<p>Route critical alerts (readiness failures, integrity drift) to your on-call rotation. Route warning alerts to a lower-urgency channel.</p>
+</div>

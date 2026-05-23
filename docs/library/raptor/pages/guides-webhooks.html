@@ -1,0 +1,103 @@
+<div class="docs-page">
+<h1>Webhook Integration</h1>
+<p class="docs-page-description">Receive real-time governance events from Raptor via HMAC-signed webhook deliveries.</p>
+<h1 id="webhook-integration">Webhook Integration</h1>
+
+<p>Raptor dispatches webhook events when governance decisions, responses, and policy changes occur. Each delivery is signed with HMAC-SHA256 so your endpoint can verify authenticity.</p>
+
+<h2 id="1-create-a-webhook-endpoint">1. Create a webhook endpoint</h2>
+
+<p>Register a URL and subscribe to the events you care about:</p>
+
+<pre><code class="language-bash">curl -X POST https://raptor.harpyits.com/api/webhooks \
+  -H "Authorization: Bearer rpt_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-app.com/webhooks/raptor",
+    "events": ["governance.allowed", "governance.denied", "response.created"]
+  }'</code></pre>
+
+<p>The response includes a <code>whsec_</code> prefixed signing secret. Store it securely — it is shown only at creation:</p>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "endpoint": {
+    "id": "uuid",
+    "url": "https://your-app.com/webhooks/raptor",
+    "events": ["governance.allowed", "governance.denied", "response.created"],
+    "secret": "whsec_a1b2c3d4e5f6...",
+    "active": true
+  }
+}</code></pre>
+
+<p>Pass an empty <code>events</code> array to subscribe to all event types.</p>
+
+<h2 id="2-verify-hmac-sha256-signatures">2. Verify HMAC-SHA256 signatures</h2>
+
+<p>Every webhook delivery includes two headers:</p>
+
+<p>| Header | Contents |<br>|---|---|<br>| <code>X-Raptor-Event</code> | Event type (e.g. <code>governance.allowed</code>) |<br>| <code>X-Raptor-Signature</code> | HMAC-SHA256 hex digest of the request body, keyed with your endpoint secret |</p>
+
+<p>Verify the signature before processing:</p>
+
+<pre><code class="language-javascript">import crypto from "node:crypto";
+
+<p>function verifySignature(body, secret, receivedSignature) {<br>  const expected = crypto<br>    .createHmac("sha256", secret)<br>    .update(body)<br>    .digest("hex");<br>  return crypto.timingSafeEqual(<br>    Buffer.from(expected, "hex"),<br>    Buffer.from(receivedSignature, "hex")<br>  );<br>}</code></pre></p>
+
+<p>Always use a constant-time comparison to prevent timing attacks.</p>
+
+<h2 id="3-event-types">3. Event types</h2>
+
+<p>| Event | Fired when |<br>|---|---|<br>| <code>governance.allowed</code> | A governance decision permits an operation |<br>| <code>governance.denied</code> | A governance decision blocks an operation |<br>| <code>response.created</code> | A governed response is committed to the audit chain |<br>| <code>execution.completed</code> | A confirmed action finishes executing |<br>| <code>policy.activated</code> | A new governance policy becomes active |<br>| <code>governance_decision</code> | Raw governance decision event (includes operation, decision, reason) |</p>
+
+<p>Event payloads are JSON objects with fields specific to the event type. The <code>governance_decision</code> payload includes <code>operation</code>, <code>decision</code> (<code>"allowed"</code> or <code>"denied"</code>), and <code>reason</code>.</p>
+
+<h2 id="4-example-express-js-handler">4. Example Express.js handler</h2>
+
+<pre><code class="language-javascript">import express from "express";
+import crypto from "node:crypto";
+
+<p>const app = express();<br>const WEBHOOK_SECRET = process.env.RAPTOR_WEBHOOK_SECRET;</p>
+
+<p>app.post("/webhooks/raptor", express.raw({ type: "application/json" }), (req, res) =&gt; {<br>  const signature = req.headers["x-raptor-signature"];<br>  const eventType = req.headers["x-raptor-event"];</p>
+
+<p>// 1. Verify signature<br>  const expected = crypto<br>    .createHmac("sha256", WEBHOOK_SECRET)<br>    .update(req.body)<br>    .digest("hex");</p>
+
+<p>if (!crypto.timingSafeEqual(Buffer.from(expected, "hex"), Buffer.from(signature, "hex"))) {<br>    return res.status(401).send("Invalid signature");<br>  }</p>
+
+<p>// 2. Parse and handle<br>  const payload = JSON.parse(req.body);</p>
+
+<p>switch (eventType) {<br>    case "governance.denied":<br>      alertSecurityTeam(payload);<br>      break;<br>    case "execution.completed":<br>      updateDashboard(payload);<br>      break;<br>    case "policy.activated":<br>      logPolicyChange(payload);<br>      break;<br>  }</p>
+
+<p>// 3. Respond 2xx to acknowledge receipt<br>  res.status(200).json({ received: true });<br>});</code></pre></p>
+
+<h2 id="5-retry-behavior">5. Retry behavior</h2>
+
+<p>Raptor retries failed deliveries once, with a 2-second delay between attempts. A delivery is considered successful when your endpoint returns a 2xx status code within 5 seconds.</p>
+
+<p>| Attempt | Timing |<br>|---|---|<br>| 1 | Immediate |<br>| 2 | 2 seconds after first failure |</p>
+
+<p>All delivery attempts are recorded and visible via the deliveries endpoint:</p>
+
+<pre><code class="language-bash">curl -H "Authorization: Bearer rpt_your_key" \
+  https://raptor.harpyits.com/api/webhooks/{endpointId}/deliveries</code></pre>
+
+<h2 id="6-manage-endpoints">6. Manage endpoints</h2>
+
+<pre><code class="language-bash"># List all endpoints
+GET /api/webhooks
+
+<h1 id="delete-deactivate-an-endpoint">Delete (deactivate) an endpoint</h1>
+DELETE /api/webhooks/{id}
+
+<h1 id="view-delivery-history">View delivery history</h1>
+GET /api/webhooks/{id}/deliveries</code></pre>
+
+<h2 id="next-steps">Next steps</h2>
+
+<ul>
+<li><a href="/guides/rest-api">REST API integration</a> — the full API surface webhooks complement</li>
+<li><a href="/guides/audit-export">Audit export</a> — batch export of the same events webhooks deliver in real time</li>
+<li><a href="/guides/policy-authoring">Policy authoring</a> — the policies that generate governance events</li>
+</ul>
+</div>

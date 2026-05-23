@@ -1,0 +1,62 @@
+<div class="docs-page">
+<h1>Proposal/Commit Architecture</h1>
+<p class="docs-page-description">Why Raptor separates AI proposals from deterministic commits — and why that separation is the safety model.</p>
+<h1 id="proposal-commit-architecture">Proposal/Commit Architecture</h1>
+
+<p>Raptor enforces a hard separation between what AI proposes and what the system commits. AI is never directly connected to execution. This is not a design preference — it is the safety architecture.</p>
+
+<h2 id="the-separation">The separation</h2>
+
+<p>Three layers handle three concerns:</p>
+
+<p>| Layer | Responsibility | Deterministic? |<br>|-------|---------------|----------------|<br>| <strong>Proposal</strong> | AI generates language, recommendations, action suggestions | No — AI is probabilistic |<br>| <strong>Governance</strong> | Classify intent, enforce policies, check authorization | Yes — rule evaluation |<br>| <strong>Commit</strong> | Structure output, assign trust boundaries, hash-chain, execute | Yes — deterministic core |</p>
+
+<p>The AI layer never touches execution directly. A proposed action passes through governance evaluation and human confirmation before the commit layer executes it.</p>
+
+<h2 id="how-a-proposed-action-flows">How a proposed action flows</h2>
+
+<ol>
+<li>User says: "Deploy the canary build"</li>
+<li>Classifier categorizes intent as <code>propose_action</code></li>
+<li>AI generates a structured proposal:</li>
+</ol>
+   <pre><code class="language-json">   {
+     "action": "deploy_canary",
+     "parameters": { "build_id": "b-4a91", "target": "staging" },
+     "reasoning": "Build passed all gates. Canary deploy is next step."
+   }</code></pre>
+<ol>
+<li>Governance checks: does the policy allow <code>deploy_canary</code>? Is the user authorized? Is the budget within limits?</li>
+<li>Proposal is presented to the user with decision support metadata</li>
+<li>User confirms</li>
+<li>Classifier re-categorizes as <code>execute_confirmed_action</code></li>
+<li>Commit layer executes the action and records the result to the hash chain</li>
+</ol>
+
+<p>If the user does not confirm, the action is never executed. The proposal remains in the audit trail as a proposed-but-not-confirmed event.</p>
+
+<h2 id="what-this-prevents">What this prevents</h2>
+
+<p><strong>Prompt injection leading to execution.</strong> Even if an attacker manipulates the AI into proposing a harmful action, the governance layer evaluates the proposal against policies, and the human confirmation gate blocks unauthorized execution.</p>
+
+<p><strong>AI hallucination reaching operations.</strong> The AI might hallucinate a capability or a parameter. The commit layer validates the action against the registered action schema before execution. Invalid actions fail at commit, not at runtime.</p>
+
+<p><strong>Unaudited side effects.</strong> Every execution passes through the commit layer, which records input, output, timing, and trust classification. There is no path from AI to side effect that bypasses the audit chain.</p>
+
+<h2 id="conversational-responses">Conversational responses</h2>
+
+<p>Not every response involves an action. For <code>respond</code> and <code>ask</code> intents, the proposal/commit separation still applies:</p>
+
+<ul>
+<li>AI generates the conversational content (proposal)</li>
+<li>Commit layer assigns trust boundaries to each segment</li>
+<li>Commit layer hashes and chains the output</li>
+<li>No confirmation gate because there is no side effect</li>
+</ul>
+
+<p>The governance model applies uniformly. The confirmation gate activates only when the classified intent involves execution.</p>
+
+<h2 id="the-design-principle">The design principle</h2>
+
+<p>AI is good at language. It is not good at authorization, auditability, or deterministic execution. Raptor uses AI for what it is good at and uses deterministic systems for everything else. The proposal/commit boundary is where that division is enforced.</p>
+</div>

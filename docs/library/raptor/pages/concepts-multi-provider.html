@@ -1,0 +1,70 @@
+<div class="docs-page">
+<h1>Multi-Provider Architecture</h1>
+<p class="docs-page-description">How Raptor abstracts AI providers behind a unified interface — provider-agnostic governance with built-in failover.</p>
+<h1 id="multi-provider-architecture">Multi-Provider Architecture</h1>
+
+<p>Raptor is not tied to a single AI provider. A unified Provider interface abstracts Anthropic, OpenAI, Gemini, and Together AI behind a common contract. The governance layer does not care which model produced the response — the same trust boundaries, policies, and audit chain apply regardless.</p>
+
+<h2 id="supported-providers">Supported providers</h2>
+
+<p>| Provider | Models | Use case |<br>|----------|--------|----------|<br>| <strong>Anthropic</strong> | Claude family | Primary reasoning and governance |<br>| <strong>OpenAI</strong> | GPT family | Alternative reasoning, specialized tasks |<br>| <strong>Gemini</strong> | Gemini family | Multi-modal, alternative reasoning |<br>| <strong>Together AI</strong> | Open-source models | Cost optimization, specialized inference |</p>
+
+<h2 id="the-provider-interface">The Provider interface</h2>
+
+<p>Every provider implements the same interface:</p>
+
+<pre><code class="language-typescript">interface Provider {
+  chat(messages: Message[], options: ProviderOptions): Promise&lt;ProviderResponse&gt;
+  healthCheck(): Promise&lt;HealthStatus&gt;
+  estimateCost(messages: Message[]): CostEstimate
+}</code></pre>
+
+<p>This means the governance middleware, commit layer, and trust boundary classifier interact with a single abstraction. Adding a new provider means implementing this interface — no changes to governance logic.</p>
+
+<h2 id="provider-selection">Provider selection</h2>
+
+<p>Provider selection is configured at the tenant level:</p>
+
+<ul>
+<li><strong>Primary provider</strong> — handles all requests by default</li>
+<li><strong>Fallback provider</strong> — activated when the primary is unhealthy or rate-limited</li>
+<li><strong>Per-operation override</strong> — specific operations can target specific providers</li>
+</ul>
+
+<p>The selection is deterministic. There is no AI-driven routing — the tenant configuration specifies which provider handles which operations.</p>
+
+<h2 id="health-monitoring">Health monitoring</h2>
+
+<p>Each provider connection is monitored:</p>
+
+<ul>
+<li><strong>Latency tracking</strong> — rolling average response time</li>
+<li><strong>Error rate</strong> — percentage of failed requests over a sliding window</li>
+<li><strong>Rate limit state</strong> — remaining capacity within the provider's rate limits</li>
+<li><strong>Circuit breaker</strong> — provider is marked unhealthy after consecutive failures, with automatic recovery checks</li>
+</ul>
+
+<p>When a provider is marked unhealthy, requests fail over to the configured fallback. The failover event is recorded in the audit trail.</p>
+
+<h2 id="cost-model">Cost model</h2>
+
+<p>Raptor operates as inference pass-through: provider cost plus 10%. There is no markup on governance, audit, or trust boundary features — those are included in the platform.</p>
+
+<ul>
+<li>Provider costs are tracked per-request and aggregated per-tenant</li>
+<li>Budget policies can cap provider spend per operation, per day, or per billing cycle</li>
+<li>Cost estimates are available before execution via the <code>estimateCost</code> method</li>
+</ul>
+
+<h2 id="provider-agnostic-governance">Provider-agnostic governance</h2>
+
+<p>This is the key architectural point: the governance layer sits between the user and the provider, not inside the provider.</p>
+
+<ul>
+<li>Trust boundaries are assigned by the commit layer after the provider responds — the provider does not assign its own trust levels</li>
+<li>Policies are enforced before the request reaches the provider — the provider does not evaluate authorization</li>
+<li>The hash chain records the provider's response as-is — the provider does not participate in audit</li>
+</ul>
+
+<p>Switching providers changes the AI that generates proposals. It does not change the governance model, the trust boundary taxonomy, the policy enforcement, or the audit chain. The deterministic core is provider-independent.</p>
+</div>

@@ -1,0 +1,105 @@
+<div class="docs-page">
+<h1>Compliance Posture</h1>
+<p class="docs-page-description">What Raptor implements today for regulatory compliance and what is on the roadmap.</p>
+<h1 id="compliance-posture">Compliance Posture</h1>
+
+<p>This page describes Raptor's compliance capabilities honestly. What is implemented is implemented. What is planned is planned. We do not use aspirational language to describe incomplete work.</p>
+
+<h2 id="implemented-today">Implemented Today</h2>
+
+<h3 id="gdpr">GDPR</h3>
+
+<p>Raptor implements structural compliance with the following GDPR articles:</p>
+
+<p>| Article | Requirement | Implementation |<br>|---------|-------------|----------------|<br>| <strong>Article 6</strong> | Lawful basis for processing | Consent records with explicit grant/revoke tracking, timestamps, IP address, and user agent |<br>| <strong>Article 7</strong> | Conditions for consent | Consent management system with revocation support and full audit trail |<br>| <strong>Article 17</strong> | Right to erasure | Data subject request workflow. Mutable data is deleted. Immutable audit records have PII redacted while hash chain integrity is preserved |<br>| <strong>Article 20</strong> | Data portability | JSON export of all tenant data across 12 tables via API |<br>| <strong>Article 28</strong> | Processor obligations | Tenant isolation enforced at database level via PostgreSQL RLS on 30 tables |</p>
+
+<h3 id="ccpa">CCPA</h3>
+
+<p>| Right | Implementation |<br>|-------|----------------|<br>| <strong>Right to know</strong> | Full data export in JSON format, covering all data associated with the requesting user |<br>| <strong>Right to delete</strong> | Data subject request workflow with status tracking and completion timestamps |<br>| <strong>Right to opt-out</strong> | Consent records support explicit opt-out with audit trail |</p>
+
+<h3 id="immutable-audit-trail">Immutable Audit Trail</h3>
+
+<p>Raptor's hash-chained event log satisfies regulatory requirements for tamper-evident record-keeping:</p>
+
+<ul>
+<li>Every governed operation is recorded with a cryptographic hash linking it to the previous event</li>
+<li>11 tables are protected by database-level triggers that prevent modification or deletion</li>
+<li>The audit trail can be independently verified by any party using the canonical hashing specification</li>
+<li>Export endpoints provide the complete chain for external audit tools</li>
+</ul>
+
+<p>This is relevant to any regulation that requires demonstrable record integrity, including SOX, FINRA, and sector-specific audit mandates.</p>
+
+<h3 id="data-retention-controls">Data Retention Controls</h3>
+
+<ul>
+<li>Per-tenant retention policies configurable by resource type</li>
+<li>Configurable retention periods from 30 days to indefinite</li>
+<li>Optional auto-delete when retention period expires</li>
+<li>Immutable tables are exempt from deletion — they form the cryptographic chain</li>
+</ul>
+
+<h3 id="tenant-isolation">Tenant Isolation</h3>
+
+<ul>
+<li>PostgreSQL Row-Level Security enforced on 30 tables</li>
+<li><code>FORCE ROW LEVEL SECURITY</code> applied system-wide — even the database owner role is subject to RLS</li>
+<li>No cross-tenant data access is possible through application code</li>
+<li>Tenant-scoped API keys, webhooks, policies, and audit trails</li>
+</ul>
+
+<h2 id="roadmap">Roadmap</h2>
+
+<p>The following capabilities are planned. They are not implemented.</p>
+
+<p>Enterprise tier is not currently available. These capabilities are real preconditions for enterprise deployment, not gating language designed to drive sales conversations.</p>
+
+<h3 id="soc-2-type-2">SOC 2 Type 2</h3>
+
+<ul>
+<li><strong>Status:</strong> Not started</li>
+<li><strong>Preconditions:</strong> Formal control documentation, third-party audit engagement, 6-12 month observation window</li>
+<li><strong>What exists today:</strong> The hash-chained audit trail, RBAC, tenant isolation, and immutability triggers provide the technical controls that a SOC 2 audit would evaluate. The organizational and procedural controls are not yet formalized.</li>
+</ul>
+
+<h3 id="hipaa-business-associate-agreement">HIPAA Business Associate Agreement</h3>
+
+<ul>
+<li><strong>Status:</strong> Not started</li>
+<li><strong>Preconditions:</strong> BAA legal framework, PHI handling procedures, breach notification process, minimum necessary access controls</li>
+<li><strong>What exists today:</strong> Tenant isolation and audit logging provide the access control and auditability that HIPAA requires. PHI-specific handling (encryption of designated fields, access logging to the individual record level) is not yet implemented.</li>
+</ul>
+
+<h3 id="fedramp">FedRAMP</h3>
+
+<ul>
+<li><strong>Status:</strong> Not started</li>
+<li><strong>Preconditions:</strong> FedRAMP authorization package, third-party assessment organization (3PAO), agency sponsor</li>
+<li><strong>What exists today:</strong> This is a multi-year effort. Current architecture decisions (tenant isolation, immutable audit, deterministic governance) are compatible with FedRAMP requirements but the authorization process has not begun.</li>
+</ul>
+
+<h3 id="data-residency">Data Residency</h3>
+
+<ul>
+<li><strong>Status:</strong> Planned</li>
+<li><strong>Target:</strong> US and EU regions</li>
+<li><strong>Preconditions:</strong> Multi-region database deployment, region-aware routing, data classification per tenant</li>
+<li><strong>What exists today:</strong> Single-region deployment. Database hosting region is determined by the deployment provider (Railway, AWS, etc.).</li>
+</ul>
+
+<h3 id="pii-redaction">PII Redaction</h3>
+
+<ul>
+<li><strong>Status:</strong> Planned</li>
+<li><strong>Preconditions:</strong> PII detection pipeline, redaction-before-storage for designated fields, redaction-in-place for existing data with hash chain preservation</li>
+<li><strong>What exists today:</strong> Right-to-erasure workflow redacts PII from immutable records while preserving hash integrity. Proactive PII detection and automatic redaction before storage is not yet implemented.</li>
+</ul>
+
+<h3 id="customer-managed-encryption-keys-byok">Customer-Managed Encryption Keys (BYOK)</h3>
+
+<ul>
+<li><strong>Status:</strong> Planned</li>
+<li><strong>Preconditions:</strong> Key management integration (AWS KMS, GCP KMS, Azure Key Vault), envelope encryption, key rotation workflow</li>
+<li><strong>What exists today:</strong> Encryption at rest is provided by the database hosting provider. Application-level encryption with customer-managed keys is not implemented.</li>
+</ul>
+</div>

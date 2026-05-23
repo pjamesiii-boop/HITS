@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product Hub | Harpy I.T. Solutions INC.</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'deep-slate':    '#020617',
+            'electric-blue': '#3b82f6',
+            'blue-glow':     '#60a5fa',
+          },
+          fontFamily: {
+            'display': ['Syne',          'sans-serif'],
+            'body':    ['DM Sans',        'sans-serif'],
+            'mono':    ['JetBrains Mono', 'monospace'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root { --blue:#3b82f6; --bg:#020617; --card-bg:rgba(15,23,42,0.75); }
+    *, *::before, *::after { box-sizing:border-box; }
+    body { background-color:var(--bg); font-family:'DM Sans',sans-serif; overflow-x:hidden; }
+
+    /* Grain */
+    body::before {
+      content:''; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.4;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    }
+
+    /* ── Nav ── */
+    .nav-glass {
+      background:rgba(2,6,23,.65);
+      backdrop-filter:blur(20px) saturate(180%);
+      -webkit-backdrop-filter:blur(20px) saturate(180%);
+      border-bottom:1px solid rgba(59,130,246,.12);
+    }
+    .nav-link {
+      position:relative; color:rgba(203,213,225,.85);
+      font-size:.875rem; font-weight:500; letter-spacing:.02em; transition:color .2s;
+    }
+    .nav-link::after {
+      content:''; position:absolute; bottom:-3px; left:0;
+      width:0; height:1px; background:var(--blue); transition:width .25s ease;
+    }
+    .nav-link:hover { color:#93c5fd; }
+    .nav-link:hover::after, .nav-link.active::after { width:100%; }
+    .nav-link.active { color:#93c5fd; }
+    .btn-contact {
+      background:linear-gradient(135deg,#2563eb,#3b82f6);
+      box-shadow:0 0 20px rgba(59,130,246,.4);
+      transition:box-shadow .3s, transform .2s;
+    }
+    .btn-contact:hover { box-shadow:0 0 32px rgba(59,130,246,.65); transform:translateY(-1px); }
+
+    /* ── Dropdown ── */
+    .dropdown-wrap { position:relative; }
+    .dropdown-btn {
+      display:flex; align-items:center; gap:5px;
+      color:rgba(203,213,225,.85); font-size:.875rem; font-weight:500;
+      letter-spacing:.02em; cursor:pointer; background:none; border:none;
+      padding:0; transition:color .2s; font-family:'DM Sans',sans-serif; position:relative;
+    }
+    .dropdown-btn::after {
+      content:''; position:absolute; bottom:-3px; left:0;
+      width:0; height:1px; background:var(--blue); transition:width .25s ease;
+    }
+    .dropdown-btn:hover, .dropdown-btn.active { color:#93c5fd; }
+    .dropdown-btn:hover::after, .dropdown-btn.active::after { width:calc(100% - 16px); }
+    .dropdown-btn svg { transition:transform .25s ease; flex-shrink:0; }
+    .dropdown-wrap:hover .dropdown-btn svg,
+    .dropdown-wrap.open .dropdown-btn svg { transform:rotate(180deg); }
+    .dropdown-menu {
+      position:absolute; top:calc(100% + 12px); left:50%;
+      transform:translateX(-50%) scale(0.95);
+      min-width:230px; z-index:100;
+      background:rgba(7,12,28,.92);
+      backdrop-filter:blur(24px) saturate(180%);
+      -webkit-backdrop-filter:blur(24px) saturate(180%);
+      border:1px solid rgba(59,130,246,.22); border-radius:14px;
+      box-shadow:0 20px 60px rgba(0,0,0,.6), 0 0 0 1px rgba(59,130,246,.08);
+      padding:8px; opacity:0; pointer-events:none;
+      transform-origin:top center;
+      transition:opacity .22s ease, transform .22s ease;
+    }
+    .dropdown-wrap:hover .dropdown-menu,
+    .dropdown-wrap.open .dropdown-menu { opacity:1; pointer-events:auto; transform:translateX(-50%) scale(1); }
+    .dropdown-item {
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px; border-radius:8px;
+      font-family:'DM Sans',sans-serif; font-size:.85rem; font-weight:500;
+      color:rgba(203,213,225,.85); text-decoration:none;
+      transition:background .18s, color .18s; white-space:nowrap;
+    }
+    .dropdown-item:hover { background:rgba(59,130,246,.1); color:#93c5fd; }
+    .dropdown-item .d-icon {
+      width:28px; height:28px; border-radius:7px; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      background:rgba(59,130,246,.12); border:1px solid rgba(59,130,246,.22);
+    }
+    .dropdown-item.coming-soon { cursor:default; opacity:.42; pointer-events:none; }
+    .dropdown-divider { height:1px; background:rgba(59,130,246,.1); margin:6px 4px; }
+    .coming-tag {
+      margin-left:auto; font-size:.6rem; font-family:'JetBrains Mono',monospace;
+      font-weight:600; letter-spacing:.08em; text-transform:uppercase;
+      padding:2px 6px; border-radius:4px;
+      background:rgba(148,163,184,.1); border:1px solid rgba(148,163,184,.2);
+      color:rgba(148,163,184,.6);
+    }
+    .mob-dropdown-items { display:none; padding-left:14px; margin-top:4px; }
+    .mob-dropdown-items.open { display:flex; flex-direction:column; gap:2px; }
+    .mob-dropdown-btn {
+      display:flex; align-items:center; justify-content:space-between;
+      color:rgba(203,213,225,.85); font-size:1rem; font-weight:500;
+      background:none; border:none; padding:0; cursor:pointer;
+      font-family:'DM Sans',sans-serif; width:100%;
+    }
+    .mob-dropdown-btn svg { transition:transform .25s; }
+    .mob-dropdown-btn.open svg { transform:rotate(180deg); }
+
+    /* ── Shared utilities ── */
+    .gradient-headline {
+      background:linear-gradient(135deg,#fff 0%,#e2eeff 35%,#93c5fd 65%,#3b82f6 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .blue-line { width:48px; height:2px; background:linear-gradient(90deg,var(--blue),transparent); border-radius:2px; }
+    .tag {
+      display:inline-flex; align-items:center; padding:3px 10px;
+      background:rgba(59,130,246,.12); border:1px solid rgba(59,130,246,.3);
+      border-radius:999px; font-size:.68rem; font-weight:600;
+      letter-spacing:.08em; color:#93c5fd; text-transform:uppercase;
+    }
+    .glow-bullet {
+      width:7px; height:7px; background:var(--blue); border-radius:50%; flex-shrink:0;
+      box-shadow:0 0 8px 2px rgba(59,130,246,.65);
+    }
+
+    /* ── Hero grid ── */
+    .hero-grid {
+      background-image:
+        linear-gradient(rgba(59,130,246,.05) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(59,130,246,.05) 1px,transparent 1px);
+      background-size:60px 60px;
+    }
+
+    /* ── Harpy Talon card ── */
+    .talon-card {
+      background:rgba(10,18,36,.85);
+      border:1px solid rgba(59,130,246,.25);
+      border-radius:20px;
+      position:relative; overflow:hidden;
+      transition:border-color .3s, box-shadow .3s;
+    }
+    .talon-card:hover {
+      border-color:rgba(59,130,246,.5);
+      box-shadow:0 0 60px rgba(59,130,246,.15), 0 24px 64px rgba(0,0,0,.5);
+    }
+    .talon-card::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:2px;
+      background:linear-gradient(90deg,transparent,#3b82f6,transparent);
+    }
+
+    /* Logo glow ring */
+    .logo-ring {
+      position:absolute; inset:-20px; border-radius:50%;
+      background:radial-gradient(circle,rgba(59,130,246,.22) 0%,transparent 70%);
+      animation:ringPulse 3s ease-in-out infinite;
+    }
+    @keyframes ringPulse { 0%,100%{transform:scale(1);opacity:.7;} 50%{transform:scale(1.1);opacity:1;} }
+
+    /* Frosted logo container */
+    .logo-frosted {
+      background:rgba(15,23,42,.7);
+      backdrop-filter:blur(20px);
+      -webkit-backdrop-filter:blur(20px);
+      border:1px solid rgba(59,130,246,.22);
+      border-radius:18px;
+      position:relative; overflow:hidden;
+    }
+    .logo-frosted::before {
+      content:''; position:absolute; inset:0;
+      background:radial-gradient(ellipse at 50% 0%,rgba(59,130,246,.14) 0%,transparent 70%);
+      pointer-events:none;
+    }
+
+    /* ── Stealth card ── */
+    .stealth-card {
+      border-radius:20px; position:relative; overflow:hidden;
+      background:rgba(7,12,26,.9);
+      border:1px solid rgba(59,130,246,.12);
+      transition:border-color .35s, box-shadow .35s;
+    }
+    .stealth-card:hover {
+      border-color:rgba(59,130,246,.3);
+      box-shadow:0 0 60px rgba(59,130,246,.1), 0 24px 64px rgba(0,0,0,.5);
+    }
+
+    /* Wireframe SVG grid overlay */
+    .wf-grid {
+      position:absolute; inset:0; pointer-events:none;
+      background-image:
+        linear-gradient(rgba(59,130,246,.07) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(59,130,246,.07) 1px,transparent 1px);
+      background-size:32px 32px;
+    }
+    .wf-dots {
+      position:absolute; inset:0; pointer-events:none;
+      background-image:radial-gradient(circle,rgba(59,130,246,.18) 1px,transparent 1px);
+      background-size:32px 32px; background-position:16px 16px;
+    }
+
+    /* Stealth glow orb */
+    .stealth-orb {
+      position:absolute; top:30%; left:50%; transform:translate(-50%,-50%);
+      width:320px; height:320px;
+      background:radial-gradient(circle,rgba(59,130,246,.12) 0%,transparent 70%);
+      border-radius:50%; pointer-events:none;
+      animation:orbPulse 4s ease-in-out infinite;
+    }
+    @keyframes orbPulse { 0%,100%{opacity:.6;transform:translate(-50%,-50%) scale(1);} 50%{opacity:1;transform:translate(-50%,-50%) scale(1.15);} }
+
+    /* Wireframe hexagon */
+    .hex-frame {
+      width:110px; height:110px;
+      clip-path:polygon(50% 0%,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%);
+      background:rgba(59,130,246,.06);
+      border:1px solid rgba(59,130,246,.2);
+      display:flex; align-items:center; justify-content:center;
+      position:relative;
+      animation:hexRotate 12s linear infinite;
+    }
+    @keyframes hexRotate { from{filter:hue-rotate(0deg);} to{filter:hue-rotate(360deg);} }
+
+    /* Countdown / lock element */
+    .lock-ring {
+      width:90px; height:90px; border-radius:50%;
+      border:2px solid rgba(59,130,246,.25);
+      border-top-color:rgba(59,130,246,.7);
+      display:flex; align-items:center; justify-content:center;
+      animation:spinRing 6s linear infinite;
+    }
+    @keyframes spinRing { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+    .lock-inner {
+      width:70px; height:70px; border-radius:50%;
+      border:1px solid rgba(59,130,246,.15);
+      border-bottom-color:rgba(59,130,246,.5);
+      display:flex; align-items:center; justify-content:center;
+      animation:spinRing 3s linear infinite reverse;
+    }
+
+    /* Scan line animation */
+    .scan-line {
+      position:absolute; left:0; right:0; height:2px;
+      background:linear-gradient(90deg,transparent,rgba(59,130,246,.6),transparent);
+      animation:scanDown 3s linear infinite;
+    }
+    @keyframes scanDown { from{top:0%;} to{top:100%;} }
+
+    /* Feature chip */
+    .feature-chip {
+      display:inline-flex; align-items:center; gap:7px;
+      padding:7px 14px; border-radius:8px;
+      background:rgba(59,130,246,.08); border:1px solid rgba(59,130,246,.18);
+      font-family:'DM Sans',sans-serif; font-size:.82rem; color:#94a3b8;
+      transition:border-color .2s, background .2s;
+    }
+    .feature-chip:hover { background:rgba(59,130,246,.14); border-color:rgba(59,130,246,.35); color:#93c5fd; }
+
+    /* Philosophy section */
+    .phil-card {
+      background:rgba(15,23,42,.6);
+      border:1px solid rgba(59,130,246,.13);
+      border-radius:14px; padding:26px;
+      transition:border-color .3s, box-shadow .3s;
+    }
+    .phil-card:hover {
+      border-color:rgba(59,130,246,.32);
+      box-shadow:0 0 30px rgba(59,130,246,.08);
+    }
+
+    /* Animations */
+    .anim-1{opacity:0;animation:fadeUp .65s ease .1s forwards;}
+    .anim-2{opacity:0;animation:fadeUp .65s ease .22s forwards;}
+    .anim-3{opacity:0;animation:fadeUp .65s ease .34s forwards;}
+    .anim-4{opacity:0;animation:fadeUp .65s ease .46s forwards;}
+    .anim-5{opacity:0;animation:fadeUp .65s ease .58s forwards;}
+    @keyframes fadeUp { from{opacity:0;transform:translateY(22px);} to{opacity:1;transform:translateY(0);} }
+    .scroll-reveal{opacity:0;transform:translateY(28px);transition:opacity .65s ease,transform .65s ease;}
+    .scroll-reveal.visible{opacity:1;transform:translateY(0);}
+
+    #mobile-menu{display:none;}
+    #mobile-menu.open{display:block;}
+
+    /* Shimmer */
+    @keyframes shimmer {
+      0%{background-position:-200% 0;}
+      100%{background-position:200% 0;}
+    }
+    .shimmer-text {
+      background:linear-gradient(90deg,#60a5fa 0%,#fff 40%,#60a5fa 80%,#fff 100%);
+      background-size:200% auto;
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+      animation:shimmer 3.5s linear infinite;
+    }
+  </style>
+</head>
+
+<body class="text-slate-100 relative">
+
+  <!-- ══════════════════════════════
+       NAV
+  ══════════════════════════════ -->
+  <header class="nav-glass fixed top-0 inset-x-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-16">
+
+      <a href="index.html" class="flex items-center gap-2.5 group">
+        <!-- HITS logo — Smart Card badge housing -->
+        <div class="relative flex items-center justify-center" style="width:36px;height:36px;">
+          <!-- Outer cyber-glow bloom -->
+          <div style="position:absolute;inset:-7px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,0.28) 0%,transparent 68%);pointer-events:none;z-index:0;"></div>
+          <!-- Secure housing ring -->
+          <div style="position:absolute;inset:-1px;border-radius:10px;border:1px solid rgba(96,165,250,0.55);background:transparent;pointer-events:none;z-index:3;box-shadow:0 0 14px rgba(59,130,246,0.3);"></div>
+          <div style="position:relative;z-index:2;
+                      border-radius:7px;overflow:hidden;
+                      width:32px;height:32px;
+                      display:flex;align-items:center;justify-content:center;
+                      background:#dbeafe;
+                      box-shadow:inset 0 0 0 1px rgba(147,197,253,0.6);">
+            <img src="hits_logo.png" alt="HITS"
+                 class="h-7 w-auto"
+                 style="border-radius:5px;"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+          </div>
+          <!-- Text fallback -->
+          <div style="display:none;position:relative;z-index:2;" class="w-8 h-8 rounded-md bg-electric-blue items-center justify-center shadow-[0_0_14px_rgba(59,130,246,0.7)]">
+            <span class="font-display font-800 text-white text-sm">H</span>
+          </div>
+        </div>
+        <span class="font-display font-700 text-white text-lg tracking-tight">HITS</span>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-7 font-body">
+        <a href="index.html"      class="nav-link">Home</a>
+
+        <!-- Products dropdown — active state (we are on products.html) -->
+        <div class="dropdown-wrap">
+          <button class="dropdown-btn active">
+            Products
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="dropdown-menu">
+            <a href="product.html" class="dropdown-item">
+              <span class="d-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></span>
+              Harpy Talon
+            </a>
+            <a href="products.html" class="dropdown-item" style="background:rgba(59,130,246,.1);color:#93c5fd;">
+              <span class="d-icon" style="border-color:rgba(59,130,246,.4);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+              Product Hub
+            </a>
+            <div class="dropdown-divider"></div>
+            <span class="dropdown-item coming-soon">
+              <span class="d-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+              Future SaaS
+              <span class="coming-tag">Soon</span>
+            </span>
+          </div>
+        </div>
+
+        <a href="services.html"   class="nav-link">Services</a>
+        <a href="government.html" class="nav-link">Government</a>
+        <a href="about.html"      class="nav-link">About</a>
+        <a href="careers.html"    class="nav-link">Careers</a>
+        <a href="news.html"       class="nav-link">News</a>
+      </nav>
+
+      <div class="hidden md:flex">
+        <a href="contact.html" class="btn-contact px-5 py-2 rounded-lg text-sm font-display font-600 text-white tracking-wide">
+          Contact Us
+        </a>
+      </div>
+
+      <button id="menu-toggle" class="md:hidden flex flex-col gap-1.5 p-1" aria-label="Toggle menu">
+        <span class="w-5 h-0.5 bg-slate-300 block"></span>
+        <span class="w-5 h-0.5 bg-slate-300 block"></span>
+        <span class="w-5 h-0.5 bg-slate-300 block"></span>
+      </button>
+    </div>
+
+    <div id="mobile-menu" class="md:hidden px-6 pb-5 pt-2 flex flex-col gap-4 font-body border-t border-white/5">
+      <a href="index.html" class="nav-link text-base">Home</a>
+      <div>
+        <button class="mob-dropdown-btn" id="mob-prod-btn">
+          Products
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="mob-dropdown-items" id="mob-prod-items">
+          <a href="product.html"  class="dropdown-item" style="padding:8px 10px;font-size:.9rem;">Harpy Talon</a>
+          <a href="products.html" class="dropdown-item" style="padding:8px 10px;font-size:.9rem;color:#93c5fd;">Product Hub</a>
+          <span class="dropdown-item coming-soon" style="padding:8px 10px;font-size:.9rem;">Future SaaS <span class="coming-tag">Soon</span></span>
+        </div>
+      </div>
+      <a href="services.html"   class="nav-link text-base">Services</a>
+      <a href="government.html" class="nav-link text-base">Government</a>
+      <a href="about.html"      class="nav-link text-base">About</a>
+      <a href="careers.html"    class="nav-link text-base">Careers</a>
+      <a href="news.html"       class="nav-link text-base">News</a>
+      <a href="contact.html" class="btn-contact px-5 py-2.5 rounded-lg text-sm font-display font-600 text-white text-center">Contact Us</a>
+    </div>
+  </header>
+
+
+  <!-- ══════════════════════════════
+       HERO
+  ══════════════════════════════ -->
+  <section class="relative min-h-[88vh] flex flex-col justify-center px-6 pt-28 pb-20 overflow-hidden hero-grid">
+    <div class="absolute inset-0 pointer-events-none"
+         style="background:radial-gradient(ellipse 75% 55% at 50% 30%,rgba(59,130,246,.11) 0%,transparent 70%);">
+    </div>
+
+    <div class="relative z-10 max-w-7xl mx-auto w-full">
+      <div class="anim-1 mb-6">
+        <span class="tag">Product Suite · Harpy I.T. Solutions INC.</span>
+      </div>
+
+      <h1 class="anim-2 font-display font-800 text-5xl sm:text-6xl lg:text-[3.6rem] leading-[1.04] tracking-tight mb-6 max-w-4xl">
+        <span class="gradient-headline">Proprietary Software.</span><br />
+        <span class="shimmer-text">Mission-Critical Logic.</span>
+      </h1>
+
+      <p class="anim-3 font-body text-lg text-slate-400 leading-relaxed max-w-2xl mb-10">
+        Every tool in the HITS software suite was forged from 30+ years of lived DoD experience —
+        purpose-built to close the gaps where commercial software fails federal operators.
+        No bloat. No compromise. No off-the-shelf guesswork.
+      </p>
+
+      <div class="anim-4 flex flex-wrap gap-4">
+        <a href="product.html" class="btn-contact px-7 py-3.5 rounded-xl font-display font-700 text-white text-base">
+          Explore Harpy Talon
+        </a>
+        <a href="contact.html"
+           class="px-7 py-3.5 rounded-xl font-display font-600 text-slate-300 border border-slate-700 hover:border-blue-500 hover:text-white transition-all duration-300 text-base">
+          Schedule a Demo
+        </a>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════
+       SUITE BENTO GRID
+  ══════════════════════════════ -->
+  <section class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 py-20 scroll-reveal">
+
+    <div class="flex items-center gap-4 mb-4">
+      <div class="blue-line"></div>
+      <span class="font-display font-600 text-slate-500 text-sm tracking-widest uppercase">The HITS Suite</span>
+    </div>
+    <h2 class="font-display font-800 text-3xl lg:text-4xl text-white mb-12">Software Products</h2>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- ── Card 1: Harpy Talon ── -->
+      <div class="talon-card p-8 lg:p-10 flex flex-col min-h-[540px]">
+
+        <!-- Ambient corner glow -->
+        <div class="absolute top-0 right-0 w-72 h-72 pointer-events-none"
+             style="background:radial-gradient(circle at top right,rgba(59,130,246,.16) 0%,transparent 65%);">
+        </div>
+
+        <!-- Header row -->
+        <div class="flex items-start justify-between mb-8 relative z-10">
+          <!-- Logo showcase -->
+          <div class="relative" style="width:96px;height:96px;">
+            <div class="logo-ring"></div>
+            <div class="logo-frosted w-24 h-24 flex items-center justify-center">
+              <div style="display:inline-flex;align-items:center;justify-content:center;
+                          background:#f0f7ff;border-radius:10px;padding:4px;
+                          box-shadow:0 0 0 1px rgba(147,197,253,0.5),0 0 14px rgba(59,130,246,0.22);">
+                <img src="HITS_Talon_logo.png" alt="Harpy Talon"
+                     class="w-14 h-auto"
+                     style="display:block;border-radius:7px;"
+                     onerror="this.style.display='none';document.getElementById('talon-fb').style.display='flex';" />
+              </div>
+              <div id="talon-fb" style="display:none;" class="flex flex-col items-center justify-center w-full h-full">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="1.5">
+                  <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-2 items-end">
+            <span class="tag">Active · v2.4</span>
+            <span class="font-mono text-xs text-slate-500">FedRAMP Ready</span>
+          </div>
+        </div>
+
+        <!-- Title + description -->
+        <div class="relative z-10 flex-1">
+          <p class="font-mono text-xs text-electric-blue mb-1 tracking-wider uppercase">PDLC Platform</p>
+          <h3 class="font-display font-800 text-3xl text-white mb-4 leading-tight">
+            Harpy Talon
+          </h3>
+          <p class="font-body text-slate-400 leading-relaxed mb-7">
+            The only proposal lifecycle platform built by people who've actually sat on a Source Selection
+            Evaluation Board. Harpy Talon orchestrates every stage of the federal proposal process —
+            from opportunity scouting to submission-ready packaging — with AI precision and military-grade security.
+          </p>
+
+          <!-- Module chips -->
+          <div class="flex flex-wrap gap-2 mb-7">
+            <div class="feature-chip">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              PDLC Framework
+            </div>
+            <div class="feature-chip">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              SSEB Evaluator
+            </div>
+            <div class="feature-chip">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              PTW Module
+            </div>
+            <div class="feature-chip">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              Secure Enclave
+            </div>
+            <div class="feature-chip">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              AI Synthesizer
+            </div>
+          </div>
+
+          <!-- Mini stats row -->
+          <div class="flex gap-6 mb-8 pb-7 border-b border-slate-800">
+            <div>
+              <p class="font-display font-700 text-2xl text-white">2.3×</p>
+              <p class="font-mono text-xs text-slate-500 mt-0.5">Win Rate Lift</p>
+            </div>
+            <div>
+              <p class="font-display font-700 text-2xl text-white">68%</p>
+              <p class="font-mono text-xs text-slate-500 mt-0.5">Time Saved</p>
+            </div>
+            <div>
+              <p class="font-display font-700 text-2xl text-white">5</p>
+              <p class="font-mono text-xs text-slate-500 mt-0.5">PDLC Gates</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="relative z-10">
+          <a href="product.html"
+             class="btn-contact inline-flex items-center gap-2 px-7 py-3 rounded-xl font-display font-700 text-white text-sm">
+            Full Product Overview
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- ── Card 2: Stealth Project ── -->
+      <div class="stealth-card flex flex-col min-h-[540px]">
+        <!-- Layers -->
+        <div class="wf-grid"></div>
+        <div class="wf-dots"></div>
+        <div class="stealth-orb"></div>
+        <div class="scan-line"></div>
+
+        <!-- Content -->
+        <div class="relative z-10 p-8 lg:p-10 flex flex-col h-full">
+
+          <!-- Header row -->
+          <div class="flex items-start justify-between mb-8">
+            <!-- Animated lock graphic -->
+            <div class="flex items-center justify-center">
+              <div class="lock-ring">
+                <div class="lock-inner">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(59,130,246,0.7)" stroke-width="1.5">
+                    <rect x="3" y="11" width="18" height="11" rx="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-col items-end gap-2">
+              <span class="tag" style="background:rgba(148,163,184,.08);border-color:rgba(148,163,184,.2);color:rgba(148,163,184,.7);">
+                Classified
+              </span>
+              <span class="font-mono text-xs" style="color:rgba(59,130,246,.5);">Q4 2026</span>
+            </div>
+          </div>
+
+          <!-- Title block -->
+          <div class="flex-1">
+            <p class="font-mono text-xs uppercase tracking-widest mb-2" style="color:rgba(59,130,246,.5);">
+              Next-Gen Infrastructure Analytics
+            </p>
+            <h3 class="font-display font-800 text-3xl text-white mb-2 leading-tight">
+              Stealth Project<br />
+              <span style="color:rgba(59,130,246,.5);">[ REDACTED ]</span>
+            </h3>
+            <p class="font-body text-sm leading-relaxed mb-7" style="color:rgba(148,163,184,.6);">
+              Harpy I.T.'s next proprietary platform applies 30 years of infrastructure ops data to
+              real-time network analytics, anomaly detection, and predictive sustainment planning
+              for DoD and federal enterprise environments.
+            </p>
+
+            <!-- Wireframe feature rows -->
+            <div class="space-y-3 mb-8">
+              <div class="flex items-center gap-3 p-3 rounded-lg"
+                   style="background:rgba(59,130,246,.05);border:1px solid rgba(59,130,246,.1);">
+                <div class="w-2 h-2 rounded-full" style="background:rgba(59,130,246,.4);box-shadow:0 0 6px rgba(59,130,246,.5);"></div>
+                <span class="font-mono text-xs" style="color:rgba(148,163,184,.6);">AI-Driven Network Anomaly Detection</span>
+                <span class="ml-auto font-mono text-xs" style="color:rgba(59,130,246,.4);">[IN DEV]</span>
+              </div>
+              <div class="flex items-center gap-3 p-3 rounded-lg"
+                   style="background:rgba(59,130,246,.05);border:1px solid rgba(59,130,246,.1);">
+                <div class="w-2 h-2 rounded-full" style="background:rgba(59,130,246,.4);box-shadow:0 0 6px rgba(59,130,246,.5);"></div>
+                <span class="font-mono text-xs" style="color:rgba(148,163,184,.6);">Predictive Sustainment &amp; MTTR Reduction</span>
+                <span class="ml-auto font-mono text-xs" style="color:rgba(59,130,246,.4);">[IN DEV]</span>
+              </div>
+              <div class="flex items-center gap-3 p-3 rounded-lg"
+                   style="background:rgba(59,130,246,.05);border:1px solid rgba(59,130,246,.1);">
+                <div class="w-2 h-2 rounded-full" style="background:rgba(59,130,246,.4);box-shadow:0 0 6px rgba(59,130,246,.5);"></div>
+                <span class="font-mono text-xs" style="color:rgba(148,163,184,.6);">DoD STIG &amp; RMF Compliance Dashboard</span>
+                <span class="ml-auto font-mono text-xs" style="color:rgba(59,130,246,.4);">[IN DEV]</span>
+              </div>
+              <div class="flex items-center gap-3 p-3 rounded-lg"
+                   style="background:rgba(59,130,246,.04);border:1px dashed rgba(59,130,246,.12);">
+                <div class="w-2 h-2 rounded-full" style="background:rgba(59,130,246,.2);"></div>
+                <span class="font-mono text-xs" style="color:rgba(148,163,184,.3);">████████████████████████ — CLASSIFIED</span>
+              </div>
+            </div>
+
+            <!-- Launch countdown label -->
+            <div class="inline-flex items-center gap-3 px-5 py-3 rounded-xl"
+                 style="background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.18);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+              <div>
+                <p class="font-mono text-xs font-600 text-electric-blue">Launching Q4 2026</p>
+                <p class="font-mono text-xs" style="color:rgba(96,165,250,.5);">Next-Gen Infrastructure Analytics</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- CTA -->
+          <div class="mt-6">
+            <a href="contact.html"
+               class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-display font-600 text-sm border transition-all duration-300"
+               style="border-color:rgba(59,130,246,.25);color:rgba(96,165,250,.7);"
+               onmouseover="this.style.borderColor='rgba(59,130,246,.5)';this.style.color='#93c5fd';"
+               onmouseout="this.style.borderColor='rgba(59,130,246,.25)';this.style.color='rgba(96,165,250,.7)';">
+              Request Early Access
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════
+       INNOVATION PHILOSOPHY
+  ══════════════════════════════ -->
+  <section class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pb-24 scroll-reveal">
+
+    <div class="flex items-center gap-4 mb-4">
+      <div class="blue-line"></div>
+      <span class="font-display font-600 text-slate-500 text-sm tracking-widest uppercase">Innovation Philosophy</span>
+    </div>
+    <h2 class="font-display font-800 text-3xl lg:text-4xl text-white mb-4">Why We Build What We Build</h2>
+    <p class="font-body text-slate-400 text-base mb-12 max-w-3xl leading-relaxed">
+      Commercial software is built for the median user in the median scenario. The DoD is neither. Every tool
+      Harpy I.T. ships is a direct response to a gap our team personally encountered — in a contract room,
+      a server room, or a theater of operations. That's not a marketing claim. It's a 30-year engineering mandate.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-12">
+
+      <div class="phil-card">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+             style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-700 text-lg text-white mb-2">Built From the Inside</h3>
+        <p class="font-body text-sm text-slate-400 leading-relaxed">
+          Our founders held the clearances, ran the SOWs, and sat in the SSEBs. Every feature we ship
+          was informed by lived federal acquisition experience — not focus groups or market research.
+        </p>
+      </div>
+
+      <div class="phil-card">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+             style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="1.8">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-700 text-lg text-white mb-2">Precision Over Features</h3>
+        <p class="font-body text-sm text-slate-400 leading-relaxed">
+          We don't pad our roadmap with vanity features. Each release targets a measurable outcome —
+          win rates, compliance scores, submission velocity — with surgical precision over broad scope.
+        </p>
+      </div>
+
+      <div class="phil-card">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+             style="background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="1.8">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 8v4l3 3"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-700 text-lg text-white mb-2">30-Year Feedback Loop</h3>
+        <p class="font-body text-sm text-slate-400 leading-relaxed">
+          Three decades of deployment patterns, procurement cycles, and infrastructure failure modes
+          feed directly into our product backlog. No software house on the market has that institutional depth.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- Quote bar -->
+    <div class="bento-card p-8 lg:p-10 relative overflow-hidden"
+         style="background:linear-gradient(135deg,rgba(15,23,42,.95) 0%,rgba(17,32,68,.7) 100%);">
+      <div class="absolute inset-0 pointer-events-none"
+           style="background:radial-gradient(ellipse 60% 80% at 10% 50%,rgba(59,130,246,.1) 0%,transparent 65%);">
+      </div>
+      <div class="absolute top-6 right-8 font-display font-800 text-8xl text-blue-900/20 leading-none select-none">"</div>
+      <div class="relative z-10 max-w-3xl">
+        <blockquote class="font-display font-700 text-xl lg:text-2xl text-white leading-snug mb-4">
+          "We don't build software to compete with Salesforce or SAP. We build software that the
+          contracting officer, the program manager, and the network engineer actually need — and that
+          the commercial market has consistently failed to deliver."
+        </blockquote>
+        <p class="font-mono text-xs text-electric-blue">— Paul R. James III, Founder · Harpy I.T. Solutions INC.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════
+       CTA
+  ══════════════════════════════ -->
+  <section class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pb-28 scroll-reveal">
+    <div class="bento-card p-8 lg:p-12 text-center relative overflow-hidden"
+         style="background:rgba(10,18,36,.85);">
+      <div class="absolute inset-0 pointer-events-none"
+           style="background:radial-gradient(ellipse 70% 70% at 50% 100%,rgba(59,130,246,.13) 0%,transparent 70%);">
+      </div>
+      <div class="relative z-10">
+        <span class="tag mb-4 inline-block">Get Involved</span>
+        <h2 class="font-display font-800 text-2xl lg:text-3xl text-white mb-3">
+          Interested in the Suite?
+        </h2>
+        <p class="font-body text-slate-400 mb-8 max-w-lg mx-auto">
+          Demo Harpy Talon today or register your interest for early access to our next platform.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a href="product.html"
+             class="btn-contact px-8 py-3.5 rounded-xl font-display font-700 text-white text-base">
+            Explore Harpy Talon
+          </a>
+          <a href="contact.html"
+             class="px-8 py-3.5 rounded-xl font-display font-600 text-slate-300 border border-slate-700 hover:border-blue-500 hover:text-white transition-all duration-300 text-base">
+            Contact the Team
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════
+       FOOTER
+  ══════════════════════════════ -->
+  <footer class="relative z-10 border-t border-slate-800/60 py-10 px-6 lg:px-10">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="flex items-center gap-2.5">
+        <span style="display:inline-flex;align-items:center;justify-content:center;background:#dbeafe;border-radius:6px;padding:2px;box-shadow:0 0 10px rgba(59,130,246,0.3),inset 0 0 0 1px rgba(147,197,253,0.5);"><img src="hits_logo.png" alt="HITS" class="h-7 w-auto" style="border-radius:4px;display:block;" onerror="this.parentElement.style.display='none';this.nextElementSibling.style.display='flex';" /></span>
+        <div style="display:none;" class="items-center gap-2">
+          <div class="w-7 h-7 rounded-md bg-electric-blue flex items-center justify-center shadow-[0_0_10px_rgba(59,130,246,0.5)]">
+            <span class="font-display font-800 text-white text-xs">H</span>
+          </div>
+          <span class="font-display font-600 text-white text-base tracking-tight">HITS</span>
+        </div>
+      </div>
+      <p class="font-body text-slate-600 text-sm">&copy; 2023 Harpy I.T. Solutions INC. All rights reserved.</p>
+      <div class="flex items-center gap-5">
+        <a href="about.html"   class="text-slate-600 hover:text-slate-400 text-sm transition-colors">About</a>
+        <a href="careers.html" class="text-slate-600 hover:text-slate-400 text-sm transition-colors">Careers</a>
+        <a href="contact.html" class="text-slate-600 hover:text-slate-400 text-sm transition-colors">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('menu-toggle').addEventListener('click', () => {
+      document.getElementById('mobile-menu').classList.toggle('open');
+    });
+    const mobBtn = document.getElementById('mob-prod-btn');
+    if (mobBtn) {
+      mobBtn.addEventListener('click', () => {
+        mobBtn.classList.toggle('open');
+        document.getElementById('mob-prod-items').classList.toggle('open');
+      });
+    }
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.07 });
+    document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

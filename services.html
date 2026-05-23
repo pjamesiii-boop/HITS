@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="hits_logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Services | Harpy I.T. Solutions INC.</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'deep-slate':     '#020617',
+            'electric-blue':  '#3b82f6',
+            'blue-glow':      '#60a5fa',
+          },
+          fontFamily: {
+            'display': ['Syne',           'sans-serif'],
+            'body':    ['DM Sans',         'sans-serif'],
+            'mono':    ['JetBrains Mono',  'monospace'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root { --blue:#3b82f6; --bg:#020617; --card-bg:rgba(15,23,42,0.75); }
+    *, *::before, *::after { box-sizing:border-box; }
+    body { background-color:var(--bg); font-family:'DM Sans',sans-serif; overflow-x:hidden; }
+
+    /* ── Grain ── */
+    body::before {
+      content:''; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.4;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    }
+
+    /* ── Nav ── */
+    .nav-glass {
+      background:rgba(2,6,23,.65);
+      backdrop-filter:blur(20px) saturate(180%);
+      -webkit-backdrop-filter:blur(20px) saturate(180%);
+      border-bottom:1px solid rgba(59,130,246,.12);
+    }
+    .nav-link {
+      position:relative; color:rgba(203,213,225,.85);
+      font-size:.875rem; font-weight:500; letter-spacing:.02em; transition:color .2s;
+    }
+    .nav-link::after {
+      content:''; position:absolute; bottom:-3px; left:0;
+      width:0; height:1px; background:var(--blue); transition:width .25s ease;
+    }
+    .nav-link:hover { color:#93c5fd; }
+    .nav-link:hover::after, .nav-link.active::after { width:100%; }
+    .nav-link.active { color:#93c5fd; }
+    .btn-contact {
+      background:linear-gradient(135deg,#2563eb,#3b82f6);
+      box-shadow:0 0 20px rgba(59,130,246,.4);
+      transition:box-shadow .3s, transform .2s;
+    }
+    .btn-contact:hover { box-shadow:0 0 32px rgba(59,130,246,.65); transform:translateY(-1px); }
+
+    /* ── Shared utilities ── */
+    .gradient-headline {
+      background:linear-gradient(135deg,#fff 0%,#e2eeff 35%,#93c5fd 65%,#3b82f6 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .blue-line { width:48px; height:2px; background:linear-gradient(90deg,var(--blue),transparent); border-radius:2px; }
+    .tag {
+      display:inline-flex; align-items:center; padding:3px 10px;
+      background:rgba(59,130,246,.12); border:1px solid rgba(59,130,246,.3);
+      border-radius:999px; font-size:.68rem; font-weight:600;
+      letter-spacing:.08em; color:#93c5fd; text-transform:uppercase;
+    }
+    .glow-bullet {
+      width:7px; height:7px; background:var(--blue); border-radius:50%; flex-shrink:0;
+      box-shadow:0 0 8px 2px rgba(59,130,246,.65);
+    }
+    .bento-card {
+      background:var(--card-bg); border:1px solid rgba(59,130,246,.15);
+      border-radius:16px; backdrop-filter:blur(12px);
+      transition:border-color .3s, box-shadow .3s;
+    }
+    .bento-card:hover { border-color:rgba(59,130,246,.38); box-shadow:0 0 40px rgba(59,130,246,.1); }
+
+    /* ── Hero grid bg ── */
+    .hero-grid {
+      background-image:
+        linear-gradient(rgba(59,130,246,.05) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(59,130,246,.05) 1px,transparent 1px);
+      background-size:60px 60px;
+    }
+
+    /* ── Service section tabs ── */
+    .svc-tab {
+      cursor:pointer; transition:all .25s;
+      padding:14px 22px; border-radius:10px;
+      border:1px solid transparent;
+      font-family:'Syne',sans-serif; font-weight:600; font-size:.9rem;
+      color:rgba(148,163,184,.7);
+      display:flex; align-items:center; gap:10px;
+    }
+    .svc-tab:hover { color:#93c5fd; background:rgba(59,130,246,.06); }
+    .svc-tab.active {
+      color:#93c5fd; background:rgba(59,130,246,.1);
+      border-color:rgba(59,130,246,.3);
+      box-shadow:0 0 20px rgba(59,130,246,.1);
+    }
+    .svc-tab .tab-dot {
+      width:8px; height:8px; border-radius:50%;
+      background:rgba(59,130,246,.3); flex-shrink:0;
+      transition:background .25s, box-shadow .25s;
+    }
+    .svc-tab.active .tab-dot {
+      background:var(--blue);
+      box-shadow:0 0 8px rgba(59,130,246,.8);
+    }
+    .svc-panel { display:none; }
+    .svc-panel.active { display:block; animation:fadeSlide .4s ease forwards; }
+    @keyframes fadeSlide { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+
+    /* ── Spec table ── */
+    .spec-row {
+      display:flex; align-items:center; gap:12px;
+      padding:10px 16px; border-bottom:1px solid rgba(59,130,246,.07);
+      transition:background .2s;
+    }
+    .spec-row:last-child { border-bottom:none; }
+    .spec-row:hover { background:rgba(59,130,246,.04); }
+    .spec-label { font-family:'JetBrains Mono',monospace; font-size:.72rem; color:#60a5fa; flex-shrink:0; width:110px; }
+    .spec-val { font-family:'DM Sans',sans-serif; font-size:.83rem; color:#94a3b8; }
+
+    /* ── VAR cards ── */
+    .var-card {
+      background:rgba(10,18,36,.8);
+      border:1px solid rgba(59,130,246,.18);
+      border-radius:14px; overflow:hidden;
+      transition:border-color .3s, transform .3s, box-shadow .3s;
+      position:relative;
+    }
+    .var-card::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:1px;
+      background:linear-gradient(90deg,transparent,var(--blue),transparent);
+      opacity:0; transition:opacity .3s;
+    }
+    .var-card:hover { border-color:rgba(59,130,246,.4); transform:translateY(-3px); box-shadow:0 16px 48px rgba(0,0,0,.4),0 0 30px rgba(59,130,246,.1); }
+    .var-card:hover::before { opacity:1; }
+
+    /* ── Tech ticker ── */
+    .ticker-track {
+      display:flex; gap:0;
+      animation:tickerScroll 28s linear infinite;
+      width:max-content;
+    }
+    .ticker-track:hover { animation-play-state:paused; }
+    @keyframes tickerScroll {
+      from { transform:translateX(0); }
+      to   { transform:translateX(-50%); }
+    }
+    .ticker-wrap {
+      overflow:hidden;
+      mask-image:linear-gradient(90deg,transparent 0%,black 8%,black 92%,transparent 100%);
+      -webkit-mask-image:linear-gradient(90deg,transparent 0%,black 8%,black 92%,transparent 100%);
+    }
+    .tech-badge {
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
+      padding:18px 28px; min-width:130px;
+      background:rgba(15,23,42,.7);
+      border:1px solid rgba(59,130,246,.12);
+      border-radius:12px; margin:0 8px;
+      transition:border-color .25s, box-shadow .25s;
+      cursor:default;
+    }
+    .tech-badge:hover {
+      border-color:rgba(59,130,246,.35);
+      box-shadow:0 0 20px rgba(59,130,246,.12);
+    }
+
+    /* ── Cradle-to-grave pipeline ── */
+    .ctg-step {
+      flex:1; display:flex; flex-direction:column; align-items:center; gap:8px;
+      position:relative;
+    }
+    .ctg-step::after {
+      content:''; position:absolute; top:20px; left:calc(50% + 20px);
+      width:calc(100% - 40px); height:1px;
+      background:linear-gradient(90deg,rgba(59,130,246,.5),rgba(59,130,246,.15));
+    }
+    .ctg-step:last-child::after { display:none; }
+    .ctg-node {
+      width:42px; height:42px; border-radius:50%;
+      border:2px solid rgba(59,130,246,.35);
+      background:rgba(59,130,246,.08);
+      display:flex; align-items:center; justify-content:center;
+      transition:border-color .3s, box-shadow .3s, background .3s;
+    }
+    .ctg-step:hover .ctg-node {
+      border-color:var(--blue);
+      box-shadow:0 0 20px rgba(59,130,246,.5);
+      background:rgba(59,130,246,.18);
+    }
+
+    /* ── Animations ── */
+    .anim-1{opacity:0;animation:fadeUp .65s ease .1s forwards;}
+    .anim-2{opacity:0;animation:fadeUp .65s ease .22s forwards;}
+    .anim-3{opacity:0;animation:fadeUp .65s ease .34s forwards;}
+    .anim-4{opacity:0;animation:fadeUp .65s ease .46s forwards;}
+    .anim-5{opacity:0;animation:fadeUp .65s ease .58s forwards;}
+    @keyframes fadeUp { from{opacity:0;transform:translateY(22px);} to{opacity:1;transform:translateY(0);} }
+    .scroll-reveal { opacity:0; transform:translateY(28px); transition:opacity .65s ease,transform .65s ease; }
+    .scroll-reveal.visible { opacity:1; transform:translateY(0); }
+
+    /* Mobile menu */
+    #mobile-menu { display:none; }
+    #mobile-menu.open { display:block; }
+  
+    /* ── Products Dropdown ── */
+    .dropdown-wrap { position: relative; }
+    .dropdown-btn {
+      display: flex; align-items: center; gap: 5px;
+      color: rgba(203,213,225,0.85); font-size: .875rem; font-weight: 500;
+      letter-spacing: .02em; cursor: pointer; background: none; border: none;
+      padding: 0; transition: color .2s; font-family: 'DM Sans', sans-serif;
+      position: relative;
+    }
+    .dropdown-btn::after {
+      content: ''; position: absolute; bottom: -3px; left: 0;
+      width: 0; height: 1px; background: #3b82f6; transition: width .25s ease;
+    }
+    .dropdown-btn:hover, .dropdown-btn.active { color: #93c5fd; }
+    .dropdown-btn:hover::after, .dropdown-btn.active::after { width: calc(100% - 16px); }
+    .dropdown-btn svg { transition: transform .25s ease; flex-shrink: 0; }
+    .dropdown-wrap:hover .dropdown-btn svg,
+    .dropdown-wrap.open .dropdown-btn svg { transform: rotate(180deg); }
+    .dropdown-menu {
+      position: absolute; top: 100%; left: 50%; padding-top: 12px;
+      transform: translateX(-50%) scale(0.95);
+      min-width: 230px; z-index: 100;
+      background: transparent;
+      opacity: 0; pointer-events: none;
+      transform-origin: top center;
+      transition: opacity .22s ease, transform .22s ease;
+    }
+    .dropdown-menu-inner {
+      background: rgba(7,12,28,0.92);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid rgba(59,130,246,0.22);
+      border-radius: 14px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(59,130,246,0.08);
+      padding: 8px;
+    }
+    .dropdown-wrap:hover .dropdown-menu,
+    .dropdown-wrap.open .dropdown-menu {
+      opacity: 1; pointer-events: auto;
+      transform: translateX(-50%) scale(1);
+    }
+    .dropdown-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 8px;
+      font-family: 'DM Sans', sans-serif; font-size: .85rem; font-weight: 500;
+      color: rgba(203,213,225,0.85); text-decoration: none;
+      transition: background .18s, color .18s; white-space: nowrap;
+    }
+    .dropdown-item:hover { background: rgba(59,130,246,0.1); color: #93c5fd; }
+    .dropdown-item .d-icon {
+      width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.22);
+    }
+    .dropdown-item.coming-soon { cursor: default; opacity: .42; pointer-events: none; }
+    .dropdown-divider { height: 1px; background: rgba(59,130,246,0.1); margin: 6px 4px; }
+    .coming-tag {
+      margin-left: auto; font-size: .6rem; font-family: 'JetBrains Mono', monospace;
+      font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+      padding: 2px 6px; border-radius: 4px;
+      background: rgba(148,163,184,0.1); border: 1px solid rgba(148,163,184,0.2);
+      color: rgba(148,163,184,0.6);
+    }
+    .mob-dropdown-items { display: none; padding-left: 14px; margin-top: 4px; }
+    .mob-dropdown-items.open { display: flex; flex-direction: column; gap: 2px; }
+    .mob-dropdown-btn {
+      display: flex; align-items: center; justify-content: space-between;
+      color: rgba(203,213,225,0.85); font-size: 1rem; font-weight: 500;
+      background: none; border: none; padding: 0; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; width: 100%;
+    }
+    .mob-dropdown-btn svg { transition: transform .25s; }
+    .mob-dropdown-btn.open svg { transform: rotate(180deg); }
+
+  </style>
+</head>
+
+<body class="text-slate-100 relative">
+
+  <!-- ══════════════════════════════════
+       NAV
+  ══════════════════════════════════ -->
+  <header class="nav-glass fixed top-0 inset-x-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-16">
+
+      <a href="index.html" class="flex items-center gap-2.5 group">
+        <!-- HITS logo — Smart Card badge housing -->
+        <div class="relative flex items-center justify-center" style="width:36px;height:36px;">
+          <!-- Outer cyber-glow bloom -->
+          <div style="position:absolute;inset:-7px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,0.28) 0%,transparent 68%);pointer-events:none;z-index:0;"></div>
+          <!-- Secure housing ring -->
+          <div style="position:absolute;inset:-1px;border-radius:10px;border:1px solid rgba(96,165,250,0.55);background:transparent;pointer-events:none;z-index:3;box-shadow:0 0 14px rgba(59,130,246,0.3);"></div>
+          <div style="position:relative;z-index:2;
+                      border-radius:7px;overflow:hidden;
+                      width:32px;height:32px;
+                      display:flex;align-items:center;justify-content:center;
+                      background:#dbeafe;
+                      box-shadow:inset 0 0 0 1px rgba(147,197,253,0.6);">
+            <img src="hits_logo.png" alt="HITS"
+                 class="h-7 w-auto"
+                 style="border-radius:5px;"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+          </div>
+          <!-- Text fallback -->
+          <div style="display:none;position:relative;z-index:2;" class="w-8 h-8 rounded-md bg-electric-blue items-center justify-center shadow-[0_0_14px_rgba(59,130,246,0.7)]">
+            <span class="font-display font-800 text-white text-sm">H</span>
+          </div>
+        </div>
+        <span class="font-display font-700 text-white text-lg tracking-tight">HITS</span>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-7 font-body">
+        <a href="index.html"      class="nav-link">Home</a>
+        <div class="dropdown-wrap">
+          <button class="dropdown-btn">
+            Products
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="dropdown-menu"><div class="dropdown-menu-inner">
+            <a href="products.html" class="dropdown-item">
+              <span class="d-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+              Product Hub
+            </a>
+            <div class="dropdown-divider"></div>
+            <a href="product.html" class="dropdown-item">
+              <span class="d-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></span>
+              Harpy Talon
+            </a>
+            <a href="https://raptor.harpyits.com" class="dropdown-item">
+              <span class="d-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span>
+              Raptor
+            </a>
+            <span class="dropdown-item coming-soon">
+              <span class="d-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+              CrestView PDS
+              <span class="coming-tag">Soon</span>
+            </span>
+          </div></div>
+        </div>
+        <a href="services.html"   class="nav-link active">Services</a>
+        <a href="government.html" class="nav-link">Government</a>
+        <a href="about.html"      class="nav-link">About</a>
+        <a href="careers.html"    class="nav-link">Careers</a>
+        <a href="news.html"       class="nav-link">News</a>
+        <a href="docs.html"       class="nav-link">Docs</a>
+      </nav>
+
+      <div class="hidden md:flex">
+        <a href="contact.html" class="btn-contact px-5 py-2 rounded-lg text-sm font-display font-600 text-white tracking-wide">
+          Contact Us
+        </a>
+      </div>
+
+      <button id="menu-toggle" class="md:hidden flex flex-col gap-1.5 p-1" aria-label="Toggle menu">
+        <span class="w-5 h-0.5 bg-slate-300 block"></span>
+        <span class="w-5 h-0.5 bg-slate-300 block"></span>
+        <span class="w-5 h-0.5 bg-slate-300 block"></span>
+      </button>
+    </div>
+
+    <div id="mobile-menu" class="md:hidden px-6 pb-5 pt-2 flex flex-col gap-4 font-body border-t border-white/5">
+      <a href="index.html"      class="nav-link text-base">Home</a>
+      <div>
+        <button class="mob-dropdown-btn" id="mob-prod-btn">
+          Products
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="mob-dropdown-items" id="mob-prod-items">
+          <a href="products.html" class="dropdown-item" style="padding:8px 10px;font-size:.9rem;">Product Hub</a>
+          <a href="product.html" class="dropdown-item" style="padding:8px 10px;font-size:.9rem;">Harpy Talon</a>
+          <a href="https://raptor.harpyits.com" class="dropdown-item" style="padding:8px 10px;font-size:.9rem;">Raptor</a>
+          <span class="dropdown-item coming-soon" style="padding:8px 10px;font-size:.9rem;">CrestView PDS <span class="coming-tag">Soon</span></span>
+        </div>
+      </div>
+      <a href="services.html"   class="nav-link active text-base">Services</a>
+      <a href="government.html" class="nav-link text-base">Government</a>
+      <a href="about.html"      class="nav-link text-base">About</a>
+      <a href="careers.html"    class="nav-link text-base">Careers</a>
+      <a href="news.html"       class="nav-link text-base">News</a>
+      <a href="docs.html"       class="nav-link text-base">Docs</a>
+      <a href="contact.html" class="btn-contact px-5 py-2.5 rounded-lg text-sm font-display font-600 text-white text-center">Contact Us</a>
+    </div>
+  </header>
+
+
+  <!-- ══════════════════════════════════
+       SERVICES HERO
+  ══════════════════════════════════ -->
+  <section class="relative min-h-screen flex flex-col justify-center px-6 pt-28 pb-20 overflow-hidden hero-grid">
+
+    <div class="absolute inset-0 pointer-events-none"
+         style="background:radial-gradient(ellipse 80% 55% at 50% 30%,rgba(59,130,246,.1) 0%,transparent 70%);">
+    </div>
+
+    <div class="relative z-10 max-w-7xl mx-auto w-full">
+
+      <!-- Eyebrow -->
+      <div class="anim-1 mb-6">
+        <span class="tag">Full-Spectrum IT Services</span>
+      </div>
+
+      <!-- Headline -->
+      <h1 class="anim-2 font-display font-800 text-5xl sm:text-6xl lg:text-[3.6rem] leading-[1.04] tracking-tight mb-6 max-w-4xl">
+        <span class="gradient-headline">Engineering the Future</span><br />
+        <span class="gradient-headline">of Secure</span>
+        <span class="text-white"> Infrastructure.</span>
+      </h1>
+
+      <p class="anim-3 font-body text-lg text-slate-400 leading-relaxed max-w-2xl mb-10">
+        From initial requirements to long-term sustainment, HITS delivers <strong class="text-slate-200">cradle-to-grave</strong>
+        capability across network architecture, cybersecurity, program management, and hardware procurement —
+        engineered for the demands of DoD and federal environments.
+      </p>
+
+      <!-- Cradle-to-grave pipeline -->
+      <div class="anim-4 bento-card p-6 mb-10 max-w-4xl">
+        <p class="font-mono text-xs text-slate-500 uppercase tracking-widest mb-6">Cradle-to-Grave Service Model</p>
+        <div class="flex items-start gap-0" id="ctg-row">
+
+          <div class="ctg-step">
+            <div class="ctg-node">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            </div>
+            <span class="font-display font-600 text-xs text-slate-400 text-center">Requirements<br/>Analysis</span>
+          </div>
+
+          <div class="ctg-step">
+            <div class="ctg-node">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/></svg>
+            </div>
+            <span class="font-display font-600 text-xs text-slate-400 text-center">Architecture<br/>&amp; Design</span>
+          </div>
+
+          <div class="ctg-step">
+            <div class="ctg-node">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            </div>
+            <span class="font-display font-600 text-xs text-slate-400 text-center">Procurement<br/>&amp; Integration</span>
+          </div>
+
+          <div class="ctg-step">
+            <div class="ctg-node">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+            </div>
+            <span class="font-display font-600 text-xs text-slate-400 text-center">Installation<br/>&amp; Testing</span>
+          </div>
+
+          <div class="ctg-step">
+            <div class="ctg-node">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <span class="font-display font-600 text-xs text-slate-400 text-center">ATO &amp;<br/>Compliance</span>
+          </div>
+
+          <div class="ctg-step">
+            <div class="ctg-node">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            </div>
+            <span class="font-display font-600 text-xs text-slate-400 text-center">O&amp;M &amp;<br/>Sustainment</span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Stat strip -->
+      <div class="anim-5 flex flex-wrap gap-8">
+        <div>
+          <p class="font-display font-800 text-3xl text-white">6</p>
+          <p class="font-mono text-xs text-slate-500 uppercase tracking-widest mt-0.5">Service Phases</p>
+        </div>
+        <div class="w-px bg-slate-800 self-stretch"></div>
+        <div>
+          <p class="font-display font-800 text-3xl text-white">3</p>
+          <p class="font-mono text-xs text-slate-500 uppercase tracking-widest mt-0.5">Core Disciplines</p>
+        </div>
+        <div class="w-px bg-slate-800 self-stretch"></div>
+        <div>
+          <p class="font-display font-800 text-3xl text-white">TAA</p>
+          <p class="font-mono text-xs text-slate-500 uppercase tracking-widest mt-0.5">Compliant Procurement</p>
+        </div>
+        <div class="w-px bg-slate-800 self-stretch"></div>
+        <div>
+          <p class="font-display font-800 text-3xl text-white">CMMC</p>
+          <p class="font-mono text-xs text-slate-500 uppercase tracking-widest mt-0.5">Level 2 Certified</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════
+       CORE SERVICE SECTIONS — TABBED
+  ══════════════════════════════════ -->
+  <section class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 py-24 scroll-reveal">
+
+    <div class="flex items-center gap-4 mb-4">
+      <div class="blue-line"></div>
+      <span class="font-display font-600 text-slate-500 text-sm tracking-widest uppercase">Triple-Threat Disciplines</span>
+    </div>
+    <h2 class="font-display font-800 text-3xl lg:text-4xl text-white mb-12">Core Service Lines</h2>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+      <!-- Tab sidebar -->
+      <div class="lg:col-span-1 flex flex-row lg:flex-col gap-2 overflow-x-auto pb-2 lg:pb-0">
+        <button class="svc-tab active" data-tab="network">
+          <span class="tab-dot"></span>Network Architecture
+        </button>
+        <button class="svc-tab" data-tab="cyber">
+          <span class="tab-dot"></span>Cybersecurity
+        </button>
+        <button class="svc-tab" data-tab="pm">
+          <span class="tab-dot"></span>Program Management
+        </button>
+      </div>
+
+      <!-- Panel area -->
+      <div class="lg:col-span-3">
+
+        <!-- ── NETWORK ARCHITECTURE ── -->
+        <div class="svc-panel active" id="panel-network">
+          <div class="bento-card p-8 lg:p-10">
+            <div class="flex items-start gap-5 mb-7">
+              <div class="w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center"
+                   style="background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.3);box-shadow:0 0 20px rgba(59,130,246,.2);">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8">
+                  <circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
+                </svg>
+              </div>
+              <div>
+                <span class="tag mb-2 inline-block">Discipline 01</span>
+                <h3 class="font-display font-700 text-2xl text-white">Network Architecture &amp; Engineering</h3>
+                <p class="font-body text-slate-400 text-sm mt-1">DISN · MPLS · VPLS · SONET · NIPRNet · SIPRNet</p>
+              </div>
+            </div>
+
+            <p class="font-body text-slate-400 leading-relaxed mb-8">
+              Our network engineers hold deep expertise in DoD transport architectures — from the WAN backbones
+              of DISN to the classified enclave routing of SIPRNet. We design, configure, and validate networks
+              that meet NSA IA Technical Specifications and DISA STIG requirements from day one.
+            </p>
+
+            <!-- 3-col spec grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+              <div class="bento-card p-5" style="background:rgba(10,18,36,.6);">
+                <p class="font-mono text-xs text-electric-blue mb-2 uppercase tracking-wider">Transport</p>
+                <div class="space-y-1.5">
+                  <div class="flex items-center gap-2 text-xs text-slate-400"><div class="glow-bullet" style="width:5px;height:5px;"></div>SONET / SDH</div>
+                  <div class="flex items-center gap-2 text-xs text-slate-400"><div class="glow-bullet" style="width:5px;height:5px;"></div>DWDM / CWDM</div>
+                  <div class="flex items-center gap-2 text-xs text-slate-400"><div class="glow-bullet" style="width:5px;height:5px;"></div>MPLS / VPLS</div>
+                  <div class="flex items-center gap-2 text-xs text-slate-400"><div class="glow-bullet" style="width:5px;height:5px;"></div>DISN Circuits</div>
+                </div>
+              </div>
+              <div class="bento-card p-5" style="background:rgba(10,18,36,.6);">
+                <p class="font-mono text-xs text-electric-blue mb-2 uppercase tracking-wider">Routing / Switching</p>
+                <div class="space-y-1.5">
+                  <div class="flex items-center gap-2 text-xs text-slate-400"><div class="glow-bullet" style="width:5px;height:5px;"></div>BGP / OSPF / EIGRP</div>
+                  <div class="flex items-center gap-2 text-xs text-slate-400"><div class="glow-bullet" style="width:5px;height:5px;"></div>VRF / VLAN segmentation</div>
+                  <div class="flex items-center gap-2 text-xs text-slate-400"><div class="glow-bullet" style="width:5px;height:5px;"></div>QoS for VoIP / VTC</div>
+                  <div class="flex items-center gap-2 text-xs text-slate-400"><div class="glow-bullet" style="width:5px;height:5px;"></div>Multicast / IGMP</div>
+                </div>
+              </div>
+              <div class="bento-card p-5" style="background:rgba(10,18,36,.6);">
+                <p class="font-mono text-xs text-electric-blue mb-2 uppercase tracking-wider">DoD-Specific</p>
+                <div class="space-y-1.5">
+                  <div class="flex items-center gap-2 text-xs text-slate-400"><div class="glow-bullet" style="width:5px;height:5px;"></div>NIPRNet / SIPRNet</div>
+                  <div class="flex items-center gap-2 text-xs text-slate-400"><div class="glow-bullet" style="width:5px;height:5px;"></div>DoDNet / JRSS</div>
+                  <div class="flex items-center gap-2 text-xs text-slate-400"><div class="glow-bullet" style="width:5px;height:5px;"></div>Cross-Domain Guard</div>
+                  <div class="flex items-center gap-2 text-xs text-slate-400"><div class="glow-bullet" style="width:5px;height:5px;"></div>HAIPE encryption</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Deliverables -->
+            <div class="border-t border-slate-800 pt-6">
+              <p class="font-mono text-xs text-slate-500 uppercase tracking-widest mb-4">Key Deliverables</p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div class="flex items-start gap-3 text-sm text-slate-400 font-body"><div class="glow-bullet mt-1 flex-shrink-0"></div>Network topology diagrams (Visio / draw.io)</div>
+                <div class="flex items-start gap-3 text-sm text-slate-400 font-body"><div class="glow-bullet mt-1 flex-shrink-0"></div>DISA-compliant STIG checklists</div>
+                <div class="flex items-start gap-3 text-sm text-slate-400 font-body"><div class="glow-bullet mt-1 flex-shrink-0"></div>Circuit activation &amp; acceptance testing</div>
+                <div class="flex items-start gap-3 text-sm text-slate-400 font-body"><div class="glow-bullet mt-1 flex-shrink-0"></div>As-built documentation &amp; SOPs</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── CYBERSECURITY ── -->
+        <div class="svc-panel" id="panel-cyber">
+          <div class="bento-card p-8 lg:p-10">
+            <div class="flex items-start gap-5 mb-7">
+              <div class="w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center"
+                   style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.28);box-shadow:0 0 20px rgba(239,68,68,.15);">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="1.8">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  <polyline points="9 12 11 14 15 10" stroke="#f87171" stroke-width="2"/>
+                </svg>
+              </div>
+              <div>
+                <span class="tag mb-2 inline-block" style="background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:#fca5a5;">Discipline 02</span>
+                <h3 class="font-display font-700 text-2xl text-white">Cybersecurity &amp; Information Assurance</h3>
+                <p class="font-body text-slate-400 text-sm mt-1">Zero-Trust · NIST SP 800-53/171 · CMMC · DoD RMF</p>
+              </div>
+            </div>
+
+            <p class="font-body text-slate-400 leading-relaxed mb-8">
+              Information Assurance is not a checkbox — it's an architectural philosophy we embed at every
+              layer of design and delivery. Our IA practice spans full RMF lifecycle, CMMC Level 2 compliance
+              engineering, and zero-trust implementations that reduce attack surface without sacrificing mission velocity.
+            </p>
+
+            <!-- IA capability table -->
+            <div class="bento-card overflow-hidden mb-8" style="background:rgba(10,18,36,.7);">
+              <div class="flex items-center gap-3 px-5 py-3 border-b border-red-900/30"
+                   style="background:rgba(239,68,68,.05);">
+                <span class="font-mono text-xs text-slate-500 uppercase tracking-widest">IA Capability Matrix</span>
+              </div>
+              <div>
+                <div class="spec-row">
+                  <span class="spec-label">RMF</span>
+                  <span class="spec-val">Full A&amp;A lifecycle — NIST SP 800-37, eMASS, ATO packages</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-label">CMMC</span>
+                  <span class="spec-val">Level 2 certified · Level 3 scoping · gap assessments</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-label">NIST</span>
+                  <span class="spec-val">800-53 Rev 5 · 800-171 · CSF implementation</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-label">Zero-Trust</span>
+                  <span class="spec-val">CISA ZTA pillars · microsegmentation · identity-centric policy</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-label">Monitoring</span>
+                  <span class="spec-val">SIEM integration · CDM · continuous diagnostic dashboards</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-label">STIG</span>
+                  <span class="spec-val">Automated STIG scans · remediation playbooks · SCC/Nessus</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="border-t border-slate-800 pt-6">
+              <p class="font-mono text-xs text-slate-500 uppercase tracking-widest mb-4">Key Deliverables</p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div class="flex items-start gap-3 text-sm text-slate-400 font-body"><div class="glow-bullet mt-1 flex-shrink-0" style="background:#f87171;box-shadow:0 0 8px rgba(248,113,113,.5);"></div>System Security Plans (SSP)</div>
+                <div class="flex items-start gap-3 text-sm text-slate-400 font-body"><div class="glow-bullet mt-1 flex-shrink-0" style="background:#f87171;box-shadow:0 0 8px rgba(248,113,113,.5);"></div>Risk Assessment Reports (RAR)</div>
+                <div class="flex items-start gap-3 text-sm text-slate-400 font-body"><div class="glow-bullet mt-1 flex-shrink-0" style="background:#f87171;box-shadow:0 0 8px rgba(248,113,113,.5);"></div>POA&amp;M management &amp; remediation tracking</div>
+                <div class="flex items-start gap-3 text-sm text-slate-400 font-body"><div class="glow-bullet mt-1 flex-shrink-0" style="background:#f87171;box-shadow:0 0 8px rgba(248,113,113,.5);"></div>Incident response plans &amp; playbooks</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── PROGRAM MANAGEMENT ── -->
+        <div class="svc-panel" id="panel-pm">
+          <div class="bento-card p-8 lg:p-10">
+            <div class="flex items-start gap-5 mb-7">
+              <div class="w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center"
+                   style="background:rgba(20,184,166,.1);border:1px solid rgba(20,184,166,.28);box-shadow:0 0 20px rgba(20,184,166,.15);">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="1.8">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              </div>
+              <div>
+                <span class="tag mb-2 inline-block" style="background:rgba(20,184,166,.1);border-color:rgba(20,184,166,.3);color:#5eead4;">Discipline 03</span>
+                <h3 class="font-display font-700 text-2xl text-white">Technical Program Management</h3>
+                <p class="font-body text-slate-400 text-sm mt-1">PMP · ITIL v4 · Technical Refresh · EVM · CDRL</p>
+              </div>
+            </div>
+
+            <p class="font-body text-slate-400 leading-relaxed mb-8">
+              PMP and ITIL v4-certified leadership that bridges the delta between technical execution and
+              government contract requirements. We manage technical refresh programs, sustainment task orders,
+              and multi-year IDIQ vehicles with full earned value visibility and on-time CDRL delivery.
+            </p>
+
+            <!-- PM framework cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+              <div class="bento-card p-5" style="background:rgba(10,18,36,.6);">
+                <p class="font-mono text-xs text-teal-400 mb-3 uppercase tracking-wider">PMI / PMP Framework</p>
+                <div class="space-y-2">
+                  <div class="flex items-center gap-2 text-sm text-slate-400"><div class="glow-bullet" style="background:#2dd4bf;box-shadow:0 0 8px rgba(45,212,191,.5);"></div>Work Breakdown Structure (WBS)</div>
+                  <div class="flex items-center gap-2 text-sm text-slate-400"><div class="glow-bullet" style="background:#2dd4bf;box-shadow:0 0 8px rgba(45,212,191,.5);"></div>Earned Value Management (EVM)</div>
+                  <div class="flex items-center gap-2 text-sm text-slate-400"><div class="glow-bullet" style="background:#2dd4bf;box-shadow:0 0 8px rgba(45,212,191,.5);"></div>Risk Register &amp; mitigation plans</div>
+                  <div class="flex items-center gap-2 text-sm text-slate-400"><div class="glow-bullet" style="background:#2dd4bf;box-shadow:0 0 8px rgba(45,212,191,.5);"></div>CDRL &amp; CLIN deliverable tracking</div>
+                </div>
+              </div>
+              <div class="bento-card p-5" style="background:rgba(10,18,36,.6);">
+                <p class="font-mono text-xs text-teal-400 mb-3 uppercase tracking-wider">ITIL v4 / Service Mgmt</p>
+                <div class="space-y-2">
+                  <div class="flex items-center gap-2 text-sm text-slate-400"><div class="glow-bullet" style="background:#2dd4bf;box-shadow:0 0 8px rgba(45,212,191,.5);"></div>Incident &amp; problem management</div>
+                  <div class="flex items-center gap-2 text-sm text-slate-400"><div class="glow-bullet" style="background:#2dd4bf;box-shadow:0 0 8px rgba(45,212,191,.5);"></div>Change &amp; release management</div>
+                  <div class="flex items-center gap-2 text-sm text-slate-400"><div class="glow-bullet" style="background:#2dd4bf;box-shadow:0 0 8px rgba(45,212,191,.5);"></div>SLA &amp; OLA governance dashboards</div>
+                  <div class="flex items-center gap-2 text-sm text-slate-400"><div class="glow-bullet" style="background:#2dd4bf;box-shadow:0 0 8px rgba(45,212,191,.5);"></div>Technical refresh program planning</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="border-t border-slate-800 pt-6">
+              <p class="font-mono text-xs text-slate-500 uppercase tracking-widest mb-4">Key Deliverables</p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div class="flex items-start gap-3 text-sm text-slate-400 font-body"><div class="glow-bullet mt-1 flex-shrink-0" style="background:#2dd4bf;box-shadow:0 0 8px rgba(45,212,191,.5);"></div>Integrated Master Schedule (IMS)</div>
+                <div class="flex items-start gap-3 text-sm text-slate-400 font-body"><div class="glow-bullet mt-1 flex-shrink-0" style="background:#2dd4bf;box-shadow:0 0 8px rgba(45,212,191,.5);"></div>Monthly Status Reports (MSR)</div>
+                <div class="flex items-start gap-3 text-sm text-slate-400 font-body"><div class="glow-bullet mt-1 flex-shrink-0" style="background:#2dd4bf;box-shadow:0 0 8px rgba(45,212,191,.5);"></div>Quality Management Plans (QMP)</div>
+                <div class="flex items-start gap-3 text-sm text-slate-400 font-body"><div class="glow-bullet mt-1 flex-shrink-0" style="background:#2dd4bf;box-shadow:0 0 8px rgba(45,212,191,.5);"></div>Transition &amp; continuity of operations plans</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /panel area -->
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════
+       VAR PROCUREMENT HUB
+  ══════════════════════════════════ -->
+  <section class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pb-24 scroll-reveal">
+
+    <div class="flex items-center gap-4 mb-4">
+      <div class="blue-line"></div>
+      <span class="font-display font-600 text-slate-500 text-sm tracking-widest uppercase">Hardware &amp; Software</span>
+    </div>
+    <h2 class="font-display font-800 text-3xl lg:text-4xl text-white mb-3">VAR Procurement Hub</h2>
+    <p class="font-body text-slate-400 text-base mb-12 max-w-2xl">
+      As a certified Value-Added Reseller, HITS sources, configures, and integrates TAA-compliant hardware
+      and enterprise software — eliminating procurement friction for federal buyers.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      <!-- TAA Compliant Procurement -->
+      <div class="var-card p-7">
+        <div class="w-11 h-11 rounded-xl flex items-center justify-center mb-5"
+             style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8">
+            <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622C17.176 19.29 21 14.591 21 9a12.02 12.02 0 00-.382-3.016z"/>
+          </svg>
+        </div>
+        <span class="tag mb-3 inline-block">Compliant Sourcing</span>
+        <h3 class="font-display font-700 text-lg text-white mb-3">TAA-Compliant Procurement</h3>
+        <p class="font-body text-slate-400 text-sm leading-relaxed mb-5">
+          Every hardware acquisition is screened against the Trade Agreements Act. We source exclusively from
+          TAA-designated countries and maintain full chain-of-custody documentation for audit-ready federal purchases.
+        </p>
+        <div class="space-y-2">
+          <div class="flex items-center gap-3 text-sm text-slate-300 font-body"><div class="glow-bullet"></div>TAA country-of-origin verification</div>
+          <div class="flex items-center gap-3 text-sm text-slate-300 font-body"><div class="glow-bullet"></div>GSA Schedule-aligned pricing</div>
+          <div class="flex items-center gap-3 text-sm text-slate-300 font-body"><div class="glow-bullet"></div>Section 889 compliance screening</div>
+          <div class="flex items-center gap-3 text-sm text-slate-300 font-body"><div class="glow-bullet"></div>EPEAT &amp; Energy Star eligible products</div>
+        </div>
+      </div>
+
+      <!-- Systems Integration -->
+      <div class="var-card p-7">
+        <div class="w-11 h-11 rounded-xl flex items-center justify-center mb-5"
+             style="background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.25);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <path d="M8 21h8M12 17v4"/>
+            <path d="M7 8h.01M12 8h.01M17 8h.01"/>
+          </svg>
+        </div>
+        <span class="tag mb-3 inline-block" style="background:rgba(139,92,246,.1);border-color:rgba(139,92,246,.3);color:#c4b5fd;">Integration</span>
+        <h3 class="font-display font-700 text-lg text-white mb-3">Systems Integration</h3>
+        <p class="font-body text-slate-400 text-sm leading-relaxed mb-5">
+          We don't just drop boxes — we integrate. Our engineers configure, rack, stack, cable, and test
+          every component against government-furnished specifications and performance acceptance criteria before
+          a single device goes live.
+        </p>
+        <div class="space-y-2">
+          <div class="flex items-center gap-3 text-sm text-slate-300 font-body"><div class="glow-bullet" style="background:#a78bfa;box-shadow:0 0 8px rgba(167,139,250,.5);"></div>Factory acceptance testing (FAT)</div>
+          <div class="flex items-center gap-3 text-sm text-slate-300 font-body"><div class="glow-bullet" style="background:#a78bfa;box-shadow:0 0 8px rgba(167,139,250,.5);"></div>Site acceptance testing (SAT)</div>
+          <div class="flex items-center gap-3 text-sm text-slate-300 font-body"><div class="glow-bullet" style="background:#a78bfa;box-shadow:0 0 8px rgba(167,139,250,.5);"></div>Golden image build &amp; deployment</div>
+          <div class="flex items-center gap-3 text-sm text-slate-300 font-body"><div class="glow-bullet" style="background:#a78bfa;box-shadow:0 0 8px rgba(167,139,250,.5);"></div>STIG-hardened baseline configs</div>
+        </div>
+      </div>
+
+      <!-- VAR Partnerships -->
+      <div class="var-card p-7">
+        <div class="w-11 h-11 rounded-xl flex items-center justify-center mb-5"
+             style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="1.8">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <span class="tag mb-3 inline-block" style="background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:#86efac;">Channel Partners</span>
+        <h3 class="font-display font-700 text-lg text-white mb-3">VAR Partnerships</h3>
+        <p class="font-body text-slate-400 text-sm leading-relaxed mb-5">
+          Authorized reseller relationships with leading enterprise vendors give our clients access to
+          competitive pricing, extended support agreements, and dedicated account management — all
+          through a single, cleared SDVOSB prime.
+        </p>
+        <div class="space-y-2">
+          <div class="flex items-center gap-3 text-sm text-slate-300 font-body"><div class="glow-bullet" style="background:#4ade80;box-shadow:0 0 8px rgba(74,222,128,.5);"></div>Cisco Registered Partner</div>
+          <div class="flex items-center gap-3 text-sm text-slate-300 font-body"><div class="glow-bullet" style="background:#4ade80;box-shadow:0 0 8px rgba(74,222,128,.5);"></div>Microsoft Government reseller</div>
+          <div class="flex items-center gap-3 text-sm text-slate-300 font-body"><div class="glow-bullet" style="background:#4ade80;box-shadow:0 0 8px rgba(74,222,128,.5);"></div>Juniper Networks authorized VAR</div>
+          <div class="flex items-center gap-3 text-sm text-slate-300 font-body"><div class="glow-bullet" style="background:#4ade80;box-shadow:0 0 8px rgba(74,222,128,.5);"></div>Oracle &amp; VMware licensing resale</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════
+       TECH STACK TICKER
+  ══════════════════════════════════ -->
+  <section class="relative z-10 pb-28 scroll-reveal">
+
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 mb-10">
+      <div class="flex items-center gap-4 mb-4">
+        <div class="blue-line"></div>
+        <span class="font-display font-600 text-slate-500 text-sm tracking-widest uppercase">Technology Stack</span>
+      </div>
+      <h2 class="font-display font-800 text-3xl lg:text-4xl text-white mb-3">Platforms &amp; Partners</h2>
+      <p class="font-body text-slate-400 text-base max-w-2xl">
+        The enterprise and DoD-grade platforms our engineers are certified on and deploy daily.
+      </p>
+    </div>
+
+    <!-- Scrolling ticker -->
+    <div class="ticker-wrap py-4">
+      <div class="ticker-track">
+
+        <!-- Set 1 -->
+        <div class="tech-badge">
+          <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+            <rect width="48" height="48" rx="8" fill="rgba(0,155,222,0.15)"/>
+            <text x="24" y="32" text-anchor="middle" font-family="JetBrains Mono" font-size="14" font-weight="700" fill="#009bde">CISCO</text>
+          </svg>
+          <span class="font-mono text-xs text-slate-400">Cisco</span>
+          <span class="font-mono text-xs text-slate-600">Networking</span>
+        </div>
+
+        <div class="tech-badge">
+          <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+            <rect width="48" height="48" rx="8" fill="rgba(132,189,0,0.15)"/>
+            <text x="24" y="32" text-anchor="middle" font-family="JetBrains Mono" font-size="11" font-weight="700" fill="#84bd00">JUNIPER</text>
+          </svg>
+          <span class="font-mono text-xs text-slate-400">Juniper</span>
+          <span class="font-mono text-xs text-slate-600">Routing / SDN</span>
+        </div>
+
+        <div class="tech-badge">
+          <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+            <rect width="48" height="48" rx="8" fill="rgba(252,161,61,0.12)"/>
+            <text x="24" y="32" text-anchor="middle" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="#fc913d">ORACLE</text>
+          </svg>
+          <span class="font-mono text-xs text-slate-400">Oracle</span>
+          <span class="font-mono text-xs text-slate-600">Database / Cloud</span>
+        </div>
+
+        <div class="tech-badge">
+          <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+            <rect width="48" height="48" rx="8" fill="rgba(0,114,198,0.15)"/>
+            <text x="24" y="32" text-anchor="middle" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="#0072c6">MICROSOFT</text>
+          </svg>
+          <span class="font-mono text-xs text-slate-400">Microsoft</span>
+          <span class="font-mono text-xs text-slate-600">Azure Gov / M365</span>
+        </div>
+
+        <div class="tech-badge">
+          <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+            <rect width="48" height="48" rx="8" fill="rgba(255,204,0,0.1)"/>
+            <text x="24" y="32" text-anchor="middle" font-family="JetBrains Mono" font-size="12" font-weight="700" fill="#ffcc00">LINUX</text>
+          </svg>
+          <span class="font-mono text-xs text-slate-400">Linux</span>
+          <span class="font-mono text-xs text-slate-600">RHEL / Ubuntu</span>
+        </div>
+
+        <div class="tech-badge">
+          <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+            <rect width="48" height="48" rx="8" fill="rgba(255,122,0,0.12)"/>
+            <text x="24" y="32" text-anchor="middle" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="#ff7a00">SOLARIS</text>
+          </svg>
+          <span class="font-mono text-xs text-slate-400">Solaris</span>
+          <span class="font-mono text-xs text-slate-600">Oracle Solaris</span>
+        </div>
+
+        <div class="tech-badge">
+          <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+            <rect width="48" height="48" rx="8" fill="rgba(34,197,94,0.1)"/>
+            <text x="24" y="32" text-anchor="middle" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="#4ade80">VMWARE</text>
+          </svg>
+          <span class="font-mono text-xs text-slate-400">VMware</span>
+          <span class="font-mono text-xs text-slate-600">vSphere / NSX</span>
+        </div>
+
+        <div class="tech-badge">
+          <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+            <rect width="48" height="48" rx="8" fill="rgba(255,153,0,0.12)"/>
+            <text x="24" y="32" text-anchor="middle" font-family="JetBrains Mono" font-size="13" font-weight="700" fill="#ff9900">AWS</text>
+          </svg>
+          <span class="font-mono text-xs text-slate-400">AWS GovCloud</span>
+          <span class="font-mono text-xs text-slate-600">Cloud / FedRAMP</span>
+        </div>
+
+        <div class="tech-badge">
+          <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+            <rect width="48" height="48" rx="8" fill="rgba(139,92,246,0.12)"/>
+            <text x="24" y="32" text-anchor="middle" font-family="JetBrains Mono" font-size="11" font-weight="700" fill="#a78bfa">SPLUNK</text>
+          </svg>
+          <span class="font-mono text-xs text-slate-400">Splunk</span>
+          <span class="font-mono text-xs text-slate-600">SIEM / Analytics</span>
+        </div>
+
+        <div class="tech-badge">
+          <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+            <rect width="48" height="48" rx="8" fill="rgba(96,165,250,0.1)"/>
+            <text x="24" y="32" text-anchor="middle" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="#60a5fa">NESSUS</text>
+          </svg>
+          <span class="font-mono text-xs text-slate-400">Nessus / Tenable</span>
+          <span class="font-mono text-xs text-slate-600">Vuln Scanning</span>
+        </div>
+
+        <!-- Set 2 — duplicate for seamless loop -->
+        <div class="tech-badge">
+          <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+            <rect width="48" height="48" rx="8" fill="rgba(0,155,222,0.15)"/>
+            <text x="24" y="32" text-anchor="middle" font-family="JetBrains Mono" font-size="14" font-weight="700" fill="#009bde">CISCO</text>
+          </svg>
+          <span class="font-mono text-xs text-slate-400">Cisco</span>
+          <span class="font-mono text-xs text-slate-600">Networking</span>
+        </div>
+        <div class="tech-badge">
+          <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+            <rect width="48" height="48" rx="8" fill="rgba(132,189,0,0.15)"/>
+            <text x="24" y="32" text-anchor="middle" font-family="JetBrains Mono" font-size="11" font-weight="700" fill="#84bd00">JUNIPER</text>
+          </svg>
+          <span class="font-mono text-xs text-slate-400">Juniper</span>
+          <span class="font-mono text-xs text-slate-600">Routing / SDN</span>
+        </div>
+        <div class="tech-badge">
+          <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+            <rect width="48" height="48" rx="8" fill="rgba(252,161,61,0.12)"/>
+            <text x="24" y="32" text-anchor="middle" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="#fc913d">ORACLE</text>
+          </svg>
+          <span class="font-mono text-xs text-slate-400">Oracle</span>
+          <span class="font-mono text-xs text-slate-600">Database / Cloud</span>
+        </div>
+        <div class="tech-badge">
+          <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+            <rect width="48" height="48" rx="8" fill="rgba(0,114,198,0.15)"/>
+            <text x="24" y="32" text-anchor="middle" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="#0072c6">MICROSOFT</text>
+          </svg>
+          <span class="font-mono text-xs text-slate-400">Microsoft</span>
+          <span class="font-mono text-xs text-slate-600">Azure Gov / M365</span>
+        </div>
+        <div class="tech-badge">
+          <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+            <rect width="48" height="48" rx="8" fill="rgba(255,204,0,0.1)"/>
+            <text x="24" y="32" text-anchor="middle" font-family="JetBrains Mono" font-size="12" font-weight="700" fill="#ffcc00">LINUX</text>
+          </svg>
+          <span class="font-mono text-xs text-slate-400">Linux</span>
+          <span class="font-mono text-xs text-slate-600">RHEL / Ubuntu</span>
+        </div>
+        <div class="tech-badge">
+          <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+            <rect width="48" height="48" rx="8" fill="rgba(255,122,0,0.12)"/>
+            <text x="24" y="32" text-anchor="middle" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="#ff7a00">SOLARIS</text>
+          </svg>
+          <span class="font-mono text-xs text-slate-400">Solaris</span>
+          <span class="font-mono text-xs text-slate-600">Oracle Solaris</span>
+        </div>
+        <div class="tech-badge">
+          <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+            <rect width="48" height="48" rx="8" fill="rgba(34,197,94,0.1)"/>
+            <text x="24" y="32" text-anchor="middle" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="#4ade80">VMWARE</text>
+          </svg>
+          <span class="font-mono text-xs text-slate-400">VMware</span>
+          <span class="font-mono text-xs text-slate-600">vSphere / NSX</span>
+        </div>
+        <div class="tech-badge">
+          <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+            <rect width="48" height="48" rx="8" fill="rgba(255,153,0,0.12)"/>
+            <text x="24" y="32" text-anchor="middle" font-family="JetBrains Mono" font-size="13" font-weight="700" fill="#ff9900">AWS</text>
+          </svg>
+          <span class="font-mono text-xs text-slate-400">AWS GovCloud</span>
+          <span class="font-mono text-xs text-slate-600">Cloud / FedRAMP</span>
+        </div>
+        <div class="tech-badge">
+          <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+            <rect width="48" height="48" rx="8" fill="rgba(139,92,246,0.12)"/>
+            <text x="24" y="32" text-anchor="middle" font-family="JetBrains Mono" font-size="11" font-weight="700" fill="#a78bfa">SPLUNK</text>
+          </svg>
+          <span class="font-mono text-xs text-slate-400">Splunk</span>
+          <span class="font-mono text-xs text-slate-600">SIEM / Analytics</span>
+        </div>
+        <div class="tech-badge">
+          <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+            <rect width="48" height="48" rx="8" fill="rgba(96,165,250,0.1)"/>
+            <text x="24" y="32" text-anchor="middle" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="#60a5fa">NESSUS</text>
+          </svg>
+          <span class="font-mono text-xs text-slate-400">Nessus / Tenable</span>
+          <span class="font-mono text-xs text-slate-600">Vuln Scanning</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- CTA banner -->
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 mt-14">
+      <div class="bento-card p-8 lg:p-12 relative overflow-hidden text-center"
+           style="background:linear-gradient(135deg,rgba(15,23,42,.95) 0%,rgba(17,32,68,.7) 100%);">
+        <div class="absolute inset-0 pointer-events-none"
+             style="background:radial-gradient(ellipse 70% 70% at 50% 100%,rgba(59,130,246,.15) 0%,transparent 70%);">
+        </div>
+        <div class="relative z-10">
+          <span class="tag mb-4 inline-block">Engage HITS</span>
+          <h2 class="font-display font-800 text-2xl lg:text-3xl text-white mb-3">Ready to Scope a Project?</h2>
+          <p class="font-body text-slate-400 mb-7 max-w-xl mx-auto">
+            Tell us your requirements — we'll respond with a capability briefing and rough order of magnitude within 48 hours.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="contact.html"
+               class="btn-contact px-8 py-3.5 rounded-xl font-display font-700 text-white text-base">
+              Request a Briefing
+            </a>
+            <a href="government.html"
+               class="px-8 py-3.5 rounded-xl font-display font-600 text-slate-300 border border-slate-700 hover:border-blue-500 hover:text-white transition-all duration-300 text-base">
+              View Contracting Info
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+
+  <!-- ══════════════════════════════════
+       FOOTER
+  ══════════════════════════════════ -->
+  <footer class="relative z-10 border-t border-slate-800/60 py-10 px-6 lg:px-10">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="flex items-center gap-2.5">
+        <span style="display:inline-flex;align-items:center;justify-content:center;background:#dbeafe;border-radius:6px;padding:2px;box-shadow:0 0 10px rgba(59,130,246,0.3),inset 0 0 0 1px rgba(147,197,253,0.5);"><img src="hits_logo.png" alt="HITS" class="h-7 w-auto" style="border-radius:4px;display:block;" onerror="this.parentElement.style.display='none';this.nextElementSibling.style.display='flex';" /></span>
+        <div style="display:none;" class="items-center gap-2">
+          <div class="w-7 h-7 rounded-md bg-electric-blue flex items-center justify-center shadow-[0_0_10px_rgba(59,130,246,0.5)]">
+            <span class="font-display font-800 text-white text-xs">H</span>
+          </div>
+          <span class="font-display font-600 text-white text-base tracking-tight">HITS</span>
+        </div>
+      </div>
+      <p class="font-body text-slate-600 text-sm">&copy; 2023 Harpy I.T. Solutions INC. All rights reserved.</p>
+      <div class="flex items-center gap-5">
+        <a href="about.html"   class="text-slate-600 hover:text-slate-400 text-sm transition-colors">About</a>
+        <a href="careers.html" class="text-slate-600 hover:text-slate-400 text-sm transition-colors">Careers</a>
+        <a href="contact.html" class="text-slate-600 hover:text-slate-400 text-sm transition-colors">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+
+  <script>
+    // Mobile menu
+    document.getElementById('menu-toggle').addEventListener('click', () => {
+      document.getElementById('mobile-menu').classList.toggle('open');
+    });
+
+    // Service tabs
+    document.querySelectorAll('.svc-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.svc-tab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.svc-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.07 });
+    document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+  
+    // Products mobile dropdown
+    const mobBtn = document.getElementById('mob-prod-btn');
+    if (mobBtn) {
+      mobBtn.addEventListener('click', () => {
+        mobBtn.classList.toggle('open');
+        document.getElementById('mob-prod-items').classList.toggle('open');
+      });
+    }
+</script>
+</body>
+</html>

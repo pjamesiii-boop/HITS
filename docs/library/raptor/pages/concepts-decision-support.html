@@ -1,0 +1,57 @@
+<div class="docs-page">
+<h1>Decision Support</h1>
+<p class="docs-page-description">How Raptor provides structured guidance — confidence levels, recommendations, risk assessment.</p>
+<h1 id="decision-support">Decision Support</h1>
+
+<p>Every governed response includes a <code>decision_support</code> object that provides structured guidance for the operator.</p>
+
+<h2 id="confidence-levels">Confidence levels</h2>
+
+<p>The classifier assigns a numeric confidence (0.0-1.0) which maps to a categorical level:</p>
+
+<p>| Level | Threshold | Meaning | Recommendation behavior |<br>|-------|-----------|---------|------------------------|<br>| <strong>CLEAR</strong> | >= 95% | Evidence overwhelmingly supports one path | Direct recommendation provided |<br>| <strong>RECOMMENDED</strong> | >= 80% | Strong evidence, minor uncertainty | Recommendation with basis |<br>| <strong>ADVISORY</strong> | >= 50% | Evidence supports direction but alternatives exist | Options presented with tradeoffs |<br>| <strong>INSUFFICIENT</strong> | < 50% | Not enough evidence to recommend | No recommendation; asks for more information |</p>
+
+<h2 id="response-structure">Response structure</h2>
+
+<pre><code class="language-json">{
+  "decision_support": {
+    "confidence": "RECOMMENDED",
+    "recommendation": "Proceed with canary deployment.",
+    "basis": "All preconditions verified, artifact integrity confirmed.",
+    "risk_if_wrong": "Rollback requires manual intervention (~15m).",
+    "alternatives": ["Run rollback rehearsal first (adds ~5m)"]
+  }
+}</code></pre>
+
+<h3 id="fields">Fields</h3>
+
+<ul>
+<li><strong>confidence</strong> — categorical level (not the raw number)</li>
+<li><strong>recommendation</strong> — single-sentence directive. Empty when confidence is INSUFFICIENT.</li>
+<li><strong>basis</strong> — why you should trust this recommendation. Evidence-grounded, not conversational.</li>
+<li><strong>risk_if_wrong</strong> — what breaks if the recommendation is incorrect. Empty when risk is negligible.</li>
+<li><strong>alternatives</strong> — 0-3 alternative approaches. Empty when there's one clear path.</li>
+</ul>
+
+<h2 id="confidence-rules">Confidence rules</h2>
+
+<p>The decision engine applies automatic confidence rules:</p>
+
+<ul>
+<li><strong>Below 0.5:</strong> Proposed actions are downgraded to conversational responses</li>
+<li><strong>0.5 to 0.79:</strong> Proposed actions are downgraded to clarification requests</li>
+<li><strong>0.8 and above:</strong> Actions proceed normally through the confirmation gate</li>
+</ul>
+
+<p>These rules prevent the system from proposing actions it isn't confident about.</p>
+
+<h2 id="actionability">Actionability</h2>
+
+<p>The <code>trust_boundary.actionability</code> field summarizes whether to act:</p>
+
+<ul>
+<li><strong>safe</strong> — verified claims + CLEAR confidence: act with confidence</li>
+<li><strong>review</strong> — mixed boundaries: review before acting</li>
+<li><strong>blocked</strong> — inferred + INSUFFICIENT: do not act without verification</li>
+</ul>
+</div>

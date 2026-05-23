@@ -1,0 +1,218 @@
+<div class="docs-page">
+<h1>Webhooks API</h1>
+<p class="docs-page-description">Subscribe to governance events with authenticated webhook delivery.</p>
+<h1 id="webhooks-api">Webhooks API</h1>
+
+<p>The Webhooks API lets you subscribe to governance events in real time. Raptor delivers events to your HTTPS endpoint with HMAC-SHA256 signatures for verification.</p>
+
+<h2 id="event-types">Event Types</h2>
+
+<p>| Event | Fired when |<br>|-------|-----------|<br>| <code>governance.allowed</code> | A governance evaluation permitted an action |<br>| <code>governance.denied</code> | A governance evaluation denied an action |<br>| <code>response.created</code> | A governed response was delivered |<br>| <code>execution.completed</code> | A workflow execution finished |<br>| <code>policy.activated</code> | A new policy was activated |</p>
+
+<h2 id="delivery">Delivery</h2>
+
+<p>Each webhook delivery includes:</p>
+
+<ul>
+<li><strong>HMAC-SHA256 signature</strong> in the <code>X-Raptor-Signature</code> header, computed over the raw request body using your webhook secret.</li>
+<li><strong>Retry on failure:</strong> Raptor retries failed deliveries (non-2xx response or timeout) with exponential backoff up to 3 attempts over 1 hour.</li>
+<li><strong>Timeout:</strong> Your endpoint must respond within 10 seconds.</li>
+</ul>
+
+<h3 id="signature-verification">Signature Verification</h3>
+
+<pre><code class="language-python">import hmac
+import hashlib
+
+<p>def verify_signature(payload_body: bytes, secret: str, signature: str) -&gt; bool:<br>    expected = hmac.new(<br>        secret.encode("utf-8"),<br>        payload_body,<br>        hashlib.sha256<br>    ).hexdigest()<br>    return hmac.compare_digest(f"sha256={expected}", signature)</code></pre></p>
+
+<h3 id="delivery-payload">Delivery Payload</h3>
+
+<pre><code class="language-json">{
+  "id": "evt_abc123",
+  "type": "governance.allowed",
+  "timestamp": "2026-05-21T18:00:00Z",
+  "tenant_id": "tenant_abc123",
+  "data": {
+    "nest_id": "nest_f7a2c9e1",
+    "action": "chat.send",
+    "decision": "allowed",
+    "policy_version": 4
+  }
+}</code></pre>
+
+<hr>
+
+<h2 id="post-api-webhooks">POST /api/webhooks</h2>
+
+<p>Create a webhook subscription. A secret is auto-generated and returned in the response. Store it securely -- it is only shown once.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="request-body">Request Body</h3>
+
+<p>| Field | Type | Required | Description |<br>|-------|------|----------|-------------|<br>| <code>url</code> | string | Yes | HTTPS endpoint URL |<br>| <code>events</code> | string[] | Yes | Event types to subscribe to |</p>
+
+<pre><code class="language-json">{
+  "url": "https://example.com/webhooks/raptor",
+  "events": ["governance.allowed", "governance.denied", "response.created"]
+}</code></pre>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "webhook": {
+    "id": "wh_abc123",
+    "url": "https://example.com/webhooks/raptor",
+    "events": ["governance.allowed", "governance.denied", "response.created"],
+    "secret": "whsec_abc123def456ghi789",
+    "active": true,
+    "created_at": "2026-05-21T18:00:00Z"
+  }
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 400 | <code>validation_error</code> | Missing URL, invalid URL scheme, or unknown event types |<br>| 401 | <code>unauthorized</code> | No valid authentication |</p>
+
+<hr>
+
+<h2 id="get-api-webhooks">GET /api/webhooks</h2>
+
+<p>List all webhook subscriptions for the current tenant.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "webhooks": [
+    {
+      "id": "wh_abc123",
+      "url": "https://example.com/webhooks/raptor",
+      "events": ["governance.allowed", "governance.denied", "response.created"],
+      "active": true,
+      "created_at": "2026-05-21T18:00:00Z",
+      "last_delivery": {
+        "status": "success",
+        "timestamp": "2026-05-21T18:30:00Z",
+        "response_code": 200
+      }
+    }
+  ]
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |</p>
+
+<hr>
+
+<h2 id="get-api-webhooks-id">GET /api/webhooks/{id}</h2>
+
+<p>Get details for a specific webhook subscription, including recent delivery history.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p>| Parameter | Type | Description |<br>|-----------|------|-------------|<br>| <code>id</code> | string | Webhook ID |</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "webhook": {
+    "id": "wh_abc123",
+    "url": "https://example.com/webhooks/raptor",
+    "events": ["governance.allowed", "governance.denied", "response.created"],
+    "active": true,
+    "created_at": "2026-05-21T18:00:00Z",
+    "recent_deliveries": [
+      {
+        "id": "del_abc123",
+        "event_type": "response.created",
+        "status": "success",
+        "response_code": 200,
+        "timestamp": "2026-05-21T18:30:00Z",
+        "duration_ms": 245
+      },
+      {
+        "id": "del_def456",
+        "event_type": "governance.allowed",
+        "status": "success",
+        "response_code": 200,
+        "timestamp": "2026-05-21T18:25:00Z",
+        "duration_ms": 189
+      }
+    ]
+  }
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 404 | <code>not_found</code> | Webhook does not exist |</p>
+
+<hr>
+
+<h2 id="patch-api-webhooks-id">PATCH /api/webhooks/{id}</h2>
+
+<p>Update a webhook subscription. You can change the URL, event subscriptions, or active status.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p>| Parameter | Type | Description |<br>|-----------|------|-------------|<br>| <code>id</code> | string | Webhook ID |</p>
+
+<h3 id="request-body">Request Body</h3>
+
+<p>| Field | Type | Required | Description |<br>|-------|------|----------|-------------|<br>| <code>url</code> | string | No | New HTTPS endpoint URL |<br>| <code>events</code> | string[] | No | Updated event types |<br>| <code>active</code> | boolean | No | Enable or disable delivery |</p>
+
+<pre><code class="language-json">{
+  "events": ["governance.allowed", "governance.denied", "response.created", "execution.completed"],
+  "active": true
+}</code></pre>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "webhook": {
+    "id": "wh_abc123",
+    "url": "https://example.com/webhooks/raptor",
+    "events": ["governance.allowed", "governance.denied", "response.created", "execution.completed"],
+    "active": true,
+    "updated_at": "2026-05-21T19:00:00Z"
+  }
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 400 | <code>validation_error</code> | Invalid URL or unknown event types |<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 404 | <code>not_found</code> | Webhook does not exist |</p>
+
+<hr>
+
+<h2 id="delete-api-webhooks-id">DELETE /api/webhooks/{id}</h2>
+
+<p>Delete a webhook subscription. Pending deliveries are cancelled.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p>| Parameter | Type | Description |<br>|-----------|------|-------------|<br>| <code>id</code> | string | Webhook ID |</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "deleted_at": "2026-05-21T19:00:00Z"
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 404 | <code>not_found</code> | Webhook does not exist |</p>
+</div>

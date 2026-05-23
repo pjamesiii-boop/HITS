@@ -1,0 +1,156 @@
+<div class="docs-page">
+<h1>Chat API</h1>
+<p class="docs-page-description">Send governed messages and retrieve trust-boundary-annotated conversation history.</p>
+<h1 id="chat-api">Chat API</h1>
+
+<p>The Chat API is the primary interface for governed AI interaction. Every message passes through the decision engine, governance layer, and trust classifier before a response is returned.</p>
+
+<h2 id="post-api-chat">POST /api/chat</h2>
+
+<p>Send a governed message. The message is classified, routed through governance, and returned with trust-boundary annotations.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="request-body">Request Body</h3>
+
+<p>| Field | Type | Required | Description |<br>|-------|------|----------|-------------|<br>| <code>message</code> | string | Yes | The user's message |<br>| <code>conversation_id</code> | string | No | Nest ID to scope the conversation. Defaults to <code>"default"</code>. |</p>
+
+<pre><code class="language-json">{
+  "message": "What was Q2 revenue and how does it compare to forecast?",
+  "conversation_id": "nest_f7a2c9e1"
+}</code></pre>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "reply": "Q2 revenue was $4.2M, which is 7% above the $3.9M forecast.",
+  "decision_type": "respond",
+  "trust_boundary": {
+    "primary": "confirmed",
+    "sublabel": "2 of 2 segments verified",
+    "actionability": {
+      "level": "safe",
+      "label": "All claims verified against source"
+    },
+    "provenance": {
+      "execution_id": "exec_8b3f1a2e",
+      "input_hash": "sha256:a1b2c3d4..."
+    }
+  },
+  "segments": [
+    {
+      "boundary": "confirmed",
+      "text": "Q2 revenue was $4.2M",
+      "basis": "database_query"
+    },
+    {
+      "boundary": "confirmed",
+      "text": "7% above the $3.9M forecast",
+      "basis": "database_query"
+    }
+  ],
+  "decision_support": {
+    "confidence": "CLEAR",
+    "recommendation": "Revenue figure verified against financial database.",
+    "basis": "Direct query to transactions_summary table, fiscal Q2 2026.",
+    "risk_if_wrong": "Financial misreporting. Downstream decisions based on incorrect revenue.",
+    "alternatives": []
+  },
+  "audit_trail": [
+    { "name": "intent_received", "time": "17:44:23 UTC", "status": "pass" },
+    { "name": "governance_evaluated", "time": "17:44:23 UTC", "status": "pass" },
+    { "name": "decision_classified", "time": "17:44:24 UTC", "status": "pass" },
+    { "name": "trust_boundary_assigned", "time": "17:44:24 UTC", "status": "pass" },
+    { "name": "response_delivered", "time": "17:44:24 UTC", "status": "pass" }
+  ]
+}</code></pre>
+
+<h3 id="response-fields">Response Fields</h3>
+
+<p>| Field | Type | Description |<br>|-------|------|-------------|<br>| <code>ok</code> | boolean | <code>true</code> on success |<br>| <code>reply</code> | string | The governed response text |<br>| <code>decision_type</code> | string | How the engine classified the intent. One of: <code>respond</code>, <code>ask</code>, <code>propose_action</code>, <code>execute_confirmed_action</code> |<br>| <code>trust_boundary</code> | object | Composite trust classification for the full response |<br>| <code>trust_boundary.primary</code> | string | Highest trust level: <code>confirmed</code>, <code>executed</code>, <code>retrieved</code>, <code>inferred</code>, <code>unknown</code> |<br>| <code>trust_boundary.sublabel</code> | string | Human-readable summary of segment verification |<br>| <code>trust_boundary.actionability</code> | object | Whether the response is safe to act on |<br>| <code>trust_boundary.provenance</code> | object | Execution ID and input hash for audit chain |<br>| <code>segments</code> | array | Individual response segments with independent trust levels |<br>| <code>segments[].boundary</code> | string | Trust level for this segment |<br>| <code>segments[].text</code> | string | The text content of this segment |<br>| <code>segments[].basis</code> | string | What produced this segment: <code>model_response</code>, <code>workflow_execution</code>, <code>pbc_action</code>, <code>file_content</code>, <code>cryptographic_verification</code> |<br>| <code>decision_support</code> | object | Structured decision support contract |<br>| <code>decision_support.confidence</code> | string | <code>CLEAR</code>, <code>RECOMMENDED</code>, <code>ADVISORY</code>, or <code>INSUFFICIENT</code> |<br>| <code>decision_support.recommendation</code> | string | What the engine recommends |<br>| <code>decision_support.basis</code> | string | Evidence backing the recommendation |<br>| <code>decision_support.risk_if_wrong</code> | string | What goes wrong if this recommendation is incorrect |<br>| <code>decision_support.alternatives</code> | array | Other options considered |<br>| <code>audit_trail</code> | array | Ordered list of governance checkpoints the request passed through |</p>
+
+<h3 id="decision-types">Decision Types</h3>
+
+<p>| Type | Meaning |<br>|------|---------|<br>| <code>respond</code> | Informational response, no action proposed |<br>| <code>ask</code> | Clarification needed before proceeding |<br>| <code>propose_action</code> | Action proposed, awaiting user confirmation |<br>| <code>execute_confirmed_action</code> | Previously confirmed action executed |</p>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 400 | <code>validation_error</code> | Missing <code>message</code> field |<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 403 | <code>governance_denied</code> | Policy blocked the message |<br>| 429 | <code>rate_limited</code> | Request rate exceeded |</p>
+
+<hr>
+
+<h2 id="post-api-chat-reset">POST /api/chat/reset</h2>
+
+<p>Reset the conversation context for the current session. History is preserved but the model context window is cleared.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="request-body">Request Body</h3>
+
+<p>No body required. Send an empty JSON object or omit the body.</p>
+
+<pre><code class="language-json">{}</code></pre>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |</p>
+
+<hr>
+
+<h2 id="get-api-chat-history">GET /api/chat/history</h2>
+
+<p>Retrieve paginated conversation history for a nest. Trust boundaries are preserved on historical messages.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="query-parameters">Query Parameters</h3>
+
+<p>| Parameter | Type | Required | Description |<br>|-----------|------|----------|-------------|<br>| <code>nest_id</code> | string | Yes | The nest to retrieve history for |<br>| <code>before</code> | string | No | Cursor for reverse-chronological pagination. Pass the ID of the oldest message from the previous page. |</p>
+
+<pre><code>GET /api/chat/history?nest_id=nest_f7a2c9e1&amp;before=msg_abc123</code></pre>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "messages": [
+    {
+      "id": "msg_def456",
+      "role": "user",
+      "content": "What was Q2 revenue?",
+      "timestamp": "2026-05-21T17:44:22Z"
+    },
+    {
+      "id": "msg_ghi789",
+      "role": "assistant",
+      "content": "Q2 revenue was $4.2M.",
+      "timestamp": "2026-05-21T17:44:24Z",
+      "trust_boundary": {
+        "primary": "confirmed",
+        "sublabel": "1 of 1 segments verified"
+      },
+      "segments": [
+        {
+          "boundary": "confirmed",
+          "text": "Q2 revenue was $4.2M.",
+          "basis": "database_query"
+        }
+      ],
+      "decision_type": "respond"
+    }
+  ],
+  "has_more": true,
+  "next_cursor": "msg_def456"
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 400 | <code>validation_error</code> | Missing <code>nest_id</code> parameter |<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 404 | <code>not_found</code> | Nest does not exist or is not accessible |</p>
+</div>

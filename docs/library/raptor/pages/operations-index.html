@@ -1,0 +1,73 @@
+<div class="docs-page">
+<h1>Operations</h1>
+<p class="docs-page-description">Day-to-day operational guidance for monitoring, deploying, backing up, and scaling Raptor.</p>
+<h1 id="operations">Operations</h1>
+
+<p>This section covers everything you need to keep a Raptor instance healthy in production. The core operational loop is: monitor health, deploy via git push, back up the database, and verify integrity.</p>
+
+<h2 id="health-monitoring">Health Monitoring</h2>
+
+<p>Raptor exposes three health endpoints out of the box:</p>
+
+<p>| Endpoint | Purpose |<br>|---|---|<br>| <code>/api/health</code> | Liveness -- is the process running? |<br>| <code>/api/ready</code> | Readiness -- is the database connected and are migrations applied? |<br>| <code>/api/health/dependencies</code> | Per-dependency health breakdown |</p>
+
+<p>Point your uptime monitor at <code>/api/ready</code>. If it returns anything other than <code>{"status": "ready"}</code>, the instance should not receive traffic.</p>
+
+<p>For deeper operational metrics -- connection pool utilization, request rates, error rates, and provider health -- see the <a href="/operations/monitoring">Monitoring guide</a>.</p>
+
+<h2 id="deployment">Deployment</h2>
+
+<p>Raptor deploys via <strong>git push only</strong>. Direct deploy commands (such as <code>railway up</code>) bypass the build attestation pipeline and break provenance. The correct workflow:</p>
+
+<pre><code class="language-bash">git push origin main</code></pre>
+
+<p>The CI pipeline builds the image, signs it with Ed25519 attestation, and deploys. Migrations run automatically on startup via the <code>migrate</code> container.</p>
+
+<p>For Docker Compose environments:</p>
+
+<pre><code class="language-bash">git pull
+docker compose build
+docker compose up -d</code></pre>
+
+<p>See the <a href="/operations/upgrades">Upgrade guide</a> for versioning, rollback, and breaking-change policy.</p>
+
+<h2 id="backup-and-restore">Backup and Restore</h2>
+
+<p>| Environment | Strategy | RPO |<br>|---|---|---|<br>| Self-hosted | Scheduled <code>pg_dump</code> | Depends on schedule (target < 1 hour) |<br>| Cloud (Neon) | Continuous WAL archiving + hourly snapshots | < 1 hour |</p>
+
+<p>After any restore, verify hash chain integrity and governance table counts before accepting traffic. Immutable governance tables must never be modified in place -- restore from backup only.</p>
+
+<p>Full procedures are in the <a href="/operations/backup-restore">Backup and Restore guide</a>.</p>
+
+<h2 id="integrity-verification">Integrity Verification</h2>
+
+<p>Raptor's governance chain is cryptographically verifiable. Two endpoints support external auditing:</p>
+
+<p>| Endpoint | Purpose |<br>|---|---|<br>| <code>/.well-known/raptor/attestation</code> | Build attestation (Ed25519 signature, build metadata) |<br>| <code>/.well-known/raptor/transparency</code> | Public transparency log (hash chain verification) |</p>
+
+<p>The <a href="/operations/monitoring">Monitoring guide</a> covers integrity monitoring and alerting for attestation drift.</p>
+
+<h2 id="scaling-considerations">Scaling Considerations</h2>
+
+<p>Raptor is a single Go binary backed by PostgreSQL. Scaling follows standard patterns:</p>
+
+<ul>
+<li><strong>Vertical:</strong> Increase memory and CPU on the control-panel container. PostgreSQL benefits from more shared_buffers and work_mem.</li>
+<li><strong>Horizontal:</strong> Run multiple control-panel instances behind a load balancer. All instances connect to the same PostgreSQL database. Use <code>/api/ready</code> as the load balancer health check.</li>
+<li><strong>Connection pooling:</strong> Raptor uses pgx with built-in connection pooling. Default pool size is tuned for single-instance use. For multiple instances, either reduce per-instance pool size or add PgBouncer.</li>
+<li><strong>Database:</strong> PostgreSQL 16+ with WAL archiving for point-in-time recovery. For high availability, use a managed PostgreSQL service (Neon, RDS, Cloud SQL) with read replicas.</li>
+</ul>
+
+<h2 id="slo-targets">SLO Targets</h2>
+
+<p>| Metric | Target |<br>|---|---|<br>| Availability | 99.5% |<br>| Latency (p50) | < 200 ms |<br>| Latency (p95) | < 1 s |<br>| Recovery Point Objective (RPO) | < 1 hour |<br>| Recovery Time Objective (RTO) | < 15 minutes |</p>
+
+<h2 id="guides">Guides</h2>
+
+<ul>
+<li><a href="/operations/monitoring">Monitoring</a> -- health endpoints, operational metrics, integrity monitoring, alerting</li>
+<li><a href="/operations/backup-restore">Backup and Restore</a> -- pg_dump, Neon PITR, post-restore verification</li>
+<li><a href="/operations/upgrades">Upgrades</a> -- versioning, upgrade procedure, rollback, API compatibility</li>
+<li><a href="/operations/runbooks">Runbooks</a> -- step-by-step procedures for tenant provisioning, policy rollback, incident response</li>
+</ul>
+</div>

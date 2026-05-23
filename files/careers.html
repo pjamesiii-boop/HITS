@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Careers | Harpy I.T. Solutions INC.</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'deep-slate':    '#020617',
+            'electric-blue': '#3b82f6',
+            'blue-glow':     '#60a5fa',
+          },
+          fontFamily: {
+            'display': ['Syne',          'sans-serif'],
+            'body':    ['DM Sans',        'sans-serif'],
+            'mono':    ['JetBrains Mono', 'monospace'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root { --blue:#3b82f6; --bg:#020617; --card-bg:rgba(15,23,42,0.75); }
+    *, *::before, *::after { box-sizing:border-box; }
+    body { background-color:var(--bg); font-family:'DM Sans',sans-serif; overflow-x:hidden; }
+
+    /* Grain */
+    body::before {
+      content:''; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.4;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    }
+
+    /* ── Nav ── */
+    .nav-glass {
+      background:rgba(2,6,23,.65);
+      backdrop-filter:blur(20px) saturate(180%);
+      -webkit-backdrop-filter:blur(20px) saturate(180%);
+      border-bottom:1px solid rgba(59,130,246,.12);
+    }
+    .nav-link {
+      position:relative; color:rgba(203,213,225,.85);
+      font-size:.875rem; font-weight:500; letter-spacing:.02em; transition:color .2s;
+    }
+    .nav-link::after {
+      content:''; position:absolute; bottom:-3px; left:0;
+      width:0; height:1px; background:var(--blue); transition:width .25s ease;
+    }
+    .nav-link:hover { color:#93c5fd; }
+    .nav-link:hover::after, .nav-link.active::after { width:100%; }
+    .nav-link.active { color:#93c5fd; }
+    .btn-contact {
+      background:linear-gradient(135deg,#2563eb,#3b82f6);
+      box-shadow:0 0 20px rgba(59,130,246,.4);
+      transition:box-shadow .3s, transform .2s;
+    }
+    .btn-contact:hover { box-shadow:0 0 32px rgba(59,130,246,.65); transform:translateY(-1px); }
+
+    /* ── Dropdown ── */
+    .dropdown-wrap { position:relative; }
+    .dropdown-btn {
+      display:flex; align-items:center; gap:5px;
+      color:rgba(203,213,225,.85); font-size:.875rem; font-weight:500;
+      letter-spacing:.02em; cursor:pointer; background:none; border:none;
+      padding:0; transition:color .2s; font-family:'DM Sans',sans-serif; position:relative;
+    }
+    .dropdown-btn::after {
+      content:''; position:absolute; bottom:-3px; left:0;
+      width:0; height:1px; background:var(--blue); transition:width .25s ease;
+    }
+    .dropdown-btn:hover, .dropdown-btn.active { color:#93c5fd; }
+    .dropdown-btn:hover::after, .dropdown-btn.active::after { width:calc(100% - 16px); }
+    .dropdown-btn svg { transition:transform .25s ease; flex-shrink:0; }
+    .dropdown-wrap:hover .dropdown-btn svg,
+    .dropdown-wrap.open .dropdown-btn svg { transform:rotate(180deg); }
+    .dropdown-menu {
+      position:absolute; top:calc(100% + 12px); left:50%;
+      transform:translateX(-50%) scale(0.95);
+      min-width:230px; z-index:100;
+      background:rgba(7,12,28,.92);
+      backdrop-filter:blur(24px) saturate(180%);
+      -webkit-backdrop-filter:blur(24px) saturate(180%);
+      border:1px solid rgba(59,130,246,.22); border-radius:14px;
+      box-shadow:0 20px 60px rgba(0,0,0,.6), 0 0 0 1px rgba(59,130,246,.08);
+      padding:8px; opacity:0; pointer-events:none;
+      transform-origin:top center;
+      transition:opacity .22s ease, transform .22s ease;
+    }
+    .dropdown-wrap:hover .dropdown-menu,
+    .dropdown-wrap.open .dropdown-menu { opacity:1; pointer-events:auto; transform:translateX(-50%) scale(1); }
+    .dropdown-item {
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px; border-radius:8px;
+      font-family:'DM Sans',sans-serif; font-size:.85rem; font-weight:500;
+      color:rgba(203,213,225,.85); text-decoration:none;
+      transition:background .18s, color .18s; white-space:nowrap;
+    }
+    .dropdown-item:hover { background:rgba(59,130,246,.1); color:#93c5fd; }
+    .dropdown-item .d-icon {
+      width:28px; height:28px; border-radius:7px; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      background:rgba(59,130,246,.12); border:1px solid rgba(59,130,246,.22);
+    }
+    .dropdown-item.coming-soon { cursor:default; opacity:.42; pointer-events:none; }
+    .dropdown-divider { height:1px; background:rgba(59,130,246,.1); margin:6px 4px; }
+    .coming-tag {
+      margin-left:auto; font-size:.6rem; font-family:'JetBrains Mono',monospace;
+      font-weight:600; letter-spacing:.08em; text-transform:uppercase;
+      padding:2px 6px; border-radius:4px;
+      background:rgba(148,163,184,.1); border:1px solid rgba(148,163,184,.2);
+      color:rgba(148,163,184,.6);
+    }
+    .mob-dropdown-items { display:none; padding-left:14px; margin-top:4px; }
+    .mob-dropdown-items.open { display:flex; flex-direction:column; gap:2px; }
+    .mob-dropdown-btn {
+      display:flex; align-items:center; justify-content:space-between;
+      color:rgba(203,213,225,.85); font-size:1rem; font-weight:500;
+      background:none; border:none; padding:0; cursor:pointer;
+      font-family:'DM Sans',sans-serif; width:100%;
+    }
+    .mob-dropdown-btn svg { transition:transform .25s; }
+    .mob-dropdown-btn.open svg { transform:rotate(180deg); }
+
+    /* ── Shared ── */
+    .gradient-headline {
+      background:linear-gradient(135deg,#fff 0%,#e2eeff 35%,#93c5fd 65%,#3b82f6 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .blue-line { width:48px; height:2px; background:linear-gradient(90deg,var(--blue),transparent); border-radius:2px; }
+    .tag {
+      display:inline-flex; align-items:center; padding:3px 10px;
+      background:rgba(59,130,246,.12); border:1px solid rgba(59,130,246,.3);
+      border-radius:999px; font-size:.68rem; font-weight:600;
+      letter-spacing:.08em; color:#93c5fd; text-transform:uppercase;
+    }
+    .glow-bullet {
+      width:7px; height:7px; background:var(--blue); border-radius:50%; flex-shrink:0;
+      box-shadow:0 0 8px 2px rgba(59,130,246,.65);
+    }
+    .bento-card {
+      background:var(--card-bg); border:1px solid rgba(59,130,246,.15);
+      border-radius:16px; backdrop-filter:blur(12px);
+      transition:border-color .3s, box-shadow .3s;
+    }
+    .bento-card:hover { border-color:rgba(59,130,246,.38); box-shadow:0 0 40px rgba(59,130,246,.1); }
+
+    /* ── Hero grid bg ── */
+    .hero-grid {
+      background-image:
+        linear-gradient(rgba(59,130,246,.04) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(59,130,246,.04) 1px,transparent 1px);
+      background-size:70px 70px;
+    }
+
+    /* ── Culture glassmorphism cards ── */
+    .culture-card {
+      background:rgba(15,23,42,.55);
+      backdrop-filter:blur(24px) saturate(160%);
+      -webkit-backdrop-filter:blur(24px) saturate(160%);
+      border:1px solid rgba(255,255,255,.07);
+      border-radius:20px;
+      box-shadow:0 8px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06);
+      position:relative; overflow:hidden;
+      transition:border-color .3s, box-shadow .3s, transform .3s;
+    }
+    .culture-card::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:1px;
+      background:linear-gradient(90deg,transparent,rgba(59,130,246,.5),transparent);
+      opacity:0; transition:opacity .3s;
+    }
+    .culture-card:hover {
+      border-color:rgba(59,130,246,.3);
+      box-shadow:0 12px 56px rgba(0,0,0,.45), 0 0 40px rgba(59,130,246,.1), inset 0 1px 0 rgba(255,255,255,.08);
+      transform:translateY(-3px);
+    }
+    .culture-card:hover::before { opacity:1; }
+
+    /* ── Role cards ── */
+    .role-card {
+      background:rgba(10,18,36,.8);
+      border:1px solid rgba(59,130,246,.16);
+      border-radius:16px; overflow:hidden;
+      transition:border-color .3s, box-shadow .3s, transform .25s;
+      position:relative;
+    }
+    .role-card::after {
+      content:''; position:absolute; top:0; left:0; bottom:0; width:2px;
+      background:linear-gradient(180deg,var(--blue),rgba(59,130,246,.2));
+      opacity:0; transition:opacity .3s;
+    }
+    .role-card:hover {
+      border-color:rgba(59,130,246,.4);
+      box-shadow:0 0 40px rgba(59,130,246,.1), 0 16px 48px rgba(0,0,0,.4);
+      transform:translateY(-2px);
+    }
+    .role-card:hover::after { opacity:1; }
+
+    /* Apply button */
+    .btn-apply {
+      display:inline-flex; align-items:center; gap:8px;
+      padding:9px 20px; border-radius:10px;
+      font-family:'Syne',sans-serif; font-size:.82rem; font-weight:700;
+      color:#93c5fd; border:1px solid rgba(59,130,246,.3);
+      background:rgba(59,130,246,.08);
+      transition:background .2s, border-color .2s, box-shadow .2s;
+      text-decoration:none;
+    }
+    .btn-apply:hover {
+      background:rgba(59,130,246,.16);
+      border-color:rgba(59,130,246,.55);
+      box-shadow:0 0 20px rgba(59,130,246,.2);
+    }
+
+    /* Role badge */
+    .role-badge {
+      font-family:'JetBrains Mono',monospace; font-size:.62rem; font-weight:600;
+      letter-spacing:.1em; text-transform:uppercase;
+      padding:3px 9px; border-radius:5px;
+    }
+    .badge-active {
+      background:rgba(34,197,94,.12); border:1px solid rgba(34,197,94,.3); color:#86efac;
+    }
+    .badge-clearance {
+      background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.3); color:#fca5a5;
+    }
+    .badge-remote {
+      background:rgba(59,130,246,.1); border:1px solid rgba(59,130,246,.25); color:#93c5fd;
+    }
+
+    /* ── Veteran CTA ── */
+    .vet-card {
+      position:relative; overflow:hidden;
+      background:rgba(8,14,30,.92);
+      border:1px solid rgba(59,130,246,.2);
+      border-radius:20px;
+    }
+    /* Stars & Stripes SVG watermark */
+    .vet-watermark {
+      position:absolute; right:-20px; top:-20px;
+      width:280px; height:280px; opacity:.04; pointer-events:none;
+    }
+    .vet-glow {
+      position:absolute; bottom:-60px; left:-60px;
+      width:400px; height:400px;
+      background:radial-gradient(circle,rgba(59,130,246,.12) 0%,transparent 65%);
+      pointer-events:none;
+    }
+    .vet-stripe {
+      position:absolute; top:0; left:0; bottom:0; width:4px;
+      background:linear-gradient(180deg,#3b82f6,#1d4ed8);
+      box-shadow:0 0 20px rgba(59,130,246,.6);
+    }
+
+    /* Stat chips */
+    .stat-chip {
+      display:flex; flex-direction:column; align-items:center; gap:2px;
+      padding:14px 20px;
+      background:rgba(15,23,42,.6);
+      border:1px solid rgba(59,130,246,.14);
+      border-radius:12px; min-width:100px;
+    }
+
+    /* Animations */
+    .anim-1{opacity:0;animation:fadeUp .65s ease .1s forwards;}
+    .anim-2{opacity:0;animation:fadeUp .65s ease .22s forwards;}
+    .anim-3{opacity:0;animation:fadeUp .65s ease .34s forwards;}
+    .anim-4{opacity:0;animation:fadeUp .65s ease .46s forwards;}
+    .anim-5{opacity:0;animation:fadeUp .65s ease .58s forwards;}
+    @keyframes fadeUp { from{opacity:0;transform:translateY(22px);} to{opacity:1;transform:translateY(0);} }
+    .scroll-reveal{opacity:0;transform:translateY(28px);transition:opacity .65s ease,transform .65s ease;}
+    .scroll-reveal.visible{opacity:1;transform:translateY(0);}
+
+    /* Pulse dot */
+    @keyframes pulseDot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(1.4);}}
+    .pulse-dot { animation:pulseDot 2s ease-in-out infinite; }
+
+    #mobile-menu{display:none;}
+    #mobile-menu.open{display:block;}
+  </style>
+</head>
+
+<body class="text-slate-100 relative">
+
+  <!-- ══════════════════════════════
+       NAV
+  ══════════════════════════════ -->
+  <header class="nav-glass fixed top-0 inset-x-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-16">
+
+      <a href="index.html" class="flex items-center gap-2.5 group">
+        <!-- HITS logo — Smart Card badge housing -->
+        <div class="relative flex items-center justify-center" style="width:36px;height:36px;">
+          <!-- Outer cyber-glow bloom -->
+          <div style="position:absolute;inset:-7px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,0.28) 0%,transparent 68%);pointer-events:none;z-index:0;"></div>
+          <!-- Secure housing ring -->
+          <div style="position:absolute;inset:-1px;border-radius:10px;border:1px solid rgba(96,165,250,0.55);background:transparent;pointer-events:none;z-index:3;box-shadow:0 0 14px rgba(59,130,246,0.3);"></div>
+          <div style="position:relative;z-index:2;
+                      border-radius:7px;overflow:hidden;
+                      width:32px;height:32px;
+                      display:flex;align-items:center;justify-content:center;
+                      background:#dbeafe;
+                      box-shadow:inset 0 0 0 1px rgba(147,197,253,0.6);">
+            <img src="hits_logo.png" alt="HITS"
+                 class="h-7 w-auto"
+                 style="border-radius:5px;"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+          </div>
+          <!-- Text fallback -->
+          <div style="display:none;position:relative;z-index:2;" class="w-8 h-8 rounded-md bg-electric-blue items-center justify-center shadow-[0_0_14px_rgba(59,130,246,0.7)]">
+            <span class="font-display font-800 text-white text-sm">H</span>
+          </div>
+        </div>
+        <span class="font-display font-700 text-white text-lg tracking-tight">HITS</span>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-7 font-body">
+        <a href="index.html" class="nav-link">Home</a>
+
+        <div class="dropdown-wrap">
+          <button class="dropdown-btn">
+            Products
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="dropdown-menu">
+            <a href="product.html" class="dropdown-item">
+              <span class="d-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></span>
+              Harpy Talon
+            </a>
+            <a href="products.html" class="dropdown-item">
+              <span class="d-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+              Product Hub
+            </a>
+            <div class="dropdown-divider"></div>
+            <span class="dropdown-item coming-soon">
+              <span class="d-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+              Future SaaS
+              <span class="coming-tag">Soon</span>
+            </span>
+          </div>
+        </div>
+
+        <a href="services.html"   class="nav-link">Services</a>
+        <a href="government.html" class="nav-link">Government</a>
+        <a href="about.html"      class="nav-link">About</a>
+        <a href="careers.html"    class="nav-link active">Careers</a>
+        <a href="news.html"       class="nav-link">News</a>
+      </nav>
+
+      <div class="hidden md:flex">
+        <a href="contact.html" class="btn-contact px-5 py-2 rounded-lg text-sm font-display font-600 text-white tracking-wide">
+          Contact Us
+        </a>
+      </div>
+
+      <button id="menu-toggle" class="md:hidden flex flex-col gap-1.5 p-1" aria-label="Toggle menu">
+        <span class="w-5 h-0.5 bg-slate-300 block"></span>
+        <span class="w-5 h-0.5 bg-slate-300 block"></span>
+        <span class="w-5 h-0.5 bg-slate-300 block"></span>
+      </button>
+    </div>
+
+    <div id="mobile-menu" class="md:hidden px-6 pb-5 pt-2 flex flex-col gap-4 font-body border-t border-white/5">
+      <a href="index.html" class="nav-link text-base">Home</a>
+      <div>
+        <button class="mob-dropdown-btn" id="mob-prod-btn">
+          Products
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="mob-dropdown-items" id="mob-prod-items">
+          <a href="product.html"  class="dropdown-item" style="padding:8px 10px;font-size:.9rem;">Harpy Talon</a>
+          <a href="products.html" class="dropdown-item" style="padding:8px 10px;font-size:.9rem;">Product Hub</a>
+          <span class="dropdown-item coming-soon" style="padding:8px 10px;font-size:.9rem;">Future SaaS <span class="coming-tag">Soon</span></span>
+        </div>
+      </div>
+      <a href="services.html"   class="nav-link text-base">Services</a>
+      <a href="government.html" class="nav-link text-base">Government</a>
+      <a href="about.html"      class="nav-link text-base">About</a>
+      <a href="careers.html"    class="nav-link active text-base">Careers</a>
+      <a href="news.html"       class="nav-link text-base">News</a>
+      <a href="contact.html" class="btn-contact px-5 py-2.5 rounded-lg text-sm font-display font-600 text-white text-center">Contact Us</a>
+    </div>
+  </header>
+
+
+  <!-- ══════════════════════════════
+       CAREERS HERO
+  ══════════════════════════════ -->
+  <section class="relative min-h-screen flex flex-col justify-center px-6 pt-28 pb-20 overflow-hidden hero-grid">
+
+    <!-- Ambient radial -->
+    <div class="absolute inset-0 pointer-events-none"
+         style="background:radial-gradient(ellipse 80% 55% at 50% 30%,rgba(59,130,246,.1) 0%,transparent 70%);">
+    </div>
+    <!-- Subtle diagonal rule -->
+    <div class="absolute inset-0 pointer-events-none opacity-20"
+         style="background:repeating-linear-gradient(-45deg,transparent,transparent 80px,rgba(59,130,246,.015) 80px,rgba(59,130,246,.015) 81px);">
+    </div>
+
+    <div class="relative z-10 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+
+      <!-- Left: copy -->
+      <div>
+        <div class="anim-1 flex flex-wrap items-center gap-3 mb-6">
+          <span class="tag">We're Hiring</span>
+          <span class="tag" style="background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:#86efac;">
+            Vets-First Employer
+          </span>
+        </div>
+
+        <h1 class="anim-2 font-display font-800 text-5xl sm:text-6xl lg:text-[3.4rem] leading-[1.04] tracking-tight mb-6">
+          <span style="background:linear-gradient(135deg,#fff 0%,#e2eeff 35%,#93c5fd 65%,#3b82f6 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+            Join the Vanguard<br />of Secure<br />Infrastructure.
+          </span>
+        </h1>
+
+        <p class="anim-3 font-body text-lg text-slate-400 leading-relaxed max-w-xl mb-8">
+          Harpy I.T. Solutions was founded by veterans who spent 30 years building and defending
+          the networks that power national security. We don't just value your service — we
+          <strong class="text-slate-200">build around it</strong>.
+        </p>
+
+        <!-- Vets-first philosophy strip -->
+        <div class="anim-4 bento-card p-5 mb-8 max-w-lg">
+          <p class="font-mono text-xs text-slate-500 uppercase tracking-widest mb-4">Vets-First Philosophy</p>
+          <div class="flex flex-col gap-2.5">
+            <div class="flex items-start gap-3 text-sm font-body text-slate-300">
+              <div class="glow-bullet mt-1.5"></div>
+              Military experience counts as direct technical qualification — no translation required
+            </div>
+            <div class="flex items-start gap-3 text-sm font-body text-slate-300">
+              <div class="glow-bullet mt-1.5"></div>
+              Active clearances fast-tracked through our verified teaming network
+            </div>
+            <div class="flex items-start gap-3 text-sm font-body text-slate-300">
+              <div class="glow-bullet mt-1.5"></div>
+              Leadership roles available at all levels — we don't bury talent
+            </div>
+            <div class="flex items-start gap-3 text-sm font-body text-slate-300">
+              <div class="glow-bullet mt-1.5"></div>
+              30-year DoD support legacy means your institutional knowledge has a home here
+            </div>
+          </div>
+        </div>
+
+        <div class="anim-5 flex flex-wrap gap-4">
+          <a href="#open-roles"
+             class="btn-contact px-7 py-3.5 rounded-xl font-display font-700 text-white text-base">
+            View Open Roles ↓
+          </a>
+          <a href="contact.html"
+             class="px-7 py-3.5 rounded-xl font-display font-600 text-slate-300 border border-slate-700 hover:border-blue-500 hover:text-white transition-all duration-300 text-base">
+            Submit Your Resume
+          </a>
+        </div>
+      </div>
+
+      <!-- Right: Stats + entity block -->
+      <div class="flex flex-col gap-5">
+
+        <!-- Stat grid -->
+        <div class="grid grid-cols-2 gap-4">
+          <div class="stat-chip">
+            <p class="font-display font-800 text-3xl text-white">30<span class="text-electric-blue">+</span></p>
+            <p class="font-mono text-xs text-slate-500 text-center">Yrs DoD Legacy</p>
+          </div>
+          <div class="stat-chip">
+            <p class="font-display font-800 text-3xl text-white">T5</p>
+            <p class="font-mono text-xs text-slate-500 text-center">Clearance Env.</p>
+          </div>
+          <div class="stat-chip">
+            <p class="font-display font-800 text-3xl text-white">100%</p>
+            <p class="font-mono text-xs text-slate-500 text-center">Remote Eligible</p>
+          </div>
+          <div class="stat-chip">
+            <p class="font-display font-800 text-3xl text-white">3</p>
+            <p class="font-mono text-xs text-slate-500 text-center">Active Openings</p>
+          </div>
+        </div>
+
+        <!-- Entity data block -->
+        <div style="background:rgba(2,6,23,.85);border:1px solid rgba(59,130,246,.25);border-radius:10px;overflow:hidden;">
+          <div class="flex items-center gap-3 px-5 py-2.5 border-b border-blue-900/40"
+               style="background:rgba(59,130,246,.05);">
+            <div class="w-2 h-2 rounded-full bg-electric-blue" style="box-shadow:0 0 8px rgba(59,130,246,.9);"></div>
+            <span class="font-mono text-xs text-slate-500 uppercase tracking-widest">Employer of Record</span>
+          </div>
+          <div class="grid grid-cols-3 divide-x divide-blue-900/30 px-0">
+            <div class="px-5 py-4">
+              <p class="font-mono text-xs text-electric-blue/60 mb-1 uppercase tracking-wider">CAGE</p>
+              <p class="font-mono text-base font-600 text-slate-200 tracking-widest">9M2N1</p>
+            </div>
+            <div class="px-5 py-4">
+              <p class="font-mono text-xs text-electric-blue/60 mb-1 uppercase tracking-wider">UEI</p>
+              <p class="font-mono text-sm font-500 text-slate-200 tracking-wide">UJ5VCLDTKK87</p>
+            </div>
+            <div class="px-5 py-4">
+              <p class="font-mono text-xs text-electric-blue/60 mb-1 uppercase tracking-wider">DUNS</p>
+              <p class="font-mono text-base font-600 text-slate-200 tracking-widest">129854474</p>
+            </div>
+          </div>
+          <div class="px-5 py-2.5 border-t border-blue-900/30"
+               style="background:rgba(2,6,23,.6);">
+            <span class="font-mono text-xs text-slate-600">SDVOSB · MBE · DBE Certified · Baltimore, MD</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════
+       CULTURE BENTO
+  ══════════════════════════════ -->
+  <section class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 py-24 scroll-reveal">
+
+    <div class="flex items-center gap-4 mb-4">
+      <div class="blue-line"></div>
+      <span class="font-display font-600 text-slate-500 text-sm tracking-widest uppercase">Why HITS</span>
+    </div>
+    <h2 class="font-display font-800 text-3xl lg:text-4xl text-white mb-3">The HITS Culture</h2>
+    <p class="font-body text-slate-400 text-base mb-12 max-w-2xl">
+      Three pillars define what it's like to work here — and why people stay.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+      <!-- Card 1: Mission-Driven -->
+      <div class="culture-card p-8">
+        <div class="absolute inset-0 pointer-events-none rounded-2xl"
+             style="background:radial-gradient(ellipse at 20% 0%,rgba(59,130,246,.09) 0%,transparent 60%);"></div>
+        <div class="relative z-10">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-5"
+               style="background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.3);box-shadow:0 0 20px rgba(59,130,246,.2);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+          </div>
+          <span class="tag mb-3 inline-block">Pillar 01</span>
+          <h3 class="font-display font-700 text-xl text-white mb-3">Mission-Driven</h3>
+          <p class="font-body text-slate-400 text-sm leading-relaxed mb-5">
+            We don't clock in and clock out — we execute. Military discipline applied to I.T. challenges
+            means every ticket, every deployment, and every deliverable is treated with operational urgency
+            and zero tolerance for half-measures.
+          </p>
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-3 text-sm text-slate-300 font-body"><div class="glow-bullet"></div>Outcomes over process</div>
+            <div class="flex items-center gap-3 text-sm text-slate-300 font-body"><div class="glow-bullet"></div>Accountability at every rank</div>
+            <div class="flex items-center gap-3 text-sm text-slate-300 font-body"><div class="glow-bullet"></div>Warfighter-standard reliability</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: High-Security Environment -->
+      <div class="culture-card p-8">
+        <div class="absolute inset-0 pointer-events-none rounded-2xl"
+             style="background:radial-gradient(ellipse at 80% 0%,rgba(239,68,68,.07) 0%,transparent 60%);"></div>
+        <div class="relative z-10">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-5"
+               style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.28);box-shadow:0 0 20px rgba(239,68,68,.15);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="1.8">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <span class="tag mb-3 inline-block" style="background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:#fca5a5;">Pillar 02</span>
+          <h3 class="font-display font-700 text-xl text-white mb-3">High-Security Environment</h3>
+          <p class="font-body text-slate-400 text-sm leading-relaxed mb-5">
+            Most of our work operates in classified and controlled unclassified environments. We hire cleared
+            professionals and support the clearance process for candidates with strong backgrounds and
+            the right disposition.
+          </p>
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-3 text-sm text-slate-300 font-body">
+              <div class="glow-bullet" style="background:#f87171;box-shadow:0 0 8px rgba(248,113,113,.5);"></div>
+              Tier 5 / TS/SSBI environment
+            </div>
+            <div class="flex items-center gap-3 text-sm text-slate-300 font-body">
+              <div class="glow-bullet" style="background:#f87171;box-shadow:0 0 8px rgba(248,113,113,.5);"></div>
+              SCI-eligible project support
+            </div>
+            <div class="flex items-center gap-3 text-sm text-slate-300 font-body">
+              <div class="glow-bullet" style="background:#f87171;box-shadow:0 0 8px rgba(248,113,113,.5);"></div>
+              Clearance sponsorship available
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Elite Technical Growth -->
+      <div class="culture-card p-8">
+        <div class="absolute inset-0 pointer-events-none rounded-2xl"
+             style="background:radial-gradient(ellipse at 50% 100%,rgba(34,197,94,.07) 0%,transparent 60%);"></div>
+        <div class="relative z-10">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-5"
+               style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.28);box-shadow:0 0 20px rgba(34,197,94,.15);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="1.8">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+            </svg>
+          </div>
+          <span class="tag mb-3 inline-block" style="background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:#86efac;">Pillar 03</span>
+          <h3 class="font-display font-700 text-xl text-white mb-3">Elite Technical Growth</h3>
+          <p class="font-body text-slate-400 text-sm leading-relaxed mb-5">
+            You won't stagnate here. Our team works on cutting-edge DoD infrastructure and proprietary
+            AI-driven tools. We actively fund certifications and put our people in front of the
+            technology that matters most.
+          </p>
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-3 text-sm text-slate-300 font-body">
+              <div class="glow-bullet" style="background:#4ade80;box-shadow:0 0 8px rgba(74,222,128,.5);"></div>
+              Cisco &amp; Juniper lab access
+            </div>
+            <div class="flex items-center gap-3 text-sm text-slate-300 font-body">
+              <div class="glow-bullet" style="background:#4ade80;box-shadow:0 0 8px rgba(74,222,128,.5);"></div>
+              Harpy Talon SaaS internal access
+            </div>
+            <div class="flex items-center gap-3 text-sm text-slate-300 font-body">
+              <div class="glow-bullet" style="background:#4ade80;box-shadow:0 0 8px rgba(74,222,128,.5);"></div>
+              Cert stipends: CCNP, CISSP, PMP
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════
+       OPEN ROLES — THE PIPELINE
+  ══════════════════════════════ -->
+  <section id="open-roles" class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pb-24 scroll-reveal">
+
+    <div class="flex items-center gap-4 mb-4">
+      <div class="blue-line"></div>
+      <span class="font-display font-600 text-slate-500 text-sm tracking-widest uppercase">Active Opportunities</span>
+    </div>
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
+      <div>
+        <h2 class="font-display font-800 text-3xl lg:text-4xl text-white mb-2">Open Roles</h2>
+        <p class="font-body text-slate-400 text-base max-w-xl" id="roles-subtitle">
+          Loading active requisitions…
+        </p>
+      </div>
+      <div class="flex items-center gap-2" id="roles-count-wrap" style="opacity:0;transition:opacity .4s;">
+        <div class="w-2 h-2 rounded-full bg-green-400 pulse-dot" style="box-shadow:0 0 8px rgba(74,222,128,.8);"></div>
+        <span class="font-mono text-xs text-green-400 uppercase tracking-widest" id="roles-count-label">— Active Positions</span>
+      </div>
+    </div>
+
+    <!-- ── Skeleton loader (shown while fetching) ── -->
+    <div id="jobs-skeleton" class="flex flex-col gap-5">
+      <div class="role-card" style="min-height:120px;background:rgba(15,23,42,.5);">
+        <div class="p-7 flex flex-col gap-3 animate-pulse">
+          <div style="height:16px;width:40%;background:rgba(59,130,246,.1);border-radius:4px;"></div>
+          <div style="height:12px;width:70%;background:rgba(59,130,246,.07);border-radius:4px;"></div>
+          <div style="height:12px;width:55%;background:rgba(59,130,246,.05);border-radius:4px;"></div>
+        </div>
+      </div>
+      <div class="role-card" style="min-height:120px;background:rgba(15,23,42,.5);">
+        <div class="p-7 flex flex-col gap-3 animate-pulse">
+          <div style="height:16px;width:35%;background:rgba(239,68,68,.08);border-radius:4px;"></div>
+          <div style="height:12px;width:65%;background:rgba(239,68,68,.05);border-radius:4px;"></div>
+          <div style="height:12px;width:50%;background:rgba(239,68,68,.04);border-radius:4px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Dynamic job cards injected here ── -->
+    <div id="jobs-container" class="flex flex-col gap-5" style="display:none!important;"></div>
+
+    <!-- ── Error state ── -->
+    <div id="jobs-error" style="display:none;" class="role-card p-8 text-center">
+      <p class="font-mono text-xs text-slate-500 mb-2 uppercase tracking-widest">Could not load jobs.json</p>
+      <p class="font-body text-sm text-slate-600">
+        Ensure <code class="font-mono text-electric-blue/70">jobs.json</code> is in the same directory and you are running from a local server
+        (<code class="font-mono text-electric-blue/70">python3 -m http.server 8080</code>).
+      </p>
+    </div>
+
+    <!-- ── General pipeline CTA ── -->
+    <div class="mt-6 p-5 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4"
+         style="background:rgba(59,130,246,.05);border:1px dashed rgba(59,130,246,.2);">
+      <div>
+        <p class="font-display font-600 text-sm text-slate-300">Don't see your role?</p>
+        <p class="font-body text-xs text-slate-500 mt-0.5">Submit a general application — we maintain a cleared talent pipeline for future requisitions.</p>
+      </div>
+      <a href="contact.html"
+         class="flex-shrink-0 px-5 py-2.5 rounded-lg font-display font-600 text-sm text-electric-blue border border-electric-blue/30 hover:bg-electric-blue/10 transition-colors duration-200 whitespace-nowrap">
+        Submit Open Application →
+      </a>
+    </div>
+  </section>
+
+  <script>
+  // ── jobs.json renderer ──────────────────────────────────────────────────────
+  (function () {
+
+    // ── Theme palette lookup ─────────────────────────────────────────────────
+    const THEMES = {
+      blue: {
+        iconBg:    'rgba(59,130,246,.1)',
+        iconBorder:'rgba(59,130,246,.25)',
+        iconStroke:'#60a5fa',
+        detailBg:  'rgba(59,130,246,.04)',
+        detailBorder:'rgba(59,130,246,.1)',
+        bulletClr: '#3b82f6',
+        bulletGlow:'rgba(59,130,246,.65)',
+        applyBorder:'rgba(59,130,246,.3)',
+        applyClr:  '#93c5fd',
+        applyBg:   'rgba(59,130,246,.08)',
+        applyHoverBg:'rgba(59,130,246,.16)',
+        applyHoverBorder:'rgba(59,130,246,.55)',
+      },
+      red: {
+        iconBg:    'rgba(239,68,68,.1)',
+        iconBorder:'rgba(239,68,68,.25)',
+        iconStroke:'#f87171',
+        detailBg:  'rgba(239,68,68,.03)',
+        detailBorder:'rgba(239,68,68,.1)',
+        bulletClr: '#f87171',
+        bulletGlow:'rgba(248,113,113,.5)',
+        applyBorder:'rgba(239,68,68,.3)',
+        applyClr:  '#fca5a5',
+        applyBg:   'rgba(239,68,68,.07)',
+        applyHoverBg:'rgba(239,68,68,.14)',
+        applyHoverBorder:'rgba(239,68,68,.5)',
+      },
+      violet: {
+        iconBg:    'rgba(167,139,250,.1)',
+        iconBorder:'rgba(167,139,250,.25)',
+        iconStroke:'#a78bfa',
+        detailBg:  'rgba(167,139,250,.03)',
+        detailBorder:'rgba(167,139,250,.1)',
+        bulletClr: '#a78bfa',
+        bulletGlow:'rgba(167,139,250,.5)',
+        applyBorder:'rgba(167,139,250,.3)',
+        applyClr:  '#c4b5fd',
+        applyBg:   'rgba(167,139,250,.07)',
+        applyHoverBg:'rgba(167,139,250,.14)',
+        applyHoverBorder:'rgba(167,139,250,.5)',
+      },
+    };
+
+    // ── SVG icon library ─────────────────────────────────────────────────────
+    const ICONS = {
+      network: `<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>`,
+      shield:  `<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/>`,
+      document:`<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>`,
+    };
+
+    // ── Clearance badge markup ────────────────────────────────────────────────
+    function clearanceBadge(level, text) {
+      if (level === 'ts-sci') {
+        return `<span class="role-badge badge-clearance">${text}</span>`;
+      }
+      if (level === 'secret') {
+        return `<span class="role-badge badge-clearance" style="background:rgba(251,146,60,.1);border-color:rgba(251,146,60,.35);color:#fdba74;">${text}</span>`;
+      }
+      // public-trust or other
+      return `<span class="role-badge" style="background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.3);color:#c4b5fd;">${text}</span>`;
+    }
+
+    // ── Work-style badge ──────────────────────────────────────────────────────
+    function workBadge(style) {
+      return `<span class="role-badge badge-remote">${style}</span>`;
+    }
+
+    // ── Clearance text colour ─────────────────────────────────────────────────
+    function clearanceTextClass(level) {
+      if (level === 'ts-sci')       return 'color:#fca5a5;';   // red
+      if (level === 'secret')       return 'color:#fdba74;';   // orange
+      return 'color:#c4b5fd;';                                  // violet
+    }
+
+    // ── Build one card ────────────────────────────────────────────────────────
+    function buildCard(job) {
+      const t    = THEMES[job.theme] || THEMES.blue;
+      const icon = ICONS[job.icon]   || ICONS.network;
+
+      const requirementsHTML = job.requirements.map(req => `
+        <div class="flex items-start gap-3 text-sm text-slate-400">
+          <div class="glow-bullet mt-1 flex-shrink-0"
+               style="background:${t.bulletClr};box-shadow:0 0 8px ${t.bulletGlow};"></div>
+          ${req}
+        </div>`).join('');
+
+      const card = document.createElement('div');
+      card.className = 'role-card';
+      card.style.cssText = 'opacity:0;transform:translateY(16px);transition:opacity .45s ease,transform .45s ease;';
+      card.dataset.jobId = job.id;
+
+      card.innerHTML = `
+        <div class="p-7 lg:p-8">
+
+          <!-- Header row -->
+          <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-5">
+            <div class="flex items-start gap-4">
+              <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                   style="background:${t.iconBg};border:1px solid ${t.iconBorder};">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                     stroke="${t.iconStroke}" stroke-width="1.8">${icon}</svg>
+              </div>
+              <div>
+                <h3 class="font-display font-700 text-xl text-white">${job.title}</h3>
+                <p class="font-body text-sm text-slate-500 mt-0.5">${job.department}</p>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <span class="role-badge badge-active">Active</span>
+              ${clearanceBadge(job.clearanceLevel, job.clearance)}
+              ${workBadge(job.workStyle)}
+            </div>
+          </div>
+
+          <!-- Description -->
+          <p class="font-body text-slate-400 text-sm leading-relaxed mb-6">${job.description}</p>
+
+          <!-- Details grid -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 p-4 rounded-xl"
+               style="background:${t.detailBg};border:1px solid ${t.detailBorder};">
+            <div>
+              <p class="font-mono text-xs text-slate-500 uppercase tracking-wider mb-1">Location</p>
+              <p class="font-body text-sm text-slate-300">${job.location}</p>
+            </div>
+            <div>
+              <p class="font-mono text-xs text-slate-500 uppercase tracking-wider mb-1">Type</p>
+              <p class="font-body text-sm text-slate-300">${job.type}</p>
+            </div>
+            <div>
+              <p class="font-mono text-xs text-slate-500 uppercase tracking-wider mb-1">Clearance</p>
+              <p class="font-body text-sm" style="${clearanceTextClass(job.clearanceLevel)}">${job.clearance}</p>
+            </div>
+            <div>
+              <p class="font-mono text-xs text-slate-500 uppercase tracking-wider mb-1">NAICS</p>
+              <p class="font-mono text-sm text-electric-blue">${job.naics}</p>
+            </div>
+          </div>
+
+          <!-- Requirements -->
+          <div class="mb-6">
+            <p class="font-mono text-xs text-slate-500 uppercase tracking-widest mb-3">Key Requirements</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">${requirementsHTML}</div>
+          </div>
+
+          <!-- Apply button -->
+          <a href="contact.html?role=${encodeURIComponent(job.id)}"
+             class="btn-apply"
+             style="border-color:${t.applyBorder};color:${t.applyClr};background:${t.applyBg};"
+             onmouseover="this.style.background='${t.applyHoverBg}';this.style.borderColor='${t.applyHoverBorder}';"
+             onmouseout="this.style.background='${t.applyBg}';this.style.borderColor='${t.applyBorder}';">
+            Apply Now — ${job.id}
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+        </div>`;
+
+      return card;
+    }
+
+    // ── Render all jobs ───────────────────────────────────────────────────────
+    function renderJobs(jobs) {
+      const skeleton   = document.getElementById('jobs-skeleton');
+      const container  = document.getElementById('jobs-container');
+      const subtitle   = document.getElementById('roles-subtitle');
+      const countLabel = document.getElementById('roles-count-label');
+      const countWrap  = document.getElementById('roles-count-wrap');
+
+      // Hide skeleton, show container
+      skeleton.style.display  = 'none';
+      container.style.cssText = 'display:flex;flex-direction:column;gap:20px;';
+
+      // Update header copy
+      const active = jobs.filter(j => j.status === 'active').length;
+      subtitle.textContent   = `${active} active requisition${active !== 1 ? 's' : ''} — all cleared, all impactful, all open to veteran applicants.`;
+      countLabel.textContent = `${active} Active Position${active !== 1 ? 's' : ''}`;
+      countWrap.style.opacity = '1';
+
+      // Build and append each card with a staggered reveal
+      jobs.forEach((job, i) => {
+        const card = buildCard(job);
+        container.appendChild(card);
+        // Stagger the fade-in
+        setTimeout(() => {
+          card.style.opacity   = '1';
+          card.style.transform = 'translateY(0)';
+        }, 80 + i * 120);
+      });
+    }
+
+    // ── Fetch jobs.json ───────────────────────────────────────────────────────
+    fetch('jobs.json')
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then(renderJobs)
+      .catch(err => {
+        console.warn('jobs.json fetch failed:', err.message);
+        document.getElementById('jobs-skeleton').style.display = 'none';
+        document.getElementById('jobs-error').style.display    = 'block';
+      });
+
+  })();
+  </script>
+
+
+  <!-- ══════════════════════════════
+       VETERAN CALL-TO-ACTION
+  ══════════════════════════════ -->
+  <section class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pb-28 scroll-reveal">
+
+    <div class="vet-card overflow-hidden">
+      <!-- Decorative elements -->
+      <div class="vet-stripe"></div>
+      <div class="vet-glow"></div>
+
+      <!-- Stars watermark SVG -->
+      <svg class="vet-watermark" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="100,10 117,65 175,65 129,100 146,155 100,120 54,155 71,100 25,65 83,65"
+                 fill="none" stroke="#3b82f6" stroke-width="1.5"/>
+        <circle cx="100" cy="100" r="80" fill="none" stroke="#3b82f6" stroke-width="0.75"/>
+        <circle cx="100" cy="100" r="90" fill="none" stroke="#3b82f6" stroke-width="0.5"/>
+      </svg>
+
+      <div class="relative z-10 p-10 lg:p-16 pl-14 lg:pl-20">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+
+          <!-- Left: message -->
+          <div>
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center"
+                   style="background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.3);box-shadow:0 0 16px rgba(59,130,246,.25);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  <polyline points="9 12 11 14 15 10" stroke="#60a5fa" stroke-width="2"/>
+                </svg>
+              </div>
+              <span class="tag" style="background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:#86efac;">
+                Veteran Call-to-Action
+              </span>
+            </div>
+
+            <h2 class="font-display font-800 text-3xl lg:text-4xl text-white mb-4 leading-tight">
+              From the Front Lines<br />
+              to the <span class="text-electric-blue">Front End.</span>
+            </h2>
+            <p class="font-display font-600 text-lg text-slate-300 mb-4 italic">
+              "We value your service."
+            </p>
+            <p class="font-body text-slate-400 leading-relaxed mb-6 max-w-lg">
+              If you wore the uniform, you already understand mission clarity, operational discipline, and
+              the cost of failure. Those aren't soft skills — they're engineering requirements. At HITS, your
+              military background isn't a footnote on your resume. It's your strongest qualification.
+            </p>
+
+            <!-- Vet benefits -->
+            <div class="flex flex-col gap-3 mb-8">
+              <div class="flex items-start gap-3 font-body text-sm text-slate-300">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" class="mt-0.5 flex-shrink-0"><polyline points="20 6 9 17 4 12"/></svg>
+                Military service counts as direct technical experience — no civilian translation required
+              </div>
+              <div class="flex items-start gap-3 font-body text-sm text-slate-300">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" class="mt-0.5 flex-shrink-0"><polyline points="20 6 9 17 4 12"/></svg>
+                We are SDVOSB certified — veteran-led from the top down, not just the marketing
+              </div>
+              <div class="flex items-start gap-3 font-body text-sm text-slate-300">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" class="mt-0.5 flex-shrink-0"><polyline points="20 6 9 17 4 12"/></svg>
+                Clearance continuity — we maintain your access, you maintain your mission readiness
+              </div>
+              <div class="flex items-start gap-3 font-body text-sm text-slate-300">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" class="mt-0.5 flex-shrink-0"><polyline points="20 6 9 17 4 12"/></svg>
+                Flexible schedules that respect VA appointments, reserve duty, and transition timelines
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-4">
+              <a href="contact.html"
+                 class="btn-contact px-7 py-3.5 rounded-xl font-display font-700 text-white text-base">
+                Apply as a Veteran
+              </a>
+              <a href="government.html"
+                 class="px-7 py-3.5 rounded-xl font-display font-600 text-slate-300 border border-slate-700 hover:border-blue-500 hover:text-white transition-all duration-300 text-base">
+                Our SDVOSB Profile
+              </a>
+            </div>
+          </div>
+
+          <!-- Right: stat cards -->
+          <div class="flex flex-col gap-4">
+            <div class="bento-card p-5 flex items-center gap-5">
+              <div class="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
+                   style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.6">
+                  <path d="M3 22V9l9-7 9 7v13"/><path d="M9 22V12h6v10"/>
+                </svg>
+              </div>
+              <div>
+                <p class="font-display font-700 text-lg text-white">SDVOSB Certified</p>
+                <p class="font-body text-sm text-slate-500">Service-Disabled Veteran-Owned Small Business — verified by SBA and VA.</p>
+              </div>
+            </div>
+
+            <div class="bento-card p-5 flex items-center gap-5">
+              <div class="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
+                   style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="1.6">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              </div>
+              <div>
+                <p class="font-display font-700 text-lg text-white">Veteran-Led Leadership</p>
+                <p class="font-body text-sm text-slate-500">Our founder and senior team are veterans. Leadership that speaks your language.</p>
+              </div>
+            </div>
+
+            <div class="bento-card p-5 flex items-center gap-5">
+              <div class="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
+                   style="background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="1.6">
+                  <circle cx="12" cy="8" r="6"/>
+                  <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>
+                </svg>
+              </div>
+              <div>
+                <p class="font-display font-700 text-lg text-white">30-Year DoD Legacy</p>
+                <p class="font-body text-sm text-slate-500">Your institutional knowledge of DoD operations has real, billable value here.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════
+       FOOTER
+  ══════════════════════════════ -->
+  <footer class="relative z-10 border-t border-slate-800/60 py-10 px-6 lg:px-10">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="flex items-center gap-2.5">
+        <span style="display:inline-flex;align-items:center;justify-content:center;background:#dbeafe;border-radius:6px;padding:2px;box-shadow:0 0 10px rgba(59,130,246,0.3),inset 0 0 0 1px rgba(147,197,253,0.5);"><img src="hits_logo.png" alt="HITS" class="h-7 w-auto" style="border-radius:4px;display:block;" onerror="this.parentElement.style.display='none';this.nextElementSibling.style.display='flex';" /></span>
+        <div style="display:none;" class="items-center gap-2">
+          <div class="w-7 h-7 rounded-md bg-electric-blue flex items-center justify-center shadow-[0_0_10px_rgba(59,130,246,0.5)]">
+            <span class="font-display font-800 text-white text-xs">H</span>
+          </div>
+          <span class="font-display font-600 text-white text-base tracking-tight">HITS</span>
+        </div>
+      </div>
+      <p class="font-body text-slate-600 text-sm">&copy; 2023 Harpy I.T. Solutions INC. All rights reserved.</p>
+      <div class="flex items-center gap-5">
+        <a href="about.html"   class="text-slate-600 hover:text-slate-400 text-sm transition-colors">About</a>
+        <a href="careers.html" class="text-slate-600 hover:text-slate-400 text-sm transition-colors">Careers</a>
+        <a href="contact.html" class="text-slate-600 hover:text-slate-400 text-sm transition-colors">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('menu-toggle').addEventListener('click', () => {
+      document.getElementById('mobile-menu').classList.toggle('open');
+    });
+    const mobBtn = document.getElementById('mob-prod-btn');
+    if (mobBtn) {
+      mobBtn.addEventListener('click', () => {
+        mobBtn.classList.toggle('open');
+        document.getElementById('mob-prod-items').classList.toggle('open');
+      });
+    }
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.07 });
+    document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

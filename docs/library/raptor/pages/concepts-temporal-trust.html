@@ -1,0 +1,62 @@
+<div class="docs-page">
+<h1>Temporal Trust</h1>
+<p class="docs-page-description">How Raptor tracks claim freshness — because a verified fact from last week is not the same as a verified fact from five minutes ago.</p>
+<h1 id="temporal-trust">Temporal Trust</h1>
+
+<p>A trust boundary tells you how a claim was established. Temporal trust tells you whether that claim is still current. Both matter for operational decisions.</p>
+
+<h2 id="freshness-states">Freshness states</h2>
+
+<p>Every claim in Raptor carries a freshness state that updates automatically based on the time elapsed since verification:</p>
+
+<p>| State | Meaning | Operator guidance |<br>|-------|---------|-------------------|<br>| <strong>FRESH</strong> | Within the source-specific freshness window | Act with confidence |<br>| <strong>AGING</strong> | Past 50% of the freshness window | Still valid, re-verification approaching |<br>| <strong>STALE</strong> | Exceeded the freshness window | Do not act without re-verification |<br>| <strong>INVALIDATED</strong> | Contradicted by newer evidence | Discard — newer evidence supersedes |</p>
+
+<p>Freshness transitions are automatic. When a FRESH claim crosses the 50% threshold of its window, it becomes AGING. When it exceeds the window, it becomes STALE. No manual intervention required.</p>
+
+<h2 id="source-specific-windows">Source-specific windows</h2>
+
+<p>Different types of evidence go stale at different rates. Raptor defines freshness windows per source type:</p>
+
+<p>| Source type | Freshness window | Rationale |<br>|-------------|-----------------|-----------|<br>| Execution events | 1 hour | System state changes rapidly after actions |<br>| Database queries | 4 hours | Operational data shifts through the day |<br>| Policy evaluations | 24 hours | Policies change infrequently |<br>| Attestations | 7 days | Signed attestations are durable evidence |<br>| External API responses | 1 hour | Third-party data has unknown update frequency |</p>
+
+<p>These windows are defaults. Organizations can configure custom windows per source type through governance policies.</p>
+
+<h2 id="how-freshness-affects-decisions">How freshness affects decisions</h2>
+
+<p>Temporal trust integrates with decision support. When stale claims are present in a response:</p>
+
+<ul>
+<li><strong>Decision confidence is reduced.</strong> A response grounded in stale evidence cannot produce a CLEAR confidence level regardless of other factors.</li>
+<li><strong>Actionability is downgraded.</strong> Stale claims shift the actionability from <code>safe</code> to <code>review</code>, signaling the operator to verify before acting.</li>
+<li><strong>Re-verification is suggested.</strong> The decision support metadata includes a <code>stale_claims</code> array identifying which claims need refreshing.</li>
+</ul>
+
+<pre><code class="language-json">{
+  "decision_support": {
+    "confidence": "ADVISORY",
+    "stale_claims": [
+      {
+        "claim": "Current alert count: 3 open",
+        "source": "alert_system",
+        "verified_at": "2026-05-20T09:15:00Z",
+        "freshness": "STALE",
+        "window": "1h"
+      }
+    ]
+  }
+}</code></pre>
+
+<h2 id="invalidation">Invalidation</h2>
+
+<p>A claim is INVALIDATED when newer evidence directly contradicts it. This is not time-based — it is evidence-based.</p>
+
+<p>For example: a claim "Build #42 is passing" verified at 10:00 AM becomes INVALIDATED if a new execution event at 10:30 AM records "Build #42 failed." The newer evidence supersedes the older claim regardless of the freshness window.</p>
+
+<p>Invalidated claims are preserved in the audit trail with their invalidation reason. They are never deleted.</p>
+
+<h2 id="why-temporal-trust-matters">Why temporal trust matters</h2>
+
+<p>Without temporal trust, a system can present verified-but-outdated information with the same confidence as verified-and-current information. An operator sees "Confirmed" and acts — not realizing the confirmation is from three days ago.</p>
+
+<p>Temporal trust makes staleness visible. The operator sees not just what was verified, but when it was verified and whether that verification is still meaningful.</p>
+</div>

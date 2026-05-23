@@ -1,0 +1,121 @@
+<div class="docs-page">
+<h1>TypeScript SDK</h1>
+<p class="docs-page-description">Install the Raptor SDK, send governed messages, and consume trust-boundary types end-to-end in TypeScript.</p>
+<h1 id="typescript-sdk">TypeScript SDK</h1>
+
+<p>The <code>@raptor/sdk</code> package is a thin, typed fetch wrapper around the Raptor REST API. It preserves trust-boundary types end-to-end — from the API response through your application code — with zero runtime dependencies.</p>
+
+<h2 id="1-install">1. Install</h2>
+
+<pre><code class="language-bash">npm install @raptor/sdk</code></pre>
+
+<p>Requires Node.js 18+ (uses the built-in <code>fetch</code> API).</p>
+
+<h2 id="2-initialize-the-client">2. Initialize the client</h2>
+
+<pre><code class="language-typescript">import { RaptorClient } from "@raptor/sdk";
+
+<p>const raptor = new RaptorClient({<br>  baseUrl: "https://raptor.harpyits.com",<br>  auth: { type: "access_token", token: "rpt_your_key" },<br>});</code></pre></p>
+
+<p>The SDK supports multiple auth modes:</p>
+
+<pre><code class="language-typescript">// Clerk JWT (browser or server)
+auth: { type: "clerk", getToken: () =&gt; clerk.session.getToken() }
+
+<p>// Static Clerk token<br>auth: { type: "clerk", token: "eyJhbG..." }</p>
+
+<p>// API key<br>auth: { type: "access_token", token: "rpt_a1b2c3d4..." }</p>
+
+<p>// Founder key<br>auth: { type: "founder_key", key: "your_founder_key" }</code></pre></p>
+
+<h2 id="3-send-a-governed-message">3. Send a governed message</h2>
+
+<pre><code class="language-typescript">const response = await raptor.chat("What are the risks of deploying on Friday?");
+
+<p>console.log(response.reply);<br>console.log(response.trust_boundary.primary); // "inferred" | "confirmed" | ...<br>console.log(response.decision_type);          // "respond" | "propose_action" | ...</code></pre></p>
+
+<p>The <code>ChatResponse</code> type carries the full response shape including <code>reply</code>, <code>trust_boundary</code>, <code>segments</code>, <code>decision_type</code>, and <code>audit_trail</code>. All fields are typed.</p>
+
+<h3 id="send-to-a-specific-nest">Send to a specific nest</h3>
+
+<pre><code class="language-typescript">const response = await raptor.chat("proceed", { nestId: "nest-uuid" });</code></pre>
+
+<h2 id="4-read-trust-boundaries-with-typescript-types">4. Read trust boundaries with TypeScript types</h2>
+
+<p>The SDK exports trust-boundary types as first-class citizens:</p>
+
+<pre><code class="language-typescript">import type {
+  TrustBoundary,
+  TrustSegment,
+  TrustLevel,
+  DecisionSupport,
+  ConfidenceLevel,
+} from "@raptor/sdk";</code></pre>
+
+<p>Trust levels form a hierarchy: <code>confirmed</code> > <code>executed</code> > <code>retrieved</code> > <code>inferred</code> > <code>unknown</code>. Every response carries a primary trust level plus per-segment boundaries:</p>
+
+<pre><code class="language-typescript">function handleResponse(response: ChatResponse) {
+  const boundary: TrustBoundary = response.trust_boundary;
+
+<p>// Primary boundary — the overall trust level for the response<br>  if (boundary.primary === "confirmed" || boundary.primary === "executed") {<br>    actOnResult(response.reply);<br>    return;<br>  }</p>
+
+<p>// Per-segment boundaries — individual parts may have different trust levels<br>  for (const segment of response.segments ?? []) {<br>    if (segment.boundary === "confirmed") {<br>      renderVerified(segment);<br>    } else {<br>      renderWithCaveat(segment);<br>    }<br>  }<br>}</code></pre></p>
+
+<h2 id="5-handle-decision-support">5. Handle decision support</h2>
+
+<p>When the decision engine returns structured recommendations, the <code>DecisionSupport</code> type gives you the five-part contract:</p>
+
+<pre><code class="language-typescript">import type { DecisionSupport } from "@raptor/sdk";
+
+<p>function renderDecision(ds: DecisionSupport) {<br>  console.log(ds.recommendation);  // What the engine recommends<br>  console.log(ds.basis);           // Why it recommends it<br>  console.log(ds.confidence);      // "CLEAR" | "RECOMMENDED" | "ADVISORY" | "INSUFFICIENT"<br>  console.log(ds.risk_if_wrong);   // What happens if the recommendation is wrong<br>  console.log(ds.alternatives);    // Other options considered<br>}</code></pre></p>
+
+<h2 id="6-work-with-nests">6. Work with nests</h2>
+
+<pre><code class="language-typescript">// Create a nest
+const { nest } = await raptor.createNest("deploy-review-q3");
+
+<p>// List nests<br>const { nests } = await raptor.listNests();</p>
+
+<p>// Get nest details<br>const { nest: detail } = await raptor.getNest(nest.id);</p>
+
+<p>// Archive a nest<br>await raptor.archiveNest(nest.id);</code></pre></p>
+
+<h2 id="7-retrieve-chat-history">7. Retrieve chat history</h2>
+
+<pre><code class="language-typescript">const history = await raptor.getChatHistory("nest-uuid");
+
+<p>for (const message of history.messages) {<br>  console.log(message.role, message.content);<br>  // Trust boundaries are preserved on historical messages<br>  console.log(message.trust_boundary?.primary);<br>}</p>
+
+<p>// Paginate backward<br>const older = await raptor.getChatHistory("nest-uuid", {<br>  before: history.messages[history.messages.length - 1].id,<br>});</code></pre></p>
+
+<h2 id="8-static-helpers">8. Static helpers</h2>
+
+<p>The client includes static methods for common trust-boundary operations:</p>
+
+<pre><code class="language-typescript">// Group segments by trust level
+const grouped = RaptorClient.segmentsByTrust(response);
+const confirmed = grouped.get("confirmed") ?? [];
+
+<p>// Quick check for high-trust content<br>if (RaptorClient.hasHighTrust(response)) {<br>  // Response is confirmed or executed — safe to act on<br>}</code></pre></p>
+
+<h2 id="9-error-handling">9. Error handling</h2>
+
+<pre><code class="language-typescript">import { RaptorError } from "@raptor/sdk";
+
+<p>try {<br>  await raptor.chat("do something risky");<br>} catch (err) {<br>  if (err instanceof RaptorError) {<br>    console.log(err.status);         // HTTP status code<br>    console.log(err.code);           // Machine-readable error code<br>    console.log(err.detail);         // Additional context<br>    console.log(err.correlationId);  // Request trace ID for support<br>  }<br>}</code></pre></p>
+
+<h2 id="10-health-check">10. Health check</h2>
+
+<pre><code class="language-typescript">const healthy = await raptor.isHealthy();
+if (!healthy) {
+  // Raptor instance is unreachable or unhealthy
+}</code></pre>
+
+<h2 id="next-steps">Next steps</h2>
+
+<ul>
+<li><a href="/guides/rest-api">REST API integration</a> — the underlying API the SDK wraps</li>
+<li><a href="/guides/policy-authoring">Policy authoring</a> — the policies that govern SDK responses</li>
+<li><a href="/guides/webhooks">Webhook integration</a> — receive events for the same operations the SDK triggers</li>
+</ul>
+</div>

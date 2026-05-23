@@ -1,0 +1,436 @@
+<div class="docs-page">
+<h1>Nests API</h1>
+<p class="docs-page-description">Create and manage governed conversation containers with full lifecycle operations.</p>
+<h1 id="nests-api">Nests API</h1>
+
+<p>Nests are the primary object in Raptor. Each nest is a governed conversation container with its own history, artifacts, governance log, and verification chain.</p>
+
+<h2 id="post-api-nests">POST /api/nests</h2>
+
+<p>Create a new nest.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="request-body">Request Body</h3>
+
+<p>| Field | Type | Required | Description |<br>|-------|------|----------|-------------|<br>| <code>name</code> | string | No | Display name for the nest. Auto-generated if omitted. |</p>
+
+<pre><code class="language-json">{
+  "name": "Q2 Revenue Analysis"
+}</code></pre>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "nest": {
+    "id": "nest_f7a2c9e1",
+    "name": "Q2 Revenue Analysis",
+    "tenant_id": "tenant_abc123",
+    "created_at": "2026-05-21T17:44:22Z",
+    "updated_at": "2026-05-21T17:44:22Z",
+    "archived": false
+  }
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |</p>
+
+<hr>
+
+<h2 id="get-api-nests">GET /api/nests</h2>
+
+<p>List nests for the current tenant. Returns non-archived nests, most recent first. Cursor-paginated.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="query-parameters">Query Parameters</h3>
+
+<p>| Parameter | Type | Required | Description |<br>|-----------|------|----------|-------------|<br>| <code>after</code> | string | No | Cursor for pagination. Pass the ID of the last nest from the previous page. |</p>
+
+<pre><code>GET /api/nests?after=nest_f7a2c9e1</code></pre>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "nests": [
+    {
+      "id": "nest_a1b2c3d4",
+      "name": "Deployment Verification",
+      "tenant_id": "tenant_abc123",
+      "created_at": "2026-05-21T18:00:00Z",
+      "updated_at": "2026-05-21T18:15:00Z",
+      "archived": false
+    },
+    {
+      "id": "nest_f7a2c9e1",
+      "name": "Q2 Revenue Analysis",
+      "tenant_id": "tenant_abc123",
+      "created_at": "2026-05-21T17:44:22Z",
+      "updated_at": "2026-05-21T17:44:22Z",
+      "archived": false
+    }
+  ],
+  "has_more": false,
+  "next_cursor": null
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |</p>
+
+<hr>
+
+<h2 id="get-api-nests-id">GET /api/nests/{id}</h2>
+
+<p>Get details for a specific nest.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p>| Parameter | Type | Description |<br>|-----------|------|-------------|<br>| <code>id</code> | string | Nest ID |</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "nest": {
+    "id": "nest_f7a2c9e1",
+    "name": "Q2 Revenue Analysis",
+    "tenant_id": "tenant_abc123",
+    "created_at": "2026-05-21T17:44:22Z",
+    "updated_at": "2026-05-21T17:50:00Z",
+    "archived": false
+  }
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 404 | <code>not_found</code> | Nest does not exist or not accessible |</p>
+
+<hr>
+
+<h2 id="patch-api-nests-id">PATCH /api/nests/{id}</h2>
+
+<p>Update a nest's display name.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p>| Parameter | Type | Description |<br>|-----------|------|-------------|<br>| <code>id</code> | string | Nest ID |</p>
+
+<h3 id="request-body">Request Body</h3>
+
+<p>| Field | Type | Required | Description |<br>|-------|------|----------|-------------|<br>| <code>name</code> | string | Yes | New display name |</p>
+
+<pre><code class="language-json">{
+  "name": "Q2 Revenue Analysis (Final)"
+}</code></pre>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "nest": {
+    "id": "nest_f7a2c9e1",
+    "name": "Q2 Revenue Analysis (Final)",
+    "tenant_id": "tenant_abc123",
+    "created_at": "2026-05-21T17:44:22Z",
+    "updated_at": "2026-05-21T18:30:00Z",
+    "archived": false
+  }
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 400 | <code>validation_error</code> | Missing or empty <code>name</code> |<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 404 | <code>not_found</code> | Nest does not exist |</p>
+
+<hr>
+
+<h2 id="post-api-nests-id-archive">POST /api/nests/{id}/archive</h2>
+
+<p>Archive a nest. Archived nests are excluded from list results but remain accessible by ID. History and governance records are preserved.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p>| Parameter | Type | Description |<br>|-----------|------|-------------|<br>| <code>id</code> | string | Nest ID |</p>
+
+<h3 id="request-body">Request Body</h3>
+
+<p>No body required.</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 404 | <code>not_found</code> | Nest does not exist |</p>
+
+<hr>
+
+<h2 id="post-api-nests-id-continue">POST /api/nests/{id}/continue</h2>
+
+<p>Fork a new nest from an existing nest's intent. Creates a continuation that inherits context from the source nest.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p>| Parameter | Type | Description |<br>|-----------|------|-------------|<br>| <code>id</code> | string | Source nest ID to fork from |</p>
+
+<h3 id="request-body">Request Body</h3>
+
+<p>No body required.</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "nest": {
+    "id": "nest_e5f6g7h8",
+    "name": "Q2 Revenue Analysis (continued)",
+    "tenant_id": "tenant_abc123",
+    "created_at": "2026-05-21T19:00:00Z",
+    "updated_at": "2026-05-21T19:00:00Z",
+    "archived": false,
+    "forked_from": "nest_f7a2c9e1"
+  }
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 404 | <code>not_found</code> | Source nest does not exist |</p>
+
+<hr>
+
+<h2 id="get-api-nests-id-actions">GET /api/nests/{id}/actions</h2>
+
+<p>List action proposals and executions within a nest. Includes proposed actions awaiting confirmation and completed action results.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p>| Parameter | Type | Description |<br>|-----------|------|-------------|<br>| <code>id</code> | string | Nest ID |</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "actions": [
+    {
+      "id": "action_abc123",
+      "type": "proposal",
+      "description": "Send deployment notification to #ops channel",
+      "status": "pending",
+      "created_at": "2026-05-21T18:00:00Z"
+    },
+    {
+      "id": "action_def456",
+      "type": "execution",
+      "description": "Acknowledged alert #7",
+      "status": "succeeded",
+      "result": { "alert_id": 7, "state": "acknowledged" },
+      "created_at": "2026-05-21T17:55:00Z",
+      "completed_at": "2026-05-21T17:55:01Z"
+    }
+  ]
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 404 | <code>not_found</code> | Nest does not exist |</p>
+
+<hr>
+
+<h2 id="get-api-nests-id-executions">GET /api/nests/{id}/executions</h2>
+
+<p>List workflow executions within a nest. Returns the execution log with inputs, outputs, and timing.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p>| Parameter | Type | Description |<br>|-----------|------|-------------|<br>| <code>id</code> | string | Nest ID |</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "executions": [
+    {
+      "id": "exec_8b3f1a2e",
+      "workflow": "pbc_acknowledge_alert",
+      "status": "succeeded",
+      "input_hash": "sha256:a1b2c3d4...",
+      "output_hash": "sha256:e5f6g7h8...",
+      "started_at": "2026-05-21T17:55:00Z",
+      "completed_at": "2026-05-21T17:55:01Z",
+      "duration_ms": 1042
+    }
+  ]
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 404 | <code>not_found</code> | Nest does not exist |</p>
+
+<hr>
+
+<h2 id="get-api-nests-id-artifacts">GET /api/nests/{id}/artifacts</h2>
+
+<p>List artifacts produced within a nest. Artifacts are outputs generated during governed interactions (reports, queries, files).</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p>| Parameter | Type | Description |<br>|-----------|------|-------------|<br>| <code>id</code> | string | Nest ID |</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "artifacts": [
+    {
+      "id": "artifact_abc123",
+      "type": "report",
+      "name": "Q2 Revenue Summary",
+      "content_hash": "sha256:9a8b7c6d...",
+      "created_at": "2026-05-21T17:50:00Z"
+    }
+  ]
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 404 | <code>not_found</code> | Nest does not exist |</p>
+
+<hr>
+
+<h2 id="get-api-nests-id-governance">GET /api/nests/{id}/governance</h2>
+
+<p>List governance authorization events for a nest. Shows every policy evaluation that occurred during the nest's lifecycle.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p>| Parameter | Type | Description |<br>|-----------|------|-------------|<br>| <code>id</code> | string | Nest ID |</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "events": [
+    {
+      "id": "gov_abc123",
+      "action": "chat.send",
+      "decision": "allowed",
+      "policy_id": "policy_def456",
+      "policy_version": 3,
+      "evaluated_at": "2026-05-21T17:44:23Z",
+      "reason": "Message permitted under active policy"
+    },
+    {
+      "id": "gov_ghi789",
+      "action": "action.execute",
+      "decision": "allowed",
+      "policy_id": "policy_def456",
+      "policy_version": 3,
+      "evaluated_at": "2026-05-21T17:55:00Z",
+      "reason": "PBC action authorized for confirmed intent"
+    }
+  ]
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 404 | <code>not_found</code> | Nest does not exist |</p>
+
+<hr>
+
+<h2 id="get-api-nests-id-summary">GET /api/nests/{id}/summary</h2>
+
+<p>Get aggregate counts for a nest. Provides a quick overview of activity without loading full records.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p>| Parameter | Type | Description |<br>|-----------|------|-------------|<br>| <code>id</code> | string | Nest ID |</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "summary": {
+    "messages": 24,
+    "actions": 3,
+    "executions": 2,
+    "artifacts": 1,
+    "governance_events": 27,
+    "files": 2
+  }
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 404 | <code>not_found</code> | Nest does not exist |</p>
+
+<hr>
+
+<h2 id="get-api-nests-id-verification">GET /api/nests/{id}/verification</h2>
+
+<p>Verify claims made within a nest. Returns verification status with freshness metadata indicating when claims were last checked.</p>
+
+<p><strong>Authentication:</strong> Required (any mode)</p>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p>| Parameter | Type | Description |<br>|-----------|------|-------------|<br>| <code>id</code> | string | Nest ID |</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "verification": {
+    "nest_id": "nest_f7a2c9e1",
+    "total_claims": 5,
+    "verified": 4,
+    "unverifiable": 1,
+    "freshness": {
+      "last_checked": "2026-05-21T18:30:00Z",
+      "age_seconds": 120,
+      "stale": false
+    },
+    "claims": [
+      {
+        "text": "Q2 revenue was $4.2M",
+        "status": "verified",
+        "source": "database_query",
+        "verified_at": "2026-05-21T17:44:24Z"
+      },
+      {
+        "text": "This represents 7% growth",
+        "status": "verified",
+        "source": "calculation",
+        "verified_at": "2026-05-21T17:44:24Z"
+      }
+    ]
+  }
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 404 | <code>not_found</code> | Nest does not exist |</p>
+</div>

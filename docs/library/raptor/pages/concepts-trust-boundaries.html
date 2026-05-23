@@ -1,0 +1,61 @@
+<div class="docs-page">
+<h1>Trust Boundaries</h1>
+<p class="docs-page-description">The five trust levels that classify every segment of every Raptor response.</p>
+<h1 id="trust-boundaries">Trust Boundaries</h1>
+
+<p>Every segment of every Raptor response carries a trust boundary — a classification that tells you how much you can rely on that specific claim.</p>
+
+<h2 id="the-five-boundaries">The five boundaries</h2>
+
+<h3 id="confirmed-c">Confirmed (C)</h3>
+
+<p><strong>Color:</strong> Gold | <strong>Meaning:</strong> Verified against an authoritative source.</p>
+
+<p>The claim was checked against a database query, signed attestation, verified document, or audited record. The verification is recorded in the event log with source, query, and timestamp. Safe for operational decisions.</p>
+
+<p><em>Example: "Q2 revenue was $4.2M" — verified via database query.</em></p>
+
+<h3 id="executed-x">Executed (X)</h3>
+
+<p><strong>Color:</strong> Teal | <strong>Meaning:</strong> Action ran with recorded result.</p>
+
+<p>An action was actually performed — an API call made, a state transition recorded, a workflow completed. The execution is in the hash-chained event log with input, output, and timestamps.</p>
+
+<p><em>Example: "Alert #7 acknowledged" — PBC action executed via API.</em></p>
+
+<h3 id="retrieved-r">Retrieved (R)</h3>
+
+<p><strong>Color:</strong> Purple | <strong>Meaning:</strong> Fetched from a system of record.</p>
+
+<p>Data was pulled from a known source and presented as-is. The retrieval is recorded, but the content was not independently verified. Trustworthy to the degree the source is trustworthy.</p>
+
+<p><em>Example: "Current alerts: 3 open" — retrieved from the alert system.</em></p>
+
+<h3 id="likely-l">Likely (L)</h3>
+
+<p><strong>Color:</strong> Slate blue | <strong>Meaning:</strong> High-confidence inference, not directly verified.</p>
+
+<p>The AI's assessment based on context and reasoning. Not verified against an authoritative source. Confidence is high but the claim could be wrong. Independent verification recommended.</p>
+
+<p><em>Example: "Renewal probability is 85-90%" — inferred from usage patterns.</em></p>
+
+<h3 id="uncertain-u">Uncertain (U)</h3>
+
+<p><strong>Color:</strong> Warm gray | <strong>Meaning:</strong> Limited evidence, treat with caution.</p>
+
+<p>The AI is extrapolating beyond its context. Do not act without independent verification. The uncertainty is an honest signal, not a failure.</p>
+
+<p><em>Example: "Market conditions may shift in Q4" — speculative.</em></p>
+
+<h2 id="composition-rules">Composition rules</h2>
+
+<p>When a response contains segments with different trust levels, the <strong>weakest boundary dominates</strong> the response-level classification. A response with one Confirmed and one Likely segment is classified as Likely overall.</p>
+
+<p>Ordering (strongest to weakest): Confirmed > Executed > Retrieved > Likely > Uncertain.</p>
+
+<h2 id="freshness-lifecycle">Freshness lifecycle</h2>
+
+<p>Trust boundaries are not permanent. Each claim has a freshness state:</p>
+
+<p>| State | Meaning |<br>|-------|---------|<br>| <strong>Fresh</strong> | Within the source-specific freshness window |<br>| <strong>Aging</strong> | Past 50% of freshness window |<br>| <strong>Stale</strong> | Exceeded freshness window — re-verification needed |<br>| <strong>Invalidated</strong> | Contradicted by newer evidence |<br>| <strong>Superseded</strong> | Replaced by a newer version |</p>
+</div>

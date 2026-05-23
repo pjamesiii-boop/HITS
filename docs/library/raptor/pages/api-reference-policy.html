@@ -1,0 +1,283 @@
+<div class="docs-page">
+<h1>Policy API</h1>
+<p class="docs-page-description">Manage the governance policy lifecycle: validate, sign, activate, rollback, and simulate.</p>
+<h1 id="policy-api">Policy API</h1>
+
+<p>The Policy API manages the governance policy lifecycle. Policies define what the AI is allowed to do, what requires confirmation, and what is denied. All policy operations are admin-only.</p>
+
+<p>Policies follow a strict lifecycle: <strong>draft</strong> -> <strong>signed</strong> -> <strong>active</strong> -> <strong>superseded</strong>.</p>
+
+<h2 id="post-api-admin-policies-validate">POST /api/admin/policies/validate</h2>
+
+<p>Validate a policy document without persisting it. Use this to check syntax and semantic correctness before signing.</p>
+
+<p><strong>Authentication:</strong> Required (Founder Key or admin)</p>
+
+<h3 id="request-body">Request Body</h3>
+
+<p>| Field | Type | Required | Description |<br>|-------|------|----------|-------------|<br>| <code>policy</code> | object | Yes | The policy document to validate |</p>
+
+<pre><code class="language-json">{
+  "policy": {
+    "version": "1.0",
+    "mode": "enforced",
+    "rules": [
+      {
+        "action": "chat.send",
+        "effect": "allow",
+        "conditions": { "trust_level": ["confirmed", "retrieved"] }
+      },
+      {
+        "action": "action.execute",
+        "effect": "require_confirmation",
+        "conditions": {}
+      },
+      {
+        "action": "data.export",
+        "effect": "deny",
+        "conditions": { "classification": ["confidential"] }
+      }
+    ]
+  }
+}</code></pre>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "valid": true,
+  "warnings": [],
+  "rule_count": 3
+}</code></pre>
+
+<p>Validation failure:</p>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "valid": false,
+  "errors": [
+    {
+      "path": "rules[2].conditions.classification",
+      "message": "Unknown classification level: 'confidential'. Valid values: public, internal, restricted, secret."
+    }
+  ],
+  "warnings": []
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 400 | <code>validation_error</code> | Malformed request body |<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 403 | <code>forbidden</code> | Not an admin user |</p>
+
+<hr>
+
+<h2 id="post-api-admin-policies-sign">POST /api/admin/policies/sign</h2>
+
+<p>Sign a policy document. Signing produces a cryptographic signature and stores the policy as a draft ready for activation. A policy must be signed before it can be activated.</p>
+
+<p><strong>Authentication:</strong> Required (Founder Key or admin)</p>
+
+<h3 id="request-body">Request Body</h3>
+
+<p>| Field | Type | Required | Description |<br>|-------|------|----------|-------------|<br>| <code>policy</code> | object | Yes | The policy document to sign |</p>
+
+<pre><code class="language-json">{
+  "policy": {
+    "version": "1.0",
+    "mode": "enforced",
+    "rules": [
+      {
+        "action": "chat.send",
+        "effect": "allow",
+        "conditions": {}
+      },
+      {
+        "action": "action.execute",
+        "effect": "require_confirmation",
+        "conditions": {}
+      }
+    ]
+  }
+}</code></pre>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "policy": {
+    "id": "policy_abc123",
+    "version": 4,
+    "status": "signed",
+    "mode": "enforced",
+    "rule_count": 2,
+    "signature": "sha256:e5f6g7h8...",
+    "signed_at": "2026-05-21T18:00:00Z",
+    "signed_by": "founder"
+  }
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 400 | <code>validation_error</code> | Policy document is invalid |<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 403 | <code>forbidden</code> | Not an admin user |</p>
+
+<hr>
+
+<h2 id="post-api-admin-policies-id-activate">POST /api/admin/policies/{id}/activate</h2>
+
+<p>Activate a signed policy. The currently active policy is superseded. Only one policy can be active at a time.</p>
+
+<p><strong>Authentication:</strong> Required (Founder Key or admin)</p>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p>| Parameter | Type | Description |<br>|-----------|------|-------------|<br>| <code>id</code> | string | Policy ID (must be in <code>signed</code> status) |</p>
+
+<h3 id="request-body">Request Body</h3>
+
+<p>No body required.</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "policy": {
+    "id": "policy_abc123",
+    "version": 4,
+    "status": "active",
+    "mode": "enforced",
+    "activated_at": "2026-05-21T18:05:00Z",
+    "activated_by": "founder"
+  },
+  "superseded": {
+    "id": "policy_xyz789",
+    "version": 3,
+    "status": "superseded",
+    "superseded_at": "2026-05-21T18:05:00Z"
+  }
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 403 | <code>forbidden</code> | Not an admin user |<br>| 404 | <code>not_found</code> | Policy does not exist |<br>| 409 | <code>conflict</code> | Policy is not in <code>signed</code> status |</p>
+
+<hr>
+
+<h2 id="post-api-admin-policies-rollback">POST /api/admin/policies/rollback</h2>
+
+<p>Rollback to the previously active policy. The current active policy is superseded and the most recent superseded policy is re-activated.</p>
+
+<p><strong>Authentication:</strong> Required (Founder Key or admin)</p>
+
+<h3 id="request-body">Request Body</h3>
+
+<p>No body required.</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "rolled_back_to": {
+    "id": "policy_xyz789",
+    "version": 3,
+    "status": "active",
+    "reactivated_at": "2026-05-21T18:10:00Z"
+  },
+  "superseded": {
+    "id": "policy_abc123",
+    "version": 4,
+    "status": "superseded",
+    "superseded_at": "2026-05-21T18:10:00Z"
+  }
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 403 | <code>forbidden</code> | Not an admin user |<br>| 409 | <code>conflict</code> | No previous policy to rollback to |</p>
+
+<hr>
+
+<h2 id="get-api-admin-policies">GET /api/admin/policies</h2>
+
+<p>List policy history. Returns all policies across all lifecycle states, most recent first.</p>
+
+<p><strong>Authentication:</strong> Required (Founder Key or admin)</p>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "policies": [
+    {
+      "id": "policy_abc123",
+      "version": 4,
+      "status": "active",
+      "mode": "enforced",
+      "rule_count": 2,
+      "signed_at": "2026-05-21T18:00:00Z",
+      "activated_at": "2026-05-21T18:05:00Z"
+    },
+    {
+      "id": "policy_xyz789",
+      "version": 3,
+      "status": "superseded",
+      "mode": "enforced",
+      "rule_count": 5,
+      "signed_at": "2026-05-20T12:00:00Z",
+      "activated_at": "2026-05-20T12:05:00Z",
+      "superseded_at": "2026-05-21T18:05:00Z"
+    },
+    {
+      "id": "policy_draft01",
+      "version": 5,
+      "status": "signed",
+      "mode": "permissive",
+      "rule_count": 3,
+      "signed_at": "2026-05-21T19:00:00Z"
+    }
+  ]
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 403 | <code>forbidden</code> | Not an admin user |</p>
+
+<hr>
+
+<h2 id="post-api-admin-policies-simulate">POST /api/admin/policies/simulate</h2>
+
+<p>Simulate a policy evaluation. Test what a given policy would allow, deny, or require confirmation for, without activating it.</p>
+
+<p><strong>Authentication:</strong> Required (Founder Key or admin)</p>
+
+<h3 id="request-body">Request Body</h3>
+
+<p>| Field | Type | Required | Description |<br>|-------|------|----------|-------------|<br>| <code>policy_id</code> | string | Yes | Policy to simulate against (any status) |<br>| <code>action</code> | string | Yes | Action to test (e.g., <code>chat.send</code>, <code>action.execute</code>) |<br>| <code>context</code> | object | No | Additional context for condition evaluation |</p>
+
+<pre><code class="language-json">{
+  "policy_id": "policy_draft01",
+  "action": "action.execute",
+  "context": {
+    "trust_level": "inferred",
+    "workflow": "pbc_send_notification"
+  }
+}</code></pre>
+
+<h3 id="response-body">Response Body</h3>
+
+<pre><code class="language-json">{
+  "ok": true,
+  "simulation": {
+    "action": "action.execute",
+    "effect": "require_confirmation",
+    "matched_rule": {
+      "action": "action.execute",
+      "effect": "require_confirmation",
+      "conditions": {}
+    },
+    "explanation": "Action execution requires user confirmation under this policy."
+  }
+}</code></pre>
+
+<h3 id="error-codes">Error Codes</h3>
+
+<p>| Status | Error | When |<br>|--------|-------|------|<br>| 400 | <code>validation_error</code> | Missing required fields |<br>| 401 | <code>unauthorized</code> | No valid authentication |<br>| 403 | <code>forbidden</code> | Not an admin user |<br>| 404 | <code>not_found</code> | Policy does not exist |</p>
+</div>

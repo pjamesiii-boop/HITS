@@ -1,0 +1,71 @@
+<div class="docs-page">
+<h1>MCP Server</h1>
+<p class="docs-page-description">Connect Claude Desktop, Cursor, or any MCP client to Raptor's governed capabilities.</p>
+<h1 id="mcp-server-integration">MCP Server Integration</h1>
+
+<p>Raptor includes an MCP (Model Context Protocol) server that exposes governed capabilities to AI assistants like Claude Desktop and Cursor.</p>
+
+<h2 id="setup">Setup</h2>
+
+<h3 id="1-start-the-mcp-server">1. Start the MCP server</h3>
+
+<p>The MCP server runs as a separate service on port 4001:</p>
+
+<pre><code class="language-bash"># With Docker Compose (recommended)
+docker compose up -d  # starts control-panel + mcp-server + postgres
+
+<h1 id="or-standalone">Or standalone</h1>
+MCP_PORT=4001 RAPTOR_URL=http://localhost:4000 go run ./cmd/raptor-mcp</code></pre>
+
+<h3 id="2-configure-your-mcp-client">2. Configure your MCP client</h3>
+
+<p><strong>Claude Desktop</strong> (<code>~/.claude/claude_desktop_config.json</code>):</p>
+
+<pre><code class="language-json">{
+  "mcpServers": {
+    "raptor": {
+      "url": "http://localhost:4001/mcp",
+      "transport": "streamable-http"
+    }
+  }
+}</code></pre>
+
+<p><strong>Cursor</strong> (Settings → MCP Servers → Add):<br><ul><br><li>URL: <code>http://localhost:4001/mcp</code></li><br><li>Transport: Streamable HTTP</li><br></ul></p>
+
+<h3 id="3-authenticate">3. Authenticate</h3>
+
+<p>The MCP server supports two auth modes:</p>
+
+<p><strong>Development (token):</strong><br><pre><code>Authorization: Bearer your-raptor-access-token</code></pre></p>
+
+<p><strong>Production (OAuth 2.1):</strong><br><ol><br><li>Client discovers endpoints via <code>GET /.well-known/oauth-authorization-server</code></li><br><li>Client initiates OAuth PKCE flow</li><br><li>Token exchange proxied through Raptor to Clerk</li><br><li>All subsequent requests use the Bearer token</li><br></ol></p>
+
+<h2 id="available-tools">Available tools</h2>
+
+<p>The MCP server exposes Raptor's capabilities as MCP tools:</p>
+
+<ul>
+<li><strong>raptor_chat</strong> — send governed messages, receive structured responses with trust boundaries</li>
+<li><strong>raptor_nests</strong> — list and manage conversation nests</li>
+<li><strong>raptor_governance</strong> — query governance decisions and policy state</li>
+</ul>
+
+<h2 id="available-resources">Available resources</h2>
+
+<ul>
+<li><strong>raptor://nests</strong> — list of active nests</li>
+<li><strong>raptor://nests/{id}/summary</strong> — nest aggregate counts</li>
+</ul>
+
+<h2 id="what-you-get">What you get</h2>
+
+<p>Every interaction through the MCP server:<br><ul><br><li>Goes through the same governance middleware as the REST API</li><br><li>Produces trust-bounded responses</li><br><li>Is recorded in the hash-chained audit log</li><br><li>Respects active policies and budgets</li><br></ul></p>
+
+<p>The MCP server is thin — it translates MCP protocol to Raptor API calls. All governance happens in the control panel.</p>
+
+<h2 id="oauth-discovery">OAuth discovery</h2>
+
+<pre><code class="language-bash">curl http://localhost:4001/.well-known/oauth-authorization-server</code></pre>
+
+<p>Returns endpoints for authorization, token exchange, and JWKS (all proxied to Clerk in production).</p>
+</div>

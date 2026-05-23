@@ -1,0 +1,146 @@
+<div class="docs-page">
+<h1>Threat Model</h1>
+<p class="docs-page-description">Attack surfaces, trust boundaries, and mitigations in Raptor's security architecture.</p>
+<h1 id="threat-model">Threat Model</h1>
+
+<p>This document describes the attack surfaces Raptor is designed to resist, the mitigations in place, and the trust assumptions the system makes.</p>
+
+<h2 id="attack-surfaces">Attack Surfaces</h2>
+
+<h3 id="api-endpoint-abuse">API Endpoint Abuse</h3>
+
+<p><strong>Threat:</strong> An attacker sends malformed, high-volume, or crafted requests to public API endpoints to exhaust resources, extract data, or bypass governance.</p>
+
+<p><strong>Mitigations:</strong></p>
+
+<ul>
+<li>Per-tenant rate limiting enforced at the middleware layer</li>
+<li>Input validation on all API endpoints before governance processing</li>
+<li>Structured error responses that do not leak internal state</li>
+<li>All requests require authentication — there are no anonymous API endpoints except health checks and <code>.well-known</code> public verification endpoints</li>
+</ul>
+
+<h3 id="authentication-bypass">Authentication Bypass</h3>
+
+<p><strong>Threat:</strong> An attacker attempts to forge JWTs, steal API keys, or exploit the Founder Key to gain unauthorized access.</p>
+
+<p><strong>Mitigations:</strong></p>
+
+<ul>
+<li><strong>JWT:</strong> Verified against Clerk's published JWKS on every request. Expired tokens are rejected. Token claims are validated against the tenant binding.</li>
+<li><strong>API keys:</strong> Only SHA-256 hashes are stored. A database breach does not expose usable credentials. Keys are prefixed (<code>rpt_</code>) for easy identification and rotation.</li>
+<li><strong>Founder Key:</strong> Compared using constant-time comparison (SHA-256) to prevent timing attacks. Intended for bootstrap only — should be rotated once Clerk is configured.</li>
+<li><strong>Grace period:</strong> Authentication transitions (e.g., Clerk configuration changes) include a grace period to prevent lockouts, with explicit logging of grace-period authentications.</li>
+</ul>
+
+<h3 id="provider-compromise">Provider Compromise</h3>
+
+<p><strong>Threat:</strong> A compromised or malicious AI provider returns manipulated responses designed to bypass governance, exfiltrate data, or inject harmful content.</p>
+
+<p><strong>Mitigations:</strong></p>
+
+<ul>
+<li><strong>Trust boundaries reflect verification status, not provider claims.</strong> A provider's response is classified based on what Raptor can verify (Confirmed, Retrieved) versus what it cannot (Likely, Uncertain). Provider self-reported confidence is not trusted.</li>
+<li><strong>Deterministic governance core.</strong> The classification, policy enforcement, and trust boundary assignment layers are deterministic code, not AI. A compromised provider cannot influence governance decisions.</li>
+<li><strong>Hash chain immutability.</strong> Provider responses are recorded in the hash-chained audit log. If a provider's behavior changes or is later found to be compromised, the historical record is intact and verifiable.</li>
+<li><strong>BYOP model.</strong> Customers use their own provider API keys. Raptor does not proxy through a shared credential — a compromise of one customer's provider key does not affect others.</li>
+</ul>
+
+<h3 id="tenant-isolation-breach">Tenant Isolation Breach</h3>
+
+<p><strong>Threat:</strong> An attacker with valid credentials for one tenant attempts to access another tenant's data.</p>
+
+<p><strong>Mitigations:</strong></p>
+
+<ul>
+<li><strong>PostgreSQL RLS</strong> enforced on 30 tables with <code>FORCE ROW LEVEL SECURITY</code></li>
+<li><strong>Database-level enforcement</strong> means application-layer bugs cannot leak cross-tenant data</li>
+<li><strong>Tenant ID set at connection level</strong> via <code>SET LOCAL</code> — not passed as a query parameter that could be manipulated</li>
+<li><strong>No shared mutable state</strong> between tenants. System configuration tables are read-only from the application role.</li>
+<li><strong>API keys are tenant-scoped</strong> — a key cannot be used to access a different tenant even if the attacker knows the tenant ID.</li>
+</ul>
+
+<h3 id="hash-chain-tampering">Hash Chain Tampering</h3>
+
+<p><strong>Threat:</strong> An attacker with database access attempts to modify, delete, or insert records into the hash-chained audit trail.</p>
+
+<p><strong>Mitigations:</strong></p>
+
+<ul>
+<li><strong>Database-level triggers</strong> on 11 immutable tables prevent <code>UPDATE</code> and <code>DELETE</code> operations. These triggers fire regardless of the database role executing the query.</li>
+<li><strong>Chain linking</strong> means modifying any single event invalidates all subsequent hashes. Tampering is detectable by any party that can read the chain.</li>
+<li><strong>Canonical hashing</strong> (sorted keys, no whitespace, deterministic serialization) means any independent implementation can verify hashes.</li>
+<li><strong>Public verification endpoints</strong> (<code>/.well-known/raptor/attestation</code>, <code>/.well-known/raptor/transparency</code>) allow external parties to verify chain integrity without requiring database access.</li>
+</ul>
+
+<h3 id="webhook-interception">Webhook Interception</h3>
+
+<p><strong>Threat:</strong> An attacker intercepts or forges webhook payloads to trigger unauthorized actions in a customer's downstream systems.</p>
+
+<p><strong>Mitigations:</strong></p>
+
+<ul>
+<li><strong>HMAC-SHA256 signatures</strong> on every outbound webhook payload using per-tenant secrets</li>
+<li><strong>Timestamp headers</strong> for replay protection — recipients should reject payloads older than a configured threshold</li>
+<li><strong>Webhook secrets stored as hashes</strong> — a database breach does not expose usable signing keys</li>
+<li><strong>TLS required</strong> for webhook delivery URLs</li>
+</ul>
+
+<h2 id="trust-boundaries">Trust Boundaries</h2>
+
+<h3 id="the-deterministic-core-cannot-be-overridden-by-ai-output">The Deterministic Core Cannot Be Overridden by AI Output</h3>
+
+<p>This is the fundamental trust boundary in Raptor's architecture.</p>
+
+<p>The governance layer — classification, policy enforcement, trust boundary assignment, hash chaining, and authorization — is deterministic code. It does not call AI models. It does not accept AI output as input to governance decisions.</p>
+
+<p>AI is used for exactly one thing: generating response content within the proposal layer. Everything that wraps that content — what the AI is asked, what it is permitted to do, how its output is classified, and what is recorded — is deterministic.</p>
+
+<p>A compromised, hallucinating, or adversarial AI model cannot:</p>
+
+<ul>
+<li>Escalate its own permissions</li>
+<li>Bypass policy enforcement</li>
+<li>Modify its trust boundary classification</li>
+<li>Alter the audit trail</li>
+<li>Access another tenant's data</li>
+<li>Execute actions without human confirmation (for action types that require it)</li>
+</ul>
+
+<h3 id="provider-trust-is-earned-not-assumed">Provider Trust Is Earned, Not Assumed</h3>
+
+<p>Trust boundaries on AI-generated content reflect what Raptor has actually verified:</p>
+
+<ul>
+<li><strong>Confirmed/Executed/Retrieved</strong> require evidence from a system of record — not the provider's assertion</li>
+<li><strong>Likely/Uncertain</strong> honestly label content that depends on AI inference</li>
+<li>The weakest trust boundary in a response dominates the response-level classification</li>
+</ul>
+
+<p>A provider claiming high confidence does not result in a Confirmed trust boundary. Verification against an authoritative source does.</p>
+
+<h3 id="hash-chain-integrity-is-database-enforced">Hash Chain Integrity Is Database-Enforced</h3>
+
+<p>The immutability guarantee does not depend on application code behaving correctly.</p>
+
+<p>Database triggers on immutable tables fire on every <code>UPDATE</code> and <code>DELETE</code> attempt and raise an exception. This means:</p>
+
+<ul>
+<li>A bug in application code cannot accidentally modify audit records</li>
+<li>A compromised application server cannot tamper with the chain</li>
+<li>The only way to bypass the triggers is direct database superuser access with trigger disabling — which is an infrastructure-level attack, not an application-level one</li>
+</ul>
+
+<h2 id="assumptions">Assumptions</h2>
+
+<p>This threat model assumes:</p>
+
+<ol>
+<li><strong>The database hosting provider is trustworthy.</strong> Encryption at rest is delegated to the database provider. A compromised hosting provider with raw disk access could read data.</li>
+<li><strong>TLS termination is correctly configured.</strong> Self-hosted deployments must terminate TLS at a reverse proxy. Raptor does not enforce TLS internally.</li>
+<li><strong>Clerk's identity infrastructure is trustworthy.</strong> JWT verification depends on Clerk's JWKS endpoint being honest. A compromise of Clerk's signing keys would allow forged JWTs.</li>
+<li><strong>Environment variables are protected.</strong> The Founder Key, database credentials, and provider API keys are stored as environment variables. If the deployment environment is compromised, these secrets are exposed.</li>
+</ol>
+
+<p>These are standard assumptions for a cloud-native application. They are stated explicitly so that operators can evaluate whether they are acceptable for their threat environment.</p>
+</div>

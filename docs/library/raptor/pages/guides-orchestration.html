@@ -1,0 +1,59 @@
+<div class="docs-page">
+<h1>Pattern 2: Orchestration</h1>
+<p class="docs-page-description">Use Raptor as the decision layer in a multi-agent AI system.</p>
+<h1 id="pattern-2-orchestration">Pattern 2: Orchestration</h1>
+
+<p>Use Raptor's decision engine as the governance layer for a multi-agent or multi-step AI workflow.</p>
+
+<h2 id="when-to-use">When to use</h2>
+
+<ul>
+<li>You're building a multi-step AI pipeline</li>
+<li>You need governance decisions at each step</li>
+<li>You want deterministic control flow around probabilistic agents</li>
+</ul>
+
+<h2 id="architecture">Architecture</h2>
+
+<pre><code>Agent A → Raptor Decision → Agent B → Raptor Decision → Output
+              ↓                            ↓
+        Policy check                 Policy check
+        Confirmation gate           Confirmation gate
+        Audit event                 Audit event</code></pre>
+
+<h2 id="integration">Integration</h2>
+
+<h3 id="1-create-a-nest-for-the-workflow">1. Create a nest for the workflow</h3>
+
+<pre><code class="language-bash">POST /api/nests
+{"name": "deploy-pipeline-run-42"}</code></pre>
+
+<h3 id="2-use-the-chat-api-as-decision-points">2. Use the chat API as decision points</h3>
+
+<p>Each step in your workflow passes through Raptor's decision engine:</p>
+
+<pre><code class="language-javascript">// Step 1: Should we proceed with deployment?
+const decision1 = await raptor.chat(nestId, {
+  message: "Evaluate deployment readiness for service-X"
+});
+// decision1.decision_type === 'respond' | 'propose_action'
+
+<p>// Step 2: If action proposed, confirm<br>if (decision1.decision_type === 'propose_action') {<br>  const execution = await raptor.chat(nestId, {<br>    message: "proceed"<br>  });<br>  // execution.decision_type === 'execute_confirmed_action'<br>}</code></pre></p>
+
+<h3 id="3-each-decision-is-governed">3. Each decision is governed</h3>
+
+<p>Every call through the decision engine:<br><ul><br><li>Checks capabilities and budgets</li><br><li>Evaluates the active governance policy</li><br><li>Applies confidence rules (low confidence → ask, not act)</li><br><li>Records an authorization_event</li><br><li>Produces a hash-chained execution_event</li><br></ul></p>
+
+<h2 id="multi-provider-routing">Multi-provider routing</h2>
+
+<p>Raptor supports 4 providers (Anthropic, OpenAI, Gemini, Together AI) with automatic failover. Your orchestration layer doesn't need to handle provider failures — Raptor does it transparently.</p>
+
+<h2 id="what-you-get">What you get</h2>
+
+<ul>
+<li>Deterministic decision control flow (same policy, same enforcement every time)</li>
+<li>Per-step audit trail with correlation IDs</li>
+<li>Budget enforcement across the entire workflow</li>
+<li>Trust boundary propagation (weakest boundary dominates)</li>
+</ul>
+</div>
