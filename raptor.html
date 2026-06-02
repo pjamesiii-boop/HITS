@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="hits_logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Raptor — Governed AI Infrastructure | HITS</title>
+  <meta name="description" content="Raptor is a deterministic governance substrate for AI applications. AI proposes. A deterministic core disposes. Every response classified, hash-chained, and auditable.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'deep-slate': '#020617',
+            'electric-blue': '#3b82f6',
+            'blue-glow': '#60a5fa',
+            'blue-bright': '#93c5fd',
+          },
+          fontFamily: {
+            'display': ['Syne', 'sans-serif'],
+            'body': ['DM Sans', 'sans-serif'],
+            'mono': ['JetBrains Mono', 'monospace'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --blue: #3b82f6;
+      --blue-glow: #60a5fa;
+      --blue-dim: rgba(59,130,246,0.15);
+      --bg: #020617;
+      --card-bg: rgba(15,23,42,0.75);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background-color: var(--bg);
+      font-family: 'DM Sans', sans-serif;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: 0.4;
+    }
+
+    .nav-glass {
+      background: rgba(2,6,23,0.65);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid rgba(59,130,246,0.12);
+    }
+    .nav-link {
+      position: relative; color: rgba(203,213,225,0.85);
+      font-size: 0.875rem; font-weight: 500; letter-spacing: 0.02em; transition: color 0.2s;
+    }
+    .nav-link::after {
+      content: ''; position: absolute; bottom: -3px; left: 0;
+      width: 0; height: 1px; background: var(--blue); transition: width 0.25s ease;
+    }
+    .nav-link:hover { color: #93c5fd; }
+    .nav-link:hover::after { width: 100%; }
+    .nav-link.active { color: #93c5fd; }
+    .nav-link.active::after { width: 100%; }
+
+    .btn-contact {
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      box-shadow: 0 0 20px rgba(59,130,246,0.4);
+      transition: box-shadow 0.3s, transform 0.2s;
+    }
+    .btn-contact:hover { box-shadow: 0 0 32px rgba(59,130,246,0.65); transform: translateY(-1px); }
+
+    .hero-grid {
+      background-image:
+        linear-gradient(rgba(59,130,246,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,130,246,0.05) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .logo-glow-ring {
+      position: absolute; inset: -24px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(59,130,246,0.25) 0%, transparent 70%);
+      animation: ringPulse 3s ease-in-out infinite;
+    }
+    .logo-glow-ring-2 {
+      position: absolute; inset: -48px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(59,130,246,0.10) 0%, transparent 65%);
+      animation: ringPulse 3s ease-in-out infinite 0.8s;
+    }
+    @keyframes ringPulse {
+      0%,100% { transform: scale(1); opacity: 0.7; }
+      50%      { transform: scale(1.08); opacity: 1; }
+    }
+
+    .gradient-headline {
+      background: linear-gradient(135deg, #ffffff 0%, #e2eeff 35%, #93c5fd 65%, #3b82f6 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    .logo-frosted {
+      background: rgba(15,23,42,0.7);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(59,130,246,0.25); border-radius: 24px;
+      padding: 36px; position: relative; overflow: hidden;
+    }
+    .logo-frosted::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .bento-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(59,130,246,0.15); border-radius: 16px;
+      backdrop-filter: blur(12px);
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .bento-card:hover {
+      border-color: rgba(59,130,246,0.4);
+      box-shadow: 0 0 40px rgba(59,130,246,0.1);
+    }
+
+    .glow-bullet {
+      width: 7px; height: 7px; background: var(--blue);
+      border-radius: 50%; flex-shrink: 0;
+      box-shadow: 0 0 8px 2px rgba(59,130,246,0.7);
+    }
+
+    .tag {
+      display: inline-flex; align-items: center; padding: 3px 10px;
+      background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.3);
+      border-radius: 999px; font-size: 0.7rem; font-weight: 600;
+      letter-spacing: 0.08em; color: #93c5fd; text-transform: uppercase;
+    }
+
+    .blue-line {
+      width: 48px; height: 2px;
+      background: linear-gradient(90deg, var(--blue), transparent); border-radius: 2px;
+    }
+
+    .feature-card {
+      background: rgba(15,23,42,0.6);
+      border: 1px solid rgba(59,130,246,0.15); border-radius: 14px;
+      padding: 28px; position: relative; overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    .feature-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(59,130,246,0.5), transparent);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .feature-card:hover { border-color: rgba(59,130,246,0.35); transform: translateY(-3px); }
+    .feature-card:hover::before { opacity: 1; }
+
+    /* Trust boundary colors */
+    .tb-confirmed { color: #fbbf24; }
+    .tb-executed { color: #2dd4bf; }
+    .tb-retrieved { color: #a78bfa; }
+    .tb-inferred { color: #94a3b8; }
+    .tb-uncertain { color: #78716c; }
+
+    .tb-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 600;
+      font-family: 'JetBrains Mono', monospace; letter-spacing: 0.04em;
+    }
+
+    /* Lifecycle flow */
+    .lifecycle-step {
+      background: rgba(15,23,42,0.6);
+      border: 1px solid rgba(59,130,246,0.15); border-radius: 14px;
+      padding: 24px; text-align: center;
+      transition: border-color 0.3s;
+      position: relative;
+    }
+    .lifecycle-step:hover { border-color: rgba(59,130,246,0.35); }
+    .lifecycle-num {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.4);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.8rem; color: #60a5fa;
+      margin: 0 auto 12px;
+    }
+
+    .anim-1 { opacity:0; animation: fadeUp 0.7s ease 0.1s forwards; }
+    .anim-2 { opacity:0; animation: fadeUp 0.7s ease 0.25s forwards; }
+    .anim-3 { opacity:0; animation: fadeUp 0.7s ease 0.4s forwards; }
+    .anim-4 { opacity:0; animation: fadeUp 0.7s ease 0.55s forwards; }
+    .anim-5 { opacity:0; animation: fadeUp 0.7s ease 0.7s forwards; }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform: translateY(24px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+
+    #mobile-menu { display: none; }
+    #mobile-menu.open { display: block; }
+
+    .scroll-reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .scroll-reveal.visible { opacity: 1; transform: translateY(0); }
+
+    .dropdown-wrap { position: relative; }
+    .dropdown-btn {
+      display: flex; align-items: center; gap: 5px;
+      color: rgba(203,213,225,0.85); font-size: .875rem; font-weight: 500;
+      letter-spacing: .02em; cursor: pointer; background: none; border: none;
+      padding: 0; transition: color .2s; font-family: 'DM Sans', sans-serif; position: relative;
+    }
+    .dropdown-btn::after {
+      content: ''; position: absolute; bottom: -3px; left: 0;
+      width: 0; height: 1px; background: #3b82f6; transition: width .25s ease;
+    }
+    .dropdown-btn:hover, .dropdown-btn.active { color: #93c5fd; }
+    .dropdown-btn:hover::after, .dropdown-btn.active::after { width: calc(100% - 16px); }
+    .dropdown-btn svg { transition: transform .25s ease; flex-shrink: 0; }
+    .dropdown-wrap:hover .dropdown-btn svg,
+    .dropdown-wrap.open .dropdown-btn svg { transform: rotate(180deg); }
+    .dropdown-menu {
+      position: absolute; top: 100%; left: 50%; padding-top: 12px;
+      transform: translateX(-50%) scale(0.95);
+      min-width: 230px; z-index: 100; background: transparent;
+      opacity: 0; pointer-events: none; transform-origin: top center;
+      transition: opacity .22s ease, transform .22s ease;
+    }
+    .dropdown-menu-inner {
+      background: rgba(7,12,28,0.92);
+      backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid rgba(59,130,246,0.22); border-radius: 14px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(59,130,246,0.08);
+      padding: 8px;
+    }
+    .dropdown-wrap:hover .dropdown-menu,
+    .dropdown-wrap.open .dropdown-menu {
+      opacity: 1; pointer-events: auto; transform: translateX(-50%) scale(1);
+    }
+    .dropdown-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 8px;
+      font-family: 'DM Sans', sans-serif; font-size: .85rem; font-weight: 500;
+      color: rgba(203,213,225,0.85); text-decoration: none;
+      transition: background .18s, color .18s; white-space: nowrap;
+    }
+    .dropdown-item:hover { background: rgba(59,130,246,0.1); color: #93c5fd; }
+    .dropdown-item .d-icon {
+      width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.22);
+    }
+    .dropdown-divider { height: 1px; background: rgba(59,130,246,0.1); margin: 6px 4px; }
+    .mob-dropdown-items { display: none; padding-left: 14px; margin-top: 4px; }
+    .mob-dropdown-items.open { display: flex; flex-direction: column; gap: 2px; }
+    .mob-dropdown-btn {
+      display: flex; align-items: center; justify-content: space-between;
+      color: rgba(203,213,225,0.85); font-size: 1rem; font-weight: 500;
+      background: none; border: none; padding: 0; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; width: 100%;
+    }
+    .mob-dropdown-btn svg { transition: transform .25s; }
+    .mob-dropdown-btn.open svg { transform: rotate(180deg); }
+  </style>
+</head>
+
+<body class="text-slate-100 relative">
+
+  <!-- ══════════════════════════════════════
+       NAVIGATION
+  ══════════════════════════════════════ -->
+  <header class="nav-glass fixed top-0 inset-x-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-16">
+      <a href="index.html" class="flex items-center gap-2.5 group">
+        <div class="relative flex items-center justify-center" style="width:36px;height:36px;">
+          <div style="position:absolute;inset:-7px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,0.28) 0%,transparent 68%);pointer-events:none;z-index:0;"></div>
+          <div style="position:absolute;inset:-1px;border-radius:10px;border:1px solid rgba(96,165,250,0.55);background:transparent;pointer-events:none;z-index:3;box-shadow:0 0 14px rgba(59,130,246,0.3);"></div>
+          <div style="position:relative;z-index:2;border-radius:7px;overflow:hidden;width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#dbeafe;box-shadow:inset 0 0 0 1px rgba(147,197,253,0.6);">
+            <img src="hits_logo.png" alt="HITS" class="h-7 w-auto" style="border-radius:5px;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+          </div>
+          <div style="display:none;position:relative;z-index:2;" class="w-8 h-8 rounded-md bg-electric-blue items-center justify-center shadow-[0_0_14px_rgba(59,130,246,0.7)]">
+            <span class="font-display font-800 text-white text-sm">H</span>
+          </div>
+        </div>
+        <span class="font-display font-700 text-white text-lg tracking-tight">HITS</span>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-7 font-body">
+        <a href="index.html" class="nav-link">Home</a>
+        <div class="dropdown-wrap">
+          <button class="dropdown-btn active">
+            Products
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="dropdown-menu"><div class="dropdown-menu-inner">
+            <a href="products.html" class="dropdown-item">
+              <span class="d-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+              Product Hub
+            </a>
+            <div class="dropdown-divider"></div>
+            <a href="product.html" class="dropdown-item">
+              <span class="d-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></span>
+              Harpy Talon
+            </a>
+            <a href="entente.html" class="dropdown-item">
+              <span class="d-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+              Entente
+            </a>
+            <a href="raptor.html" class="dropdown-item" style="background:rgba(59,130,246,.1);color:#93c5fd;">
+              <span class="d-icon" style="border-color:rgba(59,130,246,.4);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span>
+              Raptor
+            </a>
+            <a href="crestview.html" class="dropdown-item">
+              <span class="d-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+              CrestView PDS
+            </a>
+          </div></div>
+        </div>
+        <a href="services.html"   class="nav-link">Services</a>
+        <a href="government.html" class="nav-link">Government</a>
+        <a href="about.html"      class="nav-link">About</a>
+        <a href="careers.html"    class="nav-link">Careers</a>
+        <a href="news.html"       class="nav-link">News</a>
+        <a href="docs.html"       class="nav-link">Docs</a>
+      </nav>
+
+      <div class="hidden md:flex items-center">
+        <a href="contact.html" class="btn-contact px-5 py-2 rounded-lg text-sm font-display font-600 text-white tracking-wide">Contact Us</a>
+      </div>
+
+      <button id="menu-toggle" class="md:hidden flex flex-col gap-1.5 p-1" aria-label="Toggle menu">
+        <span class="w-5 h-0.5 bg-slate-300 block"></span>
+        <span class="w-5 h-0.5 bg-slate-300 block"></span>
+        <span class="w-5 h-0.5 bg-slate-300 block"></span>
+      </button>
+    </div>
+
+    <div id="mobile-menu" class="md:hidden px-6 pb-5 pt-2 flex flex-col gap-4 font-body border-t border-white/5">
+      <a href="index.html" class="nav-link text-base">Home</a>
+      <div>
+        <button class="mob-dropdown-btn" id="mob-prod-btn">
+          Products
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="mob-dropdown-items" id="mob-prod-items">
+          <a href="products.html" class="dropdown-item" style="padding:8px 10px;font-size:.9rem;">Product Hub</a>
+          <a href="product.html"  class="dropdown-item" style="padding:8px 10px;font-size:.9rem;">Harpy Talon</a>
+          <a href="entente.html"  class="dropdown-item" style="padding:8px 10px;font-size:.9rem;">Entente</a>
+          <a href="raptor.html"   class="dropdown-item" style="padding:8px 10px;font-size:.9rem;color:#93c5fd;">Raptor</a>
+          <a href="crestview.html" class="dropdown-item" style="padding:8px 10px;font-size:.9rem;">CrestView PDS</a>
+        </div>
+      </div>
+      <a href="services.html"   class="nav-link text-base">Services</a>
+      <a href="government.html" class="nav-link text-base">Government</a>
+      <a href="about.html"      class="nav-link text-base">About</a>
+      <a href="careers.html"    class="nav-link text-base">Careers</a>
+      <a href="news.html"       class="nav-link text-base">News</a>
+      <a href="docs.html"       class="nav-link text-base">Docs</a>
+      <a href="contact.html"    class="btn-contact px-5 py-2.5 rounded-lg text-sm font-display font-600 text-white text-center">Contact Us</a>
+    </div>
+  </header>
+
+
+  <!-- ══════════════════════════════════════
+       HERO
+  ══════════════════════════════════════ -->
+  <section class="relative min-h-screen flex items-center px-6 pt-24 pb-20 overflow-hidden hero-grid">
+
+    <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-[900px] h-[500px] pointer-events-none"
+         style="background: radial-gradient(ellipse, rgba(59,130,246,0.12) 0%, transparent 70%);"></div>
+
+    <div class="relative z-10 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+
+      <div>
+        <div class="anim-1 flex items-center gap-3 mb-6">
+          <span class="tag">Raptor · Governed AI</span>
+          <span class="tag" style="background:rgba(34,197,94,0.1); border-color:rgba(34,197,94,0.3); color:#86efac;">Live</span>
+        </div>
+
+        <h1 class="anim-2 font-display font-800 text-4xl sm:text-5xl lg:text-[3.4rem] leading-[1.05] tracking-tight mb-6">
+          <span class="gradient-headline">AI Proposes.</span><br />
+          <span class="gradient-headline">A Deterministic Core</span><br />
+          <span class="text-white">Disposes.</span>
+        </h1>
+
+        <p class="anim-3 font-body text-lg text-slate-400 leading-relaxed max-w-xl mb-8">
+          Raptor is a governance layer for AI systems in regulated industries. Every response carries trust boundaries, passes confirmation gates, and is traceable to its source — classified, hash-chained, and auditable by design.
+        </p>
+
+        <div class="anim-4 flex flex-wrap gap-6 mb-10">
+          <div>
+            <p class="font-display font-800 text-3xl text-white">4</p>
+            <p class="text-xs text-slate-500 mt-0.5 uppercase tracking-widest">AI Providers</p>
+          </div>
+          <div class="w-px bg-slate-800 self-stretch"></div>
+          <div>
+            <p class="font-display font-800 text-3xl text-white">11</p>
+            <p class="text-xs text-slate-500 mt-0.5 uppercase tracking-widest">Immutable Tables</p>
+          </div>
+          <div class="w-px bg-slate-800 self-stretch"></div>
+          <div>
+            <p class="font-display font-800 text-3xl text-white">32</p>
+            <p class="text-xs text-slate-500 mt-0.5 uppercase tracking-widest">API Routes</p>
+          </div>
+        </div>
+
+        <div class="anim-5 flex flex-col sm:flex-row gap-4">
+          <a href="https://raptor.harpyits.com" class="btn-contact px-7 py-3.5 rounded-xl text-base font-display font-700 text-white text-center">
+            Launch Raptor
+          </a>
+          <a href="#governance" class="px-7 py-3.5 rounded-xl text-base font-display font-600 text-slate-300 border border-slate-700 hover:border-blue-500 hover:text-white transition-all duration-300 text-center">
+            See How It Works ↓
+          </a>
+        </div>
+      </div>
+
+      <!-- Right: Logo -->
+      <div class="anim-3 flex justify-center lg:justify-end">
+        <div class="relative flex items-center justify-center" style="width:340px; height:340px;">
+          <div class="logo-glow-ring-2"></div>
+          <div class="logo-glow-ring"></div>
+
+          <div class="logo-frosted w-72 h-72 flex items-center justify-center relative z-10">
+            <div class="absolute inset-0 rounded-3xl opacity-20"
+                 style="background: conic-gradient(from 0deg, #3b82f6, transparent, #3b82f6, transparent); animation: spin 8s linear infinite; border-radius: 24px;"></div>
+
+            <div class="relative flex items-center justify-center">
+              <div style="position:absolute;inset:-32px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,0.22) 0%,transparent 70%);pointer-events:none;z-index:0;"></div>
+              <div class="relative overflow-hidden"
+                   style="background:rgba(15,23,42,0.82);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+                          border:1px solid rgba(59,130,246,0.35);border-radius:24px;padding:24px;
+                          box-shadow:0 0 32px rgba(59,130,246,0.18),0 16px 48px rgba(0,0,0,0.55),inset 0 1px 0 rgba(255,255,255,0.07);z-index:1;">
+                <div style="position:absolute;top:8px;left:8px;width:12px;height:12px;border-top:2px solid rgba(59,130,246,0.6);border-left:2px solid rgba(59,130,246,0.6);border-radius:2px 0 0 0;"></div>
+                <div style="position:absolute;top:8px;right:8px;width:12px;height:12px;border-top:2px solid rgba(59,130,246,0.6);border-right:2px solid rgba(59,130,246,0.6);border-radius:0 2px 0 0;"></div>
+                <div style="position:absolute;bottom:8px;left:8px;width:12px;height:12px;border-bottom:2px solid rgba(59,130,246,0.6);border-left:2px solid rgba(59,130,246,0.6);border-radius:0 0 0 2px;"></div>
+                <div style="position:absolute;bottom:8px;right:8px;width:12px;height:12px;border-bottom:2px solid rgba(59,130,246,0.6);border-right:2px solid rgba(59,130,246,0.6);border-radius:0 0 2px 0;"></div>
+
+                <div style="display:inline-block;background:#f0f7ff;border-radius:14px;padding:8px;
+                            box-shadow:0 0 0 1px rgba(147,197,253,0.5),0 0 24px rgba(59,130,246,0.25),0 8px 24px rgba(0,0,0,0.4);">
+                  <img src="images/raptor_logo.png" alt="Raptor"
+                       class="w-40 h-auto" style="display:block;border-radius:8px;"
+                       onerror="this.style.display='none'; document.getElementById('raptor-fallback').style.display='flex';" />
+                </div>
+                <div id="raptor-fallback" style="display:none;" class="flex flex-col items-center gap-3 relative z-10">
+                  <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="#3b82f6" stroke-width="1.5" fill="rgba(59,130,246,0.1)"/>
+                  </svg>
+                  <span class="font-display font-800 text-xl text-white tracking-wider">RAPTOR</span>
+                  <span class="font-body text-xs text-electric-blue tracking-widest uppercase">Governed AI</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="absolute top-4 left-4 w-8 h-8 border-t-2 border-l-2 border-electric-blue/40 rounded-tl-lg"></div>
+          <div class="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-electric-blue/40 rounded-tr-lg"></div>
+          <div class="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-l-2 border-electric-blue/40 rounded-bl-lg"></div>
+          <div class="absolute bottom-4 right-4 w-8 h-8 border-b-2 border-r-2 border-electric-blue/40 rounded-br-lg"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════
+       GOVERNANCE LIFECYCLE
+  ══════════════════════════════════════ -->
+  <section id="governance" class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 py-24 scroll-reveal">
+
+    <div class="flex items-center gap-4 mb-4">
+      <div class="blue-line"></div>
+      <span class="font-display font-600 text-slate-500 text-sm tracking-widest uppercase">Architecture</span>
+    </div>
+    <h2 class="font-display font-800 text-3xl lg:text-4xl text-white mb-3">The Governance Lifecycle</h2>
+    <p class="font-body text-slate-400 text-base mb-12 max-w-2xl">
+      Every request passes through five deterministic stages. The AI generates content. Everything else — classification, enforcement, trust marking, and hash-chaining — is rules-based and auditable.
+    </p>
+
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div class="lifecycle-step">
+        <div class="lifecycle-num">1</div>
+        <h3 class="font-display font-700 text-sm text-white mb-2">Classify</h3>
+        <p class="font-body text-xs text-slate-400 leading-relaxed">Deterministic pattern matching assigns intent: respond, ask, propose action, or execute confirmed action.</p>
+      </div>
+      <div class="lifecycle-step">
+        <div class="lifecycle-num">2</div>
+        <h3 class="font-display font-700 text-sm text-white mb-2">Enforce</h3>
+        <p class="font-body text-xs text-slate-400 leading-relaxed">Middleware checks capabilities, policies, budgets, rate limits, and suspension status.</p>
+      </div>
+      <div class="lifecycle-step">
+        <div class="lifecycle-num">3</div>
+        <h3 class="font-display font-700 text-sm text-white mb-2">Propose</h3>
+        <p class="font-body text-xs text-slate-400 leading-relaxed">AI generates content in a sandboxed proposal layer. It cannot commit or execute.</p>
+      </div>
+      <div class="lifecycle-step">
+        <div class="lifecycle-num">4</div>
+        <h3 class="font-display font-700 text-sm text-white mb-2">Commit</h3>
+        <p class="font-body text-xs text-slate-400 leading-relaxed">Deterministic layer validates, assigns trust boundaries, hashes, and chains to prior event.</p>
+      </div>
+      <div class="lifecycle-step">
+        <div class="lifecycle-num">5</div>
+        <h3 class="font-display font-700 text-sm text-white mb-2">Deliver</h3>
+        <p class="font-body text-xs text-slate-400 leading-relaxed">Committed, classified, hash-chained response reaches the user. Fully replayable.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════
+       TRUST BOUNDARIES
+  ══════════════════════════════════════ -->
+  <section class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pb-24 scroll-reveal">
+
+    <div class="flex items-center gap-4 mb-4">
+      <div class="blue-line"></div>
+      <span class="font-display font-600 text-slate-500 text-sm tracking-widest uppercase">Trust Model</span>
+    </div>
+    <h2 class="font-display font-800 text-3xl lg:text-4xl text-white mb-3">Five Trust Boundaries</h2>
+    <p class="font-body text-slate-400 text-base mb-12 max-w-2xl">
+      Every segment of every response is tagged with its epistemic status. The weakest boundary in a response dominates the response-level classification. No ambiguity about what's verified and what isn't.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div class="bento-card p-6 text-center">
+        <div class="tb-badge tb-confirmed mx-auto mb-3 justify-center" style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);">
+          <div class="w-2 h-2 rounded-full" style="background:#fbbf24;box-shadow:0 0 6px rgba(251,191,36,0.8);"></div>
+          CONFIRMED
+        </div>
+        <p class="font-body text-xs text-slate-400">Verified against authoritative source</p>
+      </div>
+      <div class="bento-card p-6 text-center">
+        <div class="tb-badge tb-executed mx-auto mb-3 justify-center" style="background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.3);">
+          <div class="w-2 h-2 rounded-full" style="background:#2dd4bf;box-shadow:0 0 6px rgba(45,212,191,0.8);"></div>
+          EXECUTED
+        </div>
+        <p class="font-body text-xs text-slate-400">Action ran with recorded result</p>
+      </div>
+      <div class="bento-card p-6 text-center">
+        <div class="tb-badge tb-retrieved mx-auto mb-3 justify-center" style="background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);">
+          <div class="w-2 h-2 rounded-full" style="background:#a78bfa;box-shadow:0 0 6px rgba(167,139,250,0.8);"></div>
+          RETRIEVED
+        </div>
+        <p class="font-body text-xs text-slate-400">Fetched from system of record</p>
+      </div>
+      <div class="bento-card p-6 text-center">
+        <div class="tb-badge tb-inferred mx-auto mb-3 justify-center" style="background:rgba(148,163,184,0.1);border:1px solid rgba(148,163,184,0.3);">
+          <div class="w-2 h-2 rounded-full" style="background:#94a3b8;box-shadow:0 0 6px rgba(148,163,184,0.8);"></div>
+          INFERRED
+        </div>
+        <p class="font-body text-xs text-slate-400">High-confidence inference, not verified</p>
+      </div>
+      <div class="bento-card p-6 text-center">
+        <div class="tb-badge tb-uncertain mx-auto mb-3 justify-center" style="background:rgba(120,113,108,0.1);border:1px solid rgba(120,113,108,0.3);">
+          <div class="w-2 h-2 rounded-full" style="background:#78716c;box-shadow:0 0 6px rgba(120,113,108,0.8);"></div>
+          UNCERTAIN
+        </div>
+        <p class="font-body text-xs text-slate-400">Limited evidence available</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════
+       CORE CAPABILITIES
+  ══════════════════════════════════════ -->
+  <section class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pb-24 scroll-reveal">
+
+    <div class="flex items-center gap-4 mb-4">
+      <div class="blue-line"></div>
+      <span class="font-display font-600 text-slate-500 text-sm tracking-widest uppercase">Capabilities</span>
+    </div>
+    <h2 class="font-display font-800 text-3xl lg:text-4xl text-white mb-3">What Makes Raptor Different</h2>
+    <p class="font-body text-slate-400 text-base mb-12 max-w-2xl">
+      Observability logs after the fact. Evals test capability. Raptor governs what's permitted to happen — deterministically, before it reaches the user.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+      <div class="feature-card">
+        <div class="w-12 h-12 rounded-xl bg-electric-blue/10 border border-electric-blue/25 flex items-center justify-center mb-5">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <span class="tag mb-3 inline-block">Immutable</span>
+        <h3 class="font-display font-700 text-xl text-white mb-3">Hash-Chained Audit</h3>
+        <p class="font-body text-slate-400 text-sm leading-relaxed">
+          SHA-256 hash chain across 11 append-only Postgres tables. Database-level triggers prevent UPDATE and DELETE — not application-level protection. Standalone verification without system access.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="w-12 h-12 rounded-xl bg-electric-blue/10 border border-electric-blue/25 flex items-center justify-center mb-5">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <span class="tag mb-3 inline-block">Deterministic</span>
+        <h3 class="font-display font-700 text-xl text-white mb-3">Proposal / Commit Split</h3>
+        <p class="font-body text-slate-400 text-sm leading-relaxed">
+          Hard architectural separation: AI proposes, deterministic core commits. Prevents prompt injection reaching execution, hallucination reaching operations, and unaudited side effects.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="w-12 h-12 rounded-xl bg-electric-blue/10 border border-electric-blue/25 flex items-center justify-center mb-5">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
+        <span class="tag mb-3 inline-block">Confirmation Gates</span>
+        <h3 class="font-display font-700 text-xl text-white mb-3">Human Authority</h3>
+        <p class="font-body text-slate-400 text-sm leading-relaxed">
+          Actions require explicit human confirmation before execution. The governance layer does not use AI to make governance decisions. AI generates content — everything else is rules-based.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="w-12 h-12 rounded-xl bg-electric-blue/10 border border-electric-blue/25 flex items-center justify-center mb-5">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+        </div>
+        <span class="tag mb-3 inline-block">Multi-Provider</span>
+        <h3 class="font-display font-700 text-xl text-white mb-3">4 AI Providers Unified</h3>
+        <p class="font-body text-slate-400 text-sm leading-relaxed">
+          Anthropic, OpenAI, Gemini, Together AI. Switching providers does not change governance, trust boundaries, or audit chain. Health monitoring with circuit breaker and auto-failover.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="w-12 h-12 rounded-xl bg-electric-blue/10 border border-electric-blue/25 flex items-center justify-center mb-5">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <span class="tag mb-3 inline-block">Signed</span>
+        <h3 class="font-display font-700 text-xl text-white mb-3">Ed25519 Policy Engine</h3>
+        <p class="font-body text-slate-400 text-sm leading-relaxed">
+          Cryptographically signed, versioned, append-only governance policies. Enforced or permissive modes. Visual policy editor with form-based rule builder and one-click sign + activate.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="w-12 h-12 rounded-xl bg-electric-blue/10 border border-electric-blue/25 flex items-center justify-center mb-5">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <span class="tag mb-3 inline-block">Isolated</span>
+        <h3 class="font-display font-700 text-xl text-white mb-3">Multi-Tenant Isolation</h3>
+        <p class="font-body text-slate-400 text-sm leading-relaxed">
+          PostgreSQL RLS on 30 tables with FORCE ROW LEVEL SECURITY — database-level, not application-level. Three roles: Owner, Admin, Member. Identity via Clerk SSO.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════
+       REGULATORY ALIGNMENT
+  ══════════════════════════════════════ -->
+  <section class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pb-24 scroll-reveal">
+
+    <div class="flex items-center gap-4 mb-4">
+      <div class="blue-line"></div>
+      <span class="font-display font-600 text-slate-500 text-sm tracking-widest uppercase">Compliance</span>
+    </div>
+    <h2 class="font-display font-800 text-3xl lg:text-4xl text-white mb-3">Regulatory Alignment</h2>
+    <p class="font-body text-slate-400 text-base mb-12 max-w-2xl">
+      Built for the regulatory frameworks that govern AI in production — federal, financial, healthcare, and international.
+    </p>
+
+    <div class="flex flex-wrap gap-3">
+      <div class="bento-card px-5 py-3 flex items-center gap-3">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#86efac" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span class="font-body text-sm text-slate-300">OMB M-25-21</span>
+      </div>
+      <div class="bento-card px-5 py-3 flex items-center gap-3">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#86efac" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span class="font-body text-sm text-slate-300">EU AI Act (Articles 9–17)</span>
+      </div>
+      <div class="bento-card px-5 py-3 flex items-center gap-3">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#86efac" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span class="font-body text-sm text-slate-300">SR 11-7</span>
+      </div>
+      <div class="bento-card px-5 py-3 flex items-center gap-3">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#86efac" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span class="font-body text-sm text-slate-300">HIPAA</span>
+      </div>
+      <div class="bento-card px-5 py-3 flex items-center gap-3">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#86efac" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span class="font-body text-sm text-slate-300">IL4 / IL5</span>
+      </div>
+      <div class="bento-card px-5 py-3 flex items-center gap-3">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#86efac" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span class="font-body text-sm text-slate-300">GDPR</span>
+      </div>
+      <div class="bento-card px-5 py-3 flex items-center gap-3">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#86efac" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span class="font-body text-sm text-slate-300">CCPA</span>
+      </div>
+      <div class="bento-card px-5 py-3 flex items-center gap-3">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#86efac" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span class="font-body text-sm text-slate-300">SDVOSB Certified</span>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════
+       PRICING
+  ══════════════════════════════════════ -->
+  <section class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pb-24 scroll-reveal">
+
+    <div class="flex items-center gap-4 mb-4">
+      <div class="blue-line"></div>
+      <span class="font-display font-600 text-slate-500 text-sm tracking-widest uppercase">Pricing</span>
+    </div>
+    <h2 class="font-display font-800 text-3xl lg:text-4xl text-white mb-3">Simple, Usage-Based Pricing</h2>
+    <p class="font-body text-slate-400 text-base mb-12 max-w-2xl">
+      Pay for governed responses. Provider cost pass-through plus a governance fee. No seats, no tiers, no surprises.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div class="bento-card p-8">
+        <span class="tag mb-4 inline-block">Infrastructure</span>
+        <h3 class="font-display font-700 text-2xl text-white mb-2">API / SDK / MCP</h3>
+        <div class="flex items-baseline gap-1 mb-4">
+          <span class="font-display font-800 text-4xl text-electric-blue">$0.012</span>
+          <span class="font-body text-slate-400 text-sm">/ governed response</span>
+        </div>
+        <p class="font-body text-slate-400 text-sm leading-relaxed mb-6">
+          Plus provider cost + 10%. $10 minimum credit purchase. No expiration.
+        </p>
+        <div class="space-y-2">
+          <div class="flex items-center gap-3 text-slate-300 text-sm"><div class="glow-bullet"></div>Full governance lifecycle per response</div>
+          <div class="flex items-center gap-3 text-slate-300 text-sm"><div class="glow-bullet"></div>Hash-chained audit trail included</div>
+          <div class="flex items-center gap-3 text-slate-300 text-sm"><div class="glow-bullet"></div>All 4 AI providers available</div>
+          <div class="flex items-center gap-3 text-slate-300 text-sm"><div class="glow-bullet"></div>32 REST API routes + TypeScript SDK</div>
+        </div>
+      </div>
+      <div class="bento-card p-8">
+        <span class="tag mb-4 inline-block">Workspace</span>
+        <h3 class="font-display font-700 text-2xl text-white mb-2">14-Day Trial</h3>
+        <div class="flex items-baseline gap-1 mb-4">
+          <span class="font-display font-800 text-4xl text-electric-blue">Free</span>
+        </div>
+        <p class="font-body text-slate-400 text-sm leading-relaxed mb-6">
+          500 governed responses, 1 seat. Full governance lifecycle. No credit card required.
+        </p>
+        <div class="space-y-2">
+          <div class="flex items-center gap-3 text-slate-300 text-sm"><div class="glow-bullet"></div>Full product access — no feature gating</div>
+          <div class="flex items-center gap-3 text-slate-300 text-sm"><div class="glow-bullet"></div>Trust boundaries, audit trail, policies</div>
+          <div class="flex items-center gap-3 text-slate-300 text-sm"><div class="glow-bullet"></div>Team plans from $250/mo after trial</div>
+          <div class="flex items-center gap-3 text-slate-300 text-sm"><div class="glow-bullet"></div>Design Partner program available</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════
+       CTA
+  ══════════════════════════════════════ -->
+  <section class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pb-28 scroll-reveal">
+    <div class="bento-card p-10 lg:p-14 text-center relative overflow-hidden"
+         style="background: linear-gradient(135deg, rgba(15,23,42,0.9) 0%, rgba(23,37,84,0.6) 100%);">
+      <div class="absolute inset-0 pointer-events-none"
+           style="background: radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.18) 0%, transparent 65%);"></div>
+      <div class="relative z-10">
+        <span class="tag mb-4 inline-block">Governed AI Infrastructure</span>
+        <h2 class="font-display font-800 text-3xl lg:text-4xl text-white mb-4">
+          Ready to Govern Your AI?
+        </h2>
+        <p class="font-body text-slate-400 text-lg max-w-2xl mx-auto mb-8">
+          Start a 14-day trial or talk to the founder. This is a technical conversation, not a sales call.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a href="https://raptor.harpyits.com" class="btn-contact px-8 py-3.5 rounded-xl text-base font-display font-700 text-white">
+            Launch Raptor
+          </a>
+          <a href="contact.html" class="px-8 py-3.5 rounded-xl text-base font-display font-600 text-slate-300 border border-slate-700 hover:border-blue-500 hover:text-white transition-all duration-300">
+            Talk to the Founder
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════
+       FOOTER
+  ══════════════════════════════════════ -->
+  <footer class="relative z-10 border-t border-slate-800/60 py-10 px-6 lg:px-10">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="flex items-center gap-2.5">
+        <span style="display:inline-flex;align-items:center;justify-content:center;background:#dbeafe;border-radius:6px;padding:2px;box-shadow:0 0 10px rgba(59,130,246,0.3),inset 0 0 0 1px rgba(147,197,253,0.5);"><img src="hits_logo.png" alt="HITS" class="h-7 w-auto" style="border-radius:4px;display:block;" onerror="this.parentElement.style.display='none';this.nextElementSibling.style.display='flex';" /></span>
+        <div style="display:none;" class="items-center gap-2">
+          <div class="w-7 h-7 rounded-md bg-electric-blue flex items-center justify-center shadow-[0_0_10px_rgba(59,130,246,0.5)]">
+            <span class="font-display font-800 text-white text-xs">H</span>
+          </div>
+          <span class="font-display font-600 text-white text-base tracking-tight">HITS</span>
+        </div>
+      </div>
+      <p class="font-body text-slate-600 text-sm">&copy; 2026 Harpy I.T. Solutions INC. All rights reserved.</p>
+      <div class="flex items-center gap-5">
+        <a href="about.html"   class="text-slate-600 hover:text-slate-400 text-sm transition-colors">About</a>
+        <a href="careers.html" class="text-slate-600 hover:text-slate-400 text-sm transition-colors">Careers</a>
+        <a href="contact.html" class="text-slate-600 hover:text-slate-400 text-sm transition-colors">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+
+  <script>
+    document.getElementById('menu-toggle').addEventListener('click', () => {
+      document.getElementById('mobile-menu').classList.toggle('open');
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+
+    const style = document.createElement('style');
+    style.textContent = `@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`;
+    document.head.appendChild(style);
+
+    const mobBtn = document.getElementById('mob-prod-btn');
+    if (mobBtn) {
+      mobBtn.addEventListener('click', () => {
+        mobBtn.classList.toggle('open');
+        document.getElementById('mob-prod-items').classList.toggle('open');
+      });
+    }
+  </script>
+</body>
+</html>
