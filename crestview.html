@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="hits_logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CrestView PDS — Audit-Grade Decision Records | HITS</title>
+  <meta name="description" content="CrestView PDS produces tamper-evident, cryptographically signed, externally verifiable decision records for DoD network planning.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'deep-slate': '#020617',
+            'electric-blue': '#3b82f6',
+            'blue-glow': '#60a5fa',
+            'blue-bright': '#93c5fd',
+          },
+          fontFamily: {
+            'display': ['Syne', 'sans-serif'],
+            'body': ['DM Sans', 'sans-serif'],
+            'mono': ['JetBrains Mono', 'monospace'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --blue: #3b82f6;
+      --blue-glow: #60a5fa;
+      --blue-dim: rgba(59,130,246,0.15);
+      --bg: #020617;
+      --card-bg: rgba(15,23,42,0.75);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background-color: var(--bg);
+      font-family: 'DM Sans', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Grain overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: 0.4;
+    }
+
+    /* ── Nav ── */
+    .nav-glass {
+      background: rgba(2,6,23,0.65);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid rgba(59,130,246,0.12);
+    }
+    .nav-link {
+      position: relative;
+      color: rgba(203,213,225,0.85);
+      font-size: 0.875rem; font-weight: 500;
+      letter-spacing: 0.02em;
+      transition: color 0.2s;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute; bottom: -3px; left: 0;
+      width: 0; height: 1px;
+      background: var(--blue);
+      transition: width 0.25s ease;
+    }
+    .nav-link:hover { color: #93c5fd; }
+    .nav-link:hover::after { width: 100%; }
+    .nav-link.active { color: #93c5fd; }
+    .nav-link.active::after { width: 100%; }
+
+    .btn-contact {
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      box-shadow: 0 0 20px rgba(59,130,246,0.4);
+      transition: box-shadow 0.3s, transform 0.2s;
+    }
+    .btn-contact:hover { box-shadow: 0 0 32px rgba(59,130,246,0.65); transform: translateY(-1px); }
+
+    /* ── Hero ── */
+    .hero-grid {
+      background-image:
+        linear-gradient(rgba(59,130,246,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,130,246,0.05) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .logo-glow-ring {
+      position: absolute; inset: -24px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(59,130,246,0.25) 0%, transparent 70%);
+      animation: ringPulse 3s ease-in-out infinite;
+    }
+    .logo-glow-ring-2 {
+      position: absolute; inset: -48px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(59,130,246,0.10) 0%, transparent 65%);
+      animation: ringPulse 3s ease-in-out infinite 0.8s;
+    }
+    @keyframes ringPulse {
+      0%,100% { transform: scale(1); opacity: 0.7; }
+      50%      { transform: scale(1.08); opacity: 1; }
+    }
+
+    .gradient-headline {
+      background: linear-gradient(135deg, #ffffff 0%, #e2eeff 35%, #93c5fd 65%, #3b82f6 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    /* ── Logo container ── */
+    .logo-frosted {
+      background: rgba(15,23,42,0.7);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(59,130,246,0.25);
+      border-radius: 24px;
+      padding: 36px;
+      position: relative;
+      overflow: hidden;
+    }
+    .logo-frosted::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* ── Cards ── */
+    .bento-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(59,130,246,0.15);
+      border-radius: 16px;
+      backdrop-filter: blur(12px);
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .bento-card:hover {
+      border-color: rgba(59,130,246,0.4);
+      box-shadow: 0 0 40px rgba(59,130,246,0.1);
+    }
+
+    .glow-bullet {
+      width: 7px; height: 7px;
+      background: var(--blue);
+      border-radius: 50%; flex-shrink: 0;
+      box-shadow: 0 0 8px 2px rgba(59,130,246,0.7);
+    }
+
+    .tag {
+      display: inline-flex; align-items: center;
+      padding: 3px 10px;
+      background: rgba(59,130,246,0.12);
+      border: 1px solid rgba(59,130,246,0.3);
+      border-radius: 999px;
+      font-size: 0.7rem; font-weight: 600;
+      letter-spacing: 0.08em; color: #93c5fd;
+      text-transform: uppercase;
+    }
+
+    .blue-line {
+      width: 48px; height: 2px;
+      background: linear-gradient(90deg, var(--blue), transparent);
+      border-radius: 2px;
+    }
+
+    /* ── Feature cards ── */
+    .feature-card {
+      background: rgba(15,23,42,0.6);
+      border: 1px solid rgba(59,130,246,0.15);
+      border-radius: 14px;
+      padding: 28px;
+      position: relative; overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    .feature-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(59,130,246,0.5), transparent);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .feature-card:hover { border-color: rgba(59,130,246,0.35); transform: translateY(-3px); }
+    .feature-card:hover::before { opacity: 1; }
+
+    /* ── Persona cards ── */
+    .persona-card {
+      background: rgba(15,23,42,0.6);
+      border: 1px solid rgba(59,130,246,0.13);
+      border-radius: 14px; padding: 26px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .persona-card:hover {
+      border-color: rgba(59,130,246,0.32);
+      box-shadow: 0 0 30px rgba(59,130,246,0.08);
+    }
+
+    /* ── Perf stat ── */
+    .perf-stat {
+      background: rgba(15,23,42,0.6);
+      border: 1px solid rgba(59,130,246,0.15);
+      border-radius: 14px;
+      padding: 28px;
+      text-align: center;
+      transition: border-color 0.3s;
+    }
+    .perf-stat:hover { border-color: rgba(59,130,246,0.35); }
+
+    /* ── Compare table ── */
+    .compare-table {
+      width: 100%; border-collapse: collapse;
+      background: rgba(15,23,42,0.6);
+      border: 1px solid rgba(59,130,246,0.15);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .compare-table th {
+      text-align: left; padding: 14px 16px;
+      font-size: 0.7rem; color: #60a5fa;
+      text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+      border-bottom: 1px solid rgba(59,130,246,0.15);
+      background: rgba(15,23,42,0.8);
+    }
+    .compare-table td {
+      padding: 12px 16px; font-size: 0.85rem;
+      border-bottom: 1px solid rgba(59,130,246,0.06);
+      color: #94a3b8;
+    }
+    .compare-table td:first-child { color: #e2e8f0; font-weight: 500; }
+    .compare-table .yes { color: #86efac; font-weight: 600; }
+    .compare-table .no { color: #64748b; }
+    .compare-table .partial { color: #fbbf24; }
+    .compare-table td:last-child { background: rgba(59,130,246,0.04); }
+    .compare-table th:last-child { background: rgba(59,130,246,0.08); }
+    .compare-table tr:hover td { background: rgba(59,130,246,0.03); }
+    .compare-table tr:hover td:last-child { background: rgba(59,130,246,0.07); }
+
+    /* ── Compliance badges ── */
+    .compliance-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 14px; border-radius: 10px;
+      background: rgba(59,130,246,0.06);
+      border: 1px solid rgba(59,130,246,0.15);
+      font-size: 0.82rem; color: #94a3b8;
+      transition: border-color 0.2s;
+    }
+    .compliance-badge:hover { border-color: rgba(59,130,246,0.3); color: #93c5fd; }
+
+    /* ── Animations ── */
+    .anim-1 { opacity:0; animation: fadeUp 0.7s ease 0.1s forwards; }
+    .anim-2 { opacity:0; animation: fadeUp 0.7s ease 0.25s forwards; }
+    .anim-3 { opacity:0; animation: fadeUp 0.7s ease 0.4s forwards; }
+    .anim-4 { opacity:0; animation: fadeUp 0.7s ease 0.55s forwards; }
+    .anim-5 { opacity:0; animation: fadeUp 0.7s ease 0.7s forwards; }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform: translateY(24px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+
+    /* Mobile menu */
+    #mobile-menu { display: none; }
+    #mobile-menu.open { display: block; }
+
+    /* Scroll fade-in */
+    .scroll-reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .scroll-reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── Products Dropdown ── */
+    .dropdown-wrap { position: relative; }
+    .dropdown-btn {
+      display: flex; align-items: center; gap: 5px;
+      color: rgba(203,213,225,0.85); font-size: .875rem; font-weight: 500;
+      letter-spacing: .02em; cursor: pointer; background: none; border: none;
+      padding: 0; transition: color .2s; font-family: 'DM Sans', sans-serif;
+      position: relative;
+    }
+    .dropdown-btn::after {
+      content: ''; position: absolute; bottom: -3px; left: 0;
+      width: 0; height: 1px; background: #3b82f6; transition: width .25s ease;
+    }
+    .dropdown-btn:hover, .dropdown-btn.active { color: #93c5fd; }
+    .dropdown-btn:hover::after, .dropdown-btn.active::after { width: calc(100% - 16px); }
+    .dropdown-btn svg { transition: transform .25s ease; flex-shrink: 0; }
+    .dropdown-wrap:hover .dropdown-btn svg,
+    .dropdown-wrap.open .dropdown-btn svg { transform: rotate(180deg); }
+    .dropdown-menu {
+      position: absolute; top: 100%; left: 50%; padding-top: 12px;
+      transform: translateX(-50%) scale(0.95);
+      min-width: 230px; z-index: 100;
+      background: transparent;
+      opacity: 0; pointer-events: none;
+      transform-origin: top center;
+      transition: opacity .22s ease, transform .22s ease;
+    }
+    .dropdown-menu-inner {
+      background: rgba(7,12,28,0.92);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid rgba(59,130,246,0.22);
+      border-radius: 14px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(59,130,246,0.08);
+      padding: 8px;
+    }
+    .dropdown-wrap:hover .dropdown-menu,
+    .dropdown-wrap.open .dropdown-menu {
+      opacity: 1; pointer-events: auto;
+      transform: translateX(-50%) scale(1);
+    }
+    .dropdown-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 8px;
+      font-family: 'DM Sans', sans-serif; font-size: .85rem; font-weight: 500;
+      color: rgba(203,213,225,0.85); text-decoration: none;
+      transition: background .18s, color .18s; white-space: nowrap;
+    }
+    .dropdown-item:hover { background: rgba(59,130,246,0.1); color: #93c5fd; }
+    .dropdown-item .d-icon {
+      width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.22);
+    }
+    .dropdown-divider { height: 1px; background: rgba(59,130,246,0.1); margin: 6px 4px; }
+    .mob-dropdown-items { display: none; padding-left: 14px; margin-top: 4px; }
+    .mob-dropdown-items.open { display: flex; flex-direction: column; gap: 2px; }
+    .mob-dropdown-btn {
+      display: flex; align-items: center; justify-content: space-between;
+      color: rgba(203,213,225,0.85); font-size: 1rem; font-weight: 500;
+      background: none; border: none; padding: 0; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; width: 100%;
+    }
+    .mob-dropdown-btn svg { transition: transform .25s; }
+    .mob-dropdown-btn.open svg { transform: rotate(180deg); }
+  </style>
+</head>
+
+<body class="text-slate-100 relative">
+
+  <!-- ══════════════════════════════════════
+       STICKY FROSTED-GLASS NAVIGATION
+  ══════════════════════════════════════ -->
+  <header class="nav-glass fixed top-0 inset-x-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-16">
+
+      <!-- Logo -->
+      <a href="index.html" class="flex items-center gap-2.5 group">
+        <div class="relative flex items-center justify-center" style="width:36px;height:36px;">
+          <div style="position:absolute;inset:-7px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,0.28) 0%,transparent 68%);pointer-events:none;z-index:0;"></div>
+          <div style="position:absolute;inset:-1px;border-radius:10px;border:1px solid rgba(96,165,250,0.55);background:transparent;pointer-events:none;z-index:3;box-shadow:0 0 14px rgba(59,130,246,0.3);"></div>
+          <div style="position:relative;z-index:2;border-radius:7px;overflow:hidden;width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#dbeafe;box-shadow:inset 0 0 0 1px rgba(147,197,253,0.6);">
+            <img src="hits_logo.png" alt="HITS" class="h-7 w-auto" style="border-radius:5px;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+          </div>
+          <div style="display:none;position:relative;z-index:2;" class="w-8 h-8 rounded-md bg-electric-blue items-center justify-center shadow-[0_0_14px_rgba(59,130,246,0.7)]">
+            <span class="font-display font-800 text-white text-sm">H</span>
+          </div>
+        </div>
+        <span class="font-display font-700 text-white text-lg tracking-tight">HITS</span>
+      </a>
+
+      <!-- Desktop Nav -->
+      <nav class="hidden md:flex items-center gap-7 font-body">
+        <a href="index.html"      class="nav-link">Home</a>
+        <div class="dropdown-wrap">
+          <button class="dropdown-btn active">
+            Products
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="dropdown-menu"><div class="dropdown-menu-inner">
+            <a href="products.html" class="dropdown-item">
+              <span class="d-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+              Product Hub
+            </a>
+            <div class="dropdown-divider"></div>
+            <a href="product.html" class="dropdown-item">
+              <span class="d-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></span>
+              Harpy Talon
+            </a>
+            <a href="entente.html" class="dropdown-item">
+              <span class="d-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+              Entente
+            </a>
+            <a href="https://raptor.harpyits.com" class="dropdown-item">
+              <span class="d-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span>
+              Raptor
+            </a>
+            <a href="crestview.html" class="dropdown-item" style="background:rgba(59,130,246,.1);color:#93c5fd;">
+              <span class="d-icon" style="border-color:rgba(59,130,246,.4);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+              CrestView PDS
+            </a>
+          </div></div>
+        </div>
+        <a href="services.html"   class="nav-link">Services</a>
+        <a href="government.html" class="nav-link">Government</a>
+        <a href="about.html"      class="nav-link">About</a>
+        <a href="careers.html"    class="nav-link">Careers</a>
+        <a href="news.html"       class="nav-link">News</a>
+        <a href="docs.html"       class="nav-link">Docs</a>
+      </nav>
+
+      <div class="hidden md:flex items-center">
+        <a href="contact.html" class="btn-contact px-5 py-2 rounded-lg text-sm font-display font-600 text-white tracking-wide">
+          Contact Us
+        </a>
+      </div>
+
+      <button id="menu-toggle" class="md:hidden flex flex-col gap-1.5 p-1" aria-label="Toggle menu">
+        <span class="w-5 h-0.5 bg-slate-300 block"></span>
+        <span class="w-5 h-0.5 bg-slate-300 block"></span>
+        <span class="w-5 h-0.5 bg-slate-300 block"></span>
+      </button>
+    </div>
+
+    <div id="mobile-menu" class="md:hidden px-6 pb-5 pt-2 flex flex-col gap-4 font-body border-t border-white/5">
+      <a href="index.html"      class="nav-link text-base">Home</a>
+      <div>
+        <button class="mob-dropdown-btn" id="mob-prod-btn">
+          Products
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="mob-dropdown-items" id="mob-prod-items">
+          <a href="products.html" class="dropdown-item" style="padding:8px 10px;font-size:.9rem;">Product Hub</a>
+          <a href="product.html"  class="dropdown-item" style="padding:8px 10px;font-size:.9rem;">Harpy Talon</a>
+          <a href="entente.html"  class="dropdown-item" style="padding:8px 10px;font-size:.9rem;">Entente</a>
+          <a href="https://raptor.harpyits.com" class="dropdown-item" style="padding:8px 10px;font-size:.9rem;">Raptor</a>
+          <a href="crestview.html" class="dropdown-item" style="padding:8px 10px;font-size:.9rem;color:#93c5fd;">CrestView PDS</a>
+        </div>
+      </div>
+      <a href="services.html"   class="nav-link text-base">Services</a>
+      <a href="government.html" class="nav-link text-base">Government</a>
+      <a href="about.html"      class="nav-link text-base">About</a>
+      <a href="careers.html"    class="nav-link text-base">Careers</a>
+      <a href="news.html"       class="nav-link text-base">News</a>
+      <a href="docs.html"       class="nav-link text-base">Docs</a>
+      <a href="contact.html"    class="btn-contact px-5 py-2.5 rounded-lg text-sm font-display font-600 text-white text-center">Contact Us</a>
+    </div>
+  </header>
+
+
+  <!-- ══════════════════════════════════════
+       HERO SECTION
+  ══════════════════════════════════════ -->
+  <section class="relative min-h-screen flex items-center px-6 pt-24 pb-20 overflow-hidden hero-grid">
+
+    <!-- Ambient glow -->
+    <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-[900px] h-[500px] pointer-events-none"
+         style="background: radial-gradient(ellipse, rgba(59,130,246,0.12) 0%, transparent 70%);">
+    </div>
+
+    <div class="relative z-10 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+
+      <!-- Left: Copy -->
+      <div>
+        <div class="anim-1 flex items-center gap-3 mb-6">
+          <span class="tag">CrestView PDS · Decision Records</span>
+          <span class="tag" style="background:rgba(34,197,94,0.1); border-color:rgba(34,197,94,0.3); color:#86efac;">Live</span>
+        </div>
+
+        <h1 class="anim-2 font-display font-800 text-4xl sm:text-5xl lg:text-[3.4rem] leading-[1.05] tracking-tight mb-6">
+          <span class="gradient-headline">Audit-Grade Decision</span><br />
+          <span class="gradient-headline">Records for</span><br />
+          <span class="text-white">DoD Network</span>
+          <span class="text-electric-blue"> Planning.</span>
+        </h1>
+
+        <p class="anim-3 font-body text-lg text-slate-400 leading-relaxed max-w-xl mb-8">
+          CrestView PDS produces tamper-evident, cryptographically signed, externally verifiable decision records as the primary deliverable — not a side effect of network operations.
+        </p>
+
+        <!-- Stats row -->
+        <div class="anim-4 flex flex-wrap gap-6 mb-10">
+          <div>
+            <p class="font-display font-800 text-3xl text-white">181ms</p>
+            <p class="text-xs text-slate-500 mt-0.5 uppercase tracking-widest">15K Node Import</p>
+          </div>
+          <div class="w-px bg-slate-800 self-stretch"></div>
+          <div>
+            <p class="font-display font-800 text-3xl text-white">5,413</p>
+            <p class="text-xs text-slate-500 mt-0.5 uppercase tracking-widest">Audit Chain / sec</p>
+          </div>
+          <div class="w-px bg-slate-800 self-stretch"></div>
+          <div>
+            <p class="font-display font-800 text-3xl text-white">cATO</p>
+            <p class="text-xs text-slate-500 mt-0.5 uppercase tracking-widest">Ready</p>
+          </div>
+        </div>
+
+        <div class="anim-5 flex flex-col sm:flex-row gap-4">
+          <a href="https://crestview.harpyits.com" class="btn-contact px-7 py-3.5 rounded-xl text-base font-display font-700 text-white text-center">
+            Launch CrestView PDS
+          </a>
+          <a href="#capabilities" class="px-7 py-3.5 rounded-xl text-base font-display font-600 text-slate-300 border border-slate-700 hover:border-blue-500 hover:text-white transition-all duration-300 text-center">
+            See Capabilities ↓
+          </a>
+        </div>
+      </div>
+
+      <!-- Right: Logo showcase with frosted-glass + glow -->
+      <div class="anim-3 flex justify-center lg:justify-end">
+        <div class="relative flex items-center justify-center" style="width:340px; height:340px;">
+          <div class="logo-glow-ring-2"></div>
+          <div class="logo-glow-ring"></div>
+
+          <div class="logo-frosted w-72 h-72 flex items-center justify-center relative z-10">
+            <div class="absolute inset-0 rounded-3xl opacity-20"
+                 style="background: conic-gradient(from 0deg, #3b82f6, transparent, #3b82f6, transparent); animation: spin 8s linear infinite; border-radius: 24px;">
+            </div>
+
+            <div class="relative flex items-center justify-center">
+              <div style="position:absolute;inset:-32px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,0.22) 0%,transparent 70%);pointer-events:none;z-index:0;"></div>
+              <div class="relative overflow-hidden"
+                   style="background:rgba(15,23,42,0.82);
+                          backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+                          border:1px solid rgba(59,130,246,0.35);
+                          border-radius:24px;
+                          padding:24px;
+                          box-shadow:0 0 32px rgba(59,130,246,0.18),
+                                     0 16px 48px rgba(0,0,0,0.55),
+                                     inset 0 1px 0 rgba(255,255,255,0.07);
+                          z-index:1;">
+                <div style="position:absolute;top:8px;left:8px;width:12px;height:12px;border-top:2px solid rgba(59,130,246,0.6);border-left:2px solid rgba(59,130,246,0.6);border-radius:2px 0 0 0;"></div>
+                <div style="position:absolute;top:8px;right:8px;width:12px;height:12px;border-top:2px solid rgba(59,130,246,0.6);border-right:2px solid rgba(59,130,246,0.6);border-radius:0 2px 0 0;"></div>
+                <div style="position:absolute;bottom:8px;left:8px;width:12px;height:12px;border-bottom:2px solid rgba(59,130,246,0.6);border-left:2px solid rgba(59,130,246,0.6);border-radius:0 0 0 2px;"></div>
+                <div style="position:absolute;bottom:8px;right:8px;width:12px;height:12px;border-bottom:2px solid rgba(59,130,246,0.6);border-right:2px solid rgba(59,130,246,0.6);border-radius:0 0 2px 0;"></div>
+
+                <div style="display:inline-block;
+                            border-radius:14px;
+                            padding:8px;
+                            box-shadow:0 0 0 1px rgba(147,197,253,0.5),
+                                       0 0 24px rgba(59,130,246,0.25),
+                                       0 8px 24px rgba(0,0,0,0.4);">
+                  <img src="crestview_pds_logo.png" alt="CrestView PDS"
+                       class="w-40 h-auto"
+                       style="display:block;border-radius:8px;"
+                       onerror="this.style.display='none'; document.getElementById('crestview-fallback').style.display='flex';" />
+                </div>
+                <!-- Fallback icon -->
+                <div id="crestview-fallback" style="display:none;" class="flex flex-col items-center gap-3 relative z-10">
+                  <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="#3b82f6" stroke-width="1.5" fill="rgba(59,130,246,0.1)"/>
+                    <polyline points="9 22 9 12 15 12 15 22" stroke="#60a5fa" stroke-width="1.5" fill="none"/>
+                  </svg>
+                  <span class="font-display font-800 text-xl text-white tracking-wider">CRESTVIEW</span>
+                  <span class="font-body text-xs text-electric-blue tracking-widest uppercase">Decision Records</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="absolute top-4 left-4 w-8 h-8 border-t-2 border-l-2 border-electric-blue/40 rounded-tl-lg"></div>
+          <div class="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-electric-blue/40 rounded-tr-lg"></div>
+          <div class="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-l-2 border-electric-blue/40 rounded-bl-lg"></div>
+          <div class="absolute bottom-4 right-4 w-8 h-8 border-b-2 border-r-2 border-electric-blue/40 rounded-br-lg"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════
+       KEY CAPABILITIES
+  ══════════════════════════════════════ -->
+  <section id="capabilities" class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 py-24 scroll-reveal">
+
+    <div class="flex items-center gap-4 mb-4">
+      <div class="blue-line"></div>
+      <span class="font-display font-600 text-slate-500 text-sm tracking-widest uppercase">Capabilities</span>
+    </div>
+    <h2 class="font-display font-800 text-3xl lg:text-4xl text-white mb-3">Decision Records as the Primary Deliverable</h2>
+    <p class="font-body text-slate-400 text-base mb-12 max-w-2xl">
+      Everything — topology, discovery, proposals, scoring, workflow integration — serves the production of defensible decisions.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+      <div class="feature-card">
+        <div class="w-12 h-12 rounded-xl bg-electric-blue/10 border border-electric-blue/25 flex items-center justify-center mb-5">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <span class="tag mb-3 inline-block">Tamper-Evident</span>
+        <h3 class="font-display font-700 text-xl text-white mb-3">Audit Trail</h3>
+        <p class="font-body text-slate-400 text-sm leading-relaxed">
+          Hash-chained, signed, append-only records. Database-level triggers enforce immutability. Standalone verification tool allows independent verification without system access.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="w-12 h-12 rounded-xl bg-electric-blue/10 border border-electric-blue/25 flex items-center justify-center mb-5">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+        </div>
+        <span class="tag mb-3 inline-block">Deterministic</span>
+        <h3 class="font-display font-700 text-xl text-white mb-3">Optimization Engine</h3>
+        <p class="font-body text-slate-400 text-sm leading-relaxed">
+          Ranked proposals via Pareto frontier, integer programming, and constraint propagation. Same inputs produce byte-identical output — verified across 250 test runs.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="w-12 h-12 rounded-xl bg-electric-blue/10 border border-electric-blue/25 flex items-center justify-center mb-5">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+        </div>
+        <span class="tag mb-3 inline-block">Vendor-Neutral</span>
+        <h3 class="font-display font-700 text-xl text-white mb-3">Multi-Vendor Support</h3>
+        <p class="font-body text-slate-400 text-sm leading-relaxed">
+          Vendor-neutral topology model supporting Ciena, Nokia, Cisco, and Infinera equipment in a single deployment. No vendor lock-in.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="w-12 h-12 rounded-xl bg-electric-blue/10 border border-electric-blue/25 flex items-center justify-center mb-5">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <span class="tag mb-3 inline-block">Disconnected</span>
+        <h3 class="font-display font-700 text-xl text-white mb-3">Air-Gap Ready</h3>
+        <p class="font-body text-slate-400 text-sm leading-relaxed">
+          Four deployment profiles: standalone, VM-native, OpenShift, RKE2. Node-count licensing via signed artifacts — no phone-home requirement.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="w-12 h-12 rounded-xl bg-electric-blue/10 border border-electric-blue/25 flex items-center justify-center mb-5">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
+        <span class="tag mb-3 inline-block">Continuous</span>
+        <h3 class="font-display font-700 text-xl text-white mb-3">cATO Ready</h3>
+        <p class="font-body text-slate-400 text-sm leading-relaxed">
+          Continuous evidence emission via OpenTelemetry. Self-attestation across 8 check types. 42 STIG controls assessed across 4 STIGs. FISMA Moderate baseline.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="w-12 h-12 rounded-xl bg-electric-blue/10 border border-electric-blue/25 flex items-center justify-center mb-5">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <span class="tag mb-3 inline-block">Human Authority</span>
+        <h3 class="font-display font-700 text-xl text-white mb-3">Human-Only Decisions</h3>
+        <p class="font-body text-slate-400 text-sm leading-relaxed">
+          AI systems can submit proposals but architecturally cannot commit decisions. Enforced in code, not policy. The human planner always decides.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════
+       PERFORMANCE BENCHMARKS
+  ══════════════════════════════════════ -->
+  <section class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pb-24 scroll-reveal">
+
+    <div class="flex items-center gap-4 mb-4">
+      <div class="blue-line"></div>
+      <span class="font-display font-600 text-slate-500 text-sm tracking-widest uppercase">Performance</span>
+    </div>
+    <h2 class="font-display font-800 text-3xl lg:text-4xl text-white mb-3">DISA-Scale Benchmarked</h2>
+    <p class="font-body text-slate-400 text-base mb-12 max-w-2xl">
+      All metrics measured against a 15,000-node topology matching DISN operational scale. Memory footprint verified at 57 MB.
+    </p>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
+      <div class="perf-stat">
+        <p class="font-display font-800 text-3xl text-electric-blue">181</p>
+        <p class="font-mono text-sm text-blue-glow mt-1">ms</p>
+        <p class="font-body text-sm text-slate-400 mt-3">Topology import (15K nodes)</p>
+      </div>
+      <div class="perf-stat">
+        <p class="font-display font-800 text-3xl text-electric-blue">20</p>
+        <p class="font-mono text-sm text-blue-glow mt-1">&mu;s</p>
+        <p class="font-body text-sm text-slate-400 mt-3">Pathfinding (10 hops)</p>
+      </div>
+      <div class="perf-stat">
+        <p class="font-display font-800 text-3xl text-electric-blue">469</p>
+        <p class="font-mono text-sm text-blue-glow mt-1">&mu;s</p>
+        <p class="font-body text-sm text-slate-400 mt-3">Proposal generation</p>
+      </div>
+      <div class="perf-stat">
+        <p class="font-display font-800 text-3xl text-electric-blue">5,413</p>
+        <p class="font-mono text-sm text-blue-glow mt-1">/sec</p>
+        <p class="font-body text-sm text-slate-400 mt-3">Audit chain throughput</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════
+       COMPETITIVE COMPARISON
+  ══════════════════════════════════════ -->
+  <section class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pb-24 scroll-reveal">
+
+    <div class="flex items-center gap-4 mb-4">
+      <div class="blue-line"></div>
+      <span class="font-display font-600 text-slate-500 text-sm tracking-widest uppercase">Comparison</span>
+    </div>
+    <h2 class="font-display font-800 text-3xl lg:text-4xl text-white mb-3">The Capability Gap Is Structural</h2>
+    <p class="font-body text-slate-400 text-base mb-12 max-w-2xl">
+      CrestView PDS occupies a position no existing tool does: audit-grade decision records with multi-vendor support, deterministic optimization, and air-gap operability.
+    </p>
+
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Vendor NMS</th>
+          <th>Excel + Visio</th>
+          <th>CrestView PDS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Audit-grade decision records</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td></tr>
+        <tr><td>Multi-vendor topology</td><td class="no">Single vendor</td><td class="partial">Manual</td><td class="yes">Yes</td></tr>
+        <tr><td>Deterministic optimization</td><td class="partial">Vendor-specific</td><td class="no">None</td><td class="yes">Yes</td></tr>
+        <tr><td>Air-gap deployment</td><td class="partial">Limited</td><td class="no">N/A</td><td class="yes">Yes</td></tr>
+        <tr><td>cATO readiness</td><td class="partial">Varies</td><td class="no">No</td><td class="yes">Yes</td></tr>
+        <tr><td>External verification</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td></tr>
+        <tr><td>Node-count licensing</td><td class="no">Per-vendor</td><td class="no">N/A</td><td class="yes">Yes</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+
+  <!-- ══════════════════════════════════════
+       PERSONAS
+  ══════════════════════════════════════ -->
+  <section class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pb-24 scroll-reveal">
+
+    <div class="flex items-center gap-4 mb-4">
+      <div class="blue-line"></div>
+      <span class="font-display font-600 text-slate-500 text-sm tracking-widest uppercase">Built For</span>
+    </div>
+    <h2 class="font-display font-800 text-3xl lg:text-4xl text-white mb-3">Every Role in the Decision Lifecycle</h2>
+    <p class="font-body text-slate-400 text-base mb-12 max-w-2xl">
+      CrestView PDS serves everyone who touches a network planning decision — from the planner who makes it to the auditor who reviews it years later.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="persona-card">
+        <span class="tag mb-3 inline-block">Primary</span>
+        <h3 class="font-display font-700 text-lg text-white mb-3">Network Planner</h3>
+        <p class="font-body text-slate-400 text-sm leading-relaxed">
+          Record decisions once, defend them forever. Deterministic optimization removes second-guessing. Keyboard-first workflows respect your expertise.
+        </p>
+      </div>
+      <div class="persona-card">
+        <span class="tag mb-3 inline-block">Reviewer</span>
+        <h3 class="font-display font-700 text-lg text-white mb-3">CAB Member</h3>
+        <p class="font-body text-slate-400 text-sm leading-relaxed">
+          Standardized review packages with alternatives evaluated transparently. Spend 10–30 minutes approving, not hours digging for documentation.
+        </p>
+      </div>
+      <div class="persona-card">
+        <span class="tag mb-3 inline-block">Auditor</span>
+        <h3 class="font-display font-700 text-lg text-white mb-3">IG Investigator</h3>
+        <p class="font-body text-slate-400 text-sm leading-relaxed">
+          Verify any past decision without CrestView access. Standalone verification tool. Cryptographic proof the record hasn't been tampered with.
+        </p>
+      </div>
+      <div class="persona-card">
+        <span class="tag mb-3 inline-block">Executor</span>
+        <h3 class="font-display font-700 text-lg text-white mb-3">Operations Team</h3>
+        <p class="font-body text-slate-400 text-sm leading-relaxed">
+          Clear implementation instructions with rollback procedures. ServiceNow integration for change ticket creation. No ambiguity.
+        </p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════
+       COMPLIANCE POSTURE
+  ══════════════════════════════════════ -->
+  <section class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pb-24 scroll-reveal">
+
+    <div class="flex items-center gap-4 mb-4">
+      <div class="blue-line"></div>
+      <span class="font-display font-600 text-slate-500 text-sm tracking-widest uppercase">Compliance</span>
+    </div>
+    <h2 class="font-display font-800 text-3xl lg:text-4xl text-white mb-3">Accreditation-Ready From Day One</h2>
+    <p class="font-body text-slate-400 text-base mb-12 max-w-2xl">
+      Built for classified enclaves. Every cryptographic, access control, and audit requirement is addressed in the architecture — not bolted on after.
+    </p>
+
+    <div class="flex flex-wrap gap-3">
+      <div class="compliance-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#86efac" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> FISMA Moderate</div>
+      <div class="compliance-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#86efac" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> cATO Ready</div>
+      <div class="compliance-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#86efac" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> FIPS 140-3</div>
+      <div class="compliance-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#86efac" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> CNSA 2.0</div>
+      <div class="compliance-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#86efac" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> PQC-Ready</div>
+      <div class="compliance-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#86efac" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> NIST SP 800-53 Rev 5</div>
+      <div class="compliance-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#86efac" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> IPv6 Baseline</div>
+      <div class="compliance-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#86efac" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> STIG Compliant (42 Controls)</div>
+      <div class="compliance-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#86efac" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> PPSM Documented</div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════
+       ARCHITECTURE
+  ══════════════════════════════════════ -->
+  <section class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pb-24 scroll-reveal">
+
+    <div class="flex items-center gap-4 mb-4">
+      <div class="blue-line"></div>
+      <span class="font-display font-600 text-slate-500 text-sm tracking-widest uppercase">Architecture</span>
+    </div>
+    <h2 class="font-display font-800 text-3xl lg:text-4xl text-white mb-3">11 Subsystems. Zero External Dependencies.</h2>
+    <p class="font-body text-slate-400 text-base mb-12 max-w-2xl">
+      Built in Go for single-binary deployment. PostgreSQL for persistence. No middleware, no message queues, no microservice sprawl.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+      <div class="bento-card p-7">
+        <div class="space-y-3">
+          <div class="flex justify-between text-sm"><span class="text-slate-400">Language</span><span class="text-white font-medium">Go 1.26+</span></div>
+          <div class="flex justify-between text-sm"><span class="text-slate-400">Database</span><span class="text-white font-medium">PostgreSQL 17 (Iron Bank)</span></div>
+          <div class="flex justify-between text-sm"><span class="text-slate-400">Cryptography</span><span class="text-white font-medium">FIPS 140-3 / CNSA 2.0</span></div>
+          <div class="flex justify-between text-sm"><span class="text-slate-400">Secrets</span><span class="text-white font-medium">Vault Enterprise</span></div>
+          <div class="flex justify-between text-sm"><span class="text-slate-400">Observability</span><span class="text-white font-medium">OpenTelemetry</span></div>
+        </div>
+      </div>
+      <div class="bento-card p-7">
+        <div class="space-y-3">
+          <div class="flex justify-between text-sm"><span class="text-slate-400">Container Base</span><span class="text-white font-medium">Alpine 3.20 (non-root)</span></div>
+          <div class="flex justify-between text-sm"><span class="text-slate-400">Build Pipeline</span><span class="text-white font-medium">Platform One Big Bang</span></div>
+          <div class="flex justify-between text-sm"><span class="text-slate-400">Authentication</span><span class="text-white font-medium">PKI / CAC / RADIUS / TACACS+</span></div>
+          <div class="flex justify-between text-sm"><span class="text-slate-400">RBAC Roles</span><span class="text-white font-medium">12 roles</span></div>
+          <div class="flex justify-between text-sm"><span class="text-slate-400">Network Posture</span><span class="text-white font-medium">Read-only (never pushes config)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bento-card p-5 text-center">
+        <h4 class="font-display font-700 text-white text-sm mb-1">Standalone</h4>
+        <p class="font-body text-slate-500 text-xs">systemd unit. Evaluation, pilot, training.</p>
+      </div>
+      <div class="bento-card p-5 text-center">
+        <h4 class="font-display font-700 text-white text-sm mb-1">VM-Native</h4>
+        <p class="font-body text-slate-500 text-xs">Multi-tier. DISA GMS, mid-sized enterprise.</p>
+      </div>
+      <div class="bento-card p-5 text-center">
+        <h4 class="font-display font-700 text-white text-sm mb-1">OpenShift</h4>
+        <p class="font-body text-slate-500 text-xs">Platform One environments.</p>
+      </div>
+      <div class="bento-card p-5 text-center">
+        <h4 class="font-display font-700 text-white text-sm mb-1">RKE2</h4>
+        <p class="font-body text-slate-500 text-xs">Tactical environments.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════
+       CTA BANNER
+  ══════════════════════════════════════ -->
+  <section class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pb-28 scroll-reveal">
+    <div class="bento-card p-10 lg:p-14 text-center relative overflow-hidden"
+         style="background: linear-gradient(135deg, rgba(15,23,42,0.9) 0%, rgba(23,37,84,0.6) 100%);">
+      <div class="absolute inset-0 pointer-events-none"
+           style="background: radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.18) 0%, transparent 65%);">
+      </div>
+      <div class="relative z-10">
+        <span class="tag mb-4 inline-block">Get Started</span>
+        <h2 class="font-display font-800 text-3xl lg:text-4xl text-white mb-4">
+          Ready to Make Every Decision Defensible?
+        </h2>
+        <p class="font-body text-slate-400 text-lg max-w-2xl mx-auto mb-8">
+          Node-count tier licensing. 90-day evaluation at no cost for up to 100 nodes. OTA, GSA Schedule (pending), and direct contract vehicles available.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a href="https://crestview.harpyits.com" class="btn-contact px-8 py-3.5 rounded-xl text-base font-display font-700 text-white">
+            Launch CrestView PDS
+          </a>
+          <a href="contact.html" class="px-8 py-3.5 rounded-xl text-base font-display font-600 text-slate-300 border border-slate-700 hover:border-blue-500 hover:text-white transition-all duration-300">
+            Request Evaluation
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════
+       FOOTER
+  ══════════════════════════════════════ -->
+  <footer class="relative z-10 border-t border-slate-800/60 py-10 px-6 lg:px-10">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="flex items-center gap-2.5">
+        <span style="display:inline-flex;align-items:center;justify-content:center;background:#dbeafe;border-radius:6px;padding:2px;box-shadow:0 0 10px rgba(59,130,246,0.3),inset 0 0 0 1px rgba(147,197,253,0.5);"><img src="hits_logo.png" alt="HITS" class="h-7 w-auto" style="border-radius:4px;display:block;" onerror="this.parentElement.style.display='none';this.nextElementSibling.style.display='flex';" /></span>
+        <div style="display:none;" class="items-center gap-2">
+          <div class="w-7 h-7 rounded-md bg-electric-blue flex items-center justify-center shadow-[0_0_10px_rgba(59,130,246,0.5)]">
+            <span class="font-display font-800 text-white text-xs">H</span>
+          </div>
+          <span class="font-display font-600 text-white text-base tracking-tight">HITS</span>
+        </div>
+      </div>
+      <p class="font-body text-slate-600 text-sm">&copy; 2026 Harpy I.T. Solutions INC. All rights reserved.</p>
+      <div class="flex items-center gap-5">
+        <a href="about.html"   class="text-slate-600 hover:text-slate-400 text-sm transition-colors">About</a>
+        <a href="careers.html" class="text-slate-600 hover:text-slate-400 text-sm transition-colors">Careers</a>
+        <a href="contact.html" class="text-slate-600 hover:text-slate-400 text-sm transition-colors">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+
+  <script>
+    // Mobile menu
+    document.getElementById('menu-toggle').addEventListener('click', () => {
+      document.getElementById('mobile-menu').classList.toggle('open');
+    });
+
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+
+    // CSS for spin animation
+    const style = document.createElement('style');
+    style.textContent = `@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`;
+    document.head.appendChild(style);
+
+    // Products mobile dropdown
+    const mobBtn = document.getElementById('mob-prod-btn');
+    if (mobBtn) {
+      mobBtn.addEventListener('click', () => {
+        mobBtn.classList.toggle('open');
+        document.getElementById('mob-prod-items').classList.toggle('open');
+      });
+    }
+  </script>
+</body>
+</html>
