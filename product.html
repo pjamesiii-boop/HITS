@@ -173,6 +173,44 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
+    /* ── Autopilot hero sequence (watch a bid build itself) ── */
+    .ap-panel {
+      background: rgba(15,23,42,0.82);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(59,130,246,0.30);
+      border-radius: 20px;
+      box-shadow: 0 0 40px rgba(59,130,246,0.14), 0 20px 60px rgba(0,0,0,0.55);
+    }
+    .ap-step { opacity: 0.3; animation: apReveal 11s ease-in-out infinite; }
+    .ap-step:nth-child(1) { animation-delay: 0.2s; }
+    .ap-step:nth-child(2) { animation-delay: 1.8s; }
+    .ap-step:nth-child(3) { animation-delay: 3.4s; }
+    .ap-step:nth-child(4) { animation-delay: 5.0s; }
+    .ap-step:nth-child(5) { animation-delay: 6.6s; }
+    @keyframes apReveal {
+      0%   { opacity: 0.3; }
+      6%   { opacity: 1; }
+      82%  { opacity: 1; }
+      92%  { opacity: 0.3; }
+      100% { opacity: 0.3; }
+    }
+    .ap-node {
+      width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; font-weight: 500;
+      background: rgba(59,130,246,0.14);
+      border: 1px solid rgba(59,130,246,0.4);
+      color: #93c5fd;
+    }
+    .ap-step.ap-go .ap-node {
+      background: rgba(34,197,94,0.16);
+      border-color: rgba(34,197,94,0.55);
+      color: #86efac;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .ap-step { opacity: 1 !important; animation: none !important; }
+    }
+
     /* ── Cards ── */
     .bento-card {
       background: var(--card-bg);
@@ -547,21 +585,23 @@
       <!-- Left: Copy -->
       <div>
         <div class="anim-1 flex items-center gap-3 mb-6">
+          <span class="tag">Autopilot</span>
           <span class="tag">Harpy Talon PDLC</span>
           <span class="tag" style="background:rgba(34,197,94,0.1); border-color:rgba(34,197,94,0.3); color:#86efac;">v1.0 Live</span>
         </div>
 
         <h1 class="anim-2 font-display font-800 text-4xl sm:text-5xl lg:text-[3.4rem] leading-[1.05] tracking-tight mb-6">
-          <span class="gradient-headline">Master the Proposal</span><br />
-          <span class="gradient-headline">Life Cycle.</span><br />
-          <span class="text-white">Win More.</span>
-          <span class="text-electric-blue"> Work Less.</span>
+          <span class="text-white">Business development</span><br />
+          <span class="gradient-headline">that runs while</span><br />
+          <span class="gradient-headline">you bill.</span>
         </h1>
 
         <p class="anim-3 font-body text-lg text-slate-400 leading-relaxed max-w-xl mb-8">
-          Harpy Talon orchestrates every phase of the proposal lifecycle — from opportunity scouting to
-          submission-ready packaging — with military-grade security and AI precision built for
-          defense and federal contractors.
+          Point Harpy Talon at a federal opportunity and Autopilot runs the entire response —
+          drafting, compliance, packaging — then pauses and emails you one decision:
+          <span class="text-slate-200 font-500">GO or pass</span>, one tap. Approve and it finishes a
+          submission-ready package with field-level encryption throughout, while your team stays billable.
+          You file the final package.
         </p>
 
         <!-- Stats row -->
@@ -588,80 +628,62 @@
         </div>
       </div>
 
-      <!-- Right: Logo showcase with frosted-glass + glow -->
-      <div class="anim-3 flex justify-center lg:justify-end">
-        <div class="relative flex items-center justify-center" style="width:340px; height:340px;">
-          <!-- Outer glow rings -->
-          <div class="logo-glow-ring-2"></div>
-          <div class="logo-glow-ring"></div>
-
-          <!-- Frosted glass container -->
-          <div class="logo-frosted w-72 h-72 flex items-center justify-center relative z-10">
-            <!-- Subtle rotating border effect -->
-            <div class="absolute inset-0 rounded-3xl opacity-20"
-                 style="background: conic-gradient(from 0deg, #3b82f6, transparent, #3b82f6, transparent); animation: spin 8s linear infinite; border-radius: 24px;">
+      <!-- Right: Autopilot live sequence — watch a bid build itself -->
+      <div class="anim-3 flex justify-center lg:justify-end w-full">
+        <div class="ap-panel w-full max-w-md p-6 relative">
+          <!-- header -->
+          <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full" style="background:#22c55e;box-shadow:0 0 8px #22c55e;"></span>
+              <span class="font-mono text-xs text-slate-400">autopilot · running</span>
             </div>
+            <span class="font-mono text-[10px] text-slate-600 tracking-widest uppercase">Sample</span>
+          </div>
 
-            <!-- Harpy Talon logo — Physical Asset / Smart Card housing -->
-            <div class="relative flex items-center justify-center">
-              <!-- Outer ambient bloom -->
-              <div style="position:absolute;inset:-32px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,0.22) 0%,transparent 70%);pointer-events:none;z-index:0;"></div>
-              <!-- The secure housing card -->
-              <div class="relative overflow-hidden"
-                   style="background:rgba(15,23,42,0.82);
-                          backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-                          border:1px solid rgba(59,130,246,0.35);
-                          border-radius:24px;
-                          padding:24px;
-                          box-shadow:0 0 32px rgba(59,130,246,0.18),
-                                     0 16px 48px rgba(0,0,0,0.55),
-                                     inset 0 1px 0 rgba(255,255,255,0.07);
-                          z-index:1;">
-                <!-- Scanner light — thin horizontal bar that sweeps up/down -->
-                <div style="position:absolute;left:0;right:0;height:2px;
-                            background:linear-gradient(90deg,transparent 0%,rgba(96,165,250,0.7) 40%,rgba(147,197,253,0.9) 50%,rgba(96,165,250,0.7) 60%,transparent 100%);
-                            border-radius:1px;pointer-events:none;z-index:10;
-                            animation:scannerBeam 3s ease-in-out infinite;">
-                </div>
-                <!-- Corner bracket accents -->
-                <div style="position:absolute;top:8px;left:8px;width:12px;height:12px;border-top:2px solid rgba(59,130,246,0.6);border-left:2px solid rgba(59,130,246,0.6);border-radius:2px 0 0 0;"></div>
-                <div style="position:absolute;top:8px;right:8px;width:12px;height:12px;border-top:2px solid rgba(59,130,246,0.6);border-right:2px solid rgba(59,130,246,0.6);border-radius:0 2px 0 0;"></div>
-                <div style="position:absolute;bottom:8px;left:8px;width:12px;height:12px;border-bottom:2px solid rgba(59,130,246,0.6);border-left:2px solid rgba(59,130,246,0.6);border-radius:0 0 0 2px;"></div>
-                <div style="position:absolute;bottom:8px;right:8px;width:12px;height:12px;border-bottom:2px solid rgba(59,130,246,0.6);border-right:2px solid rgba(59,130,246,0.6);border-radius:0 0 2px 0;"></div>
-                <!-- Logo — clean white badge card, intentional high-contrast asset -->
-                <div style="display:inline-block;
-                            background:#f0f7ff;
-                            border-radius:14px;
-                            padding:8px;
-                            box-shadow:0 0 0 1px rgba(147,197,253,0.5),
-                                       0 0 24px rgba(59,130,246,0.25),
-                                       0 8px 24px rgba(0,0,0,0.4);">
-                  <img src="HITS_Talon_logo.png" alt="Harpy Talon"
-                       class="w-40 h-auto"
-                       style="display:block;border-radius:8px;"
-                       onerror="this.style.display='none'; document.getElementById('talon-fallback').style.display='flex';" />
-                </div>
+          <!-- steps: a bid building itself -->
+          <div class="space-y-3">
+            <div class="ap-step flex items-start gap-3">
+              <div class="ap-node">1</div>
+              <div>
+                <p class="font-body text-sm text-white">New opportunity — SAM.gov</p>
+                <p class="font-mono text-xs text-slate-500">Dept. of the Navy · NAICS 541512</p>
               </div>
             </div>
-
-            <!-- Fallback talon icon -->
-            <div id="talon-fallback" style="display:none;" class="flex flex-col items-center gap-3 relative z-10">
-              <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M40 8L12 24V56L40 72L68 56V24L40 8Z" stroke="#3b82f6" stroke-width="2" fill="rgba(59,130,246,0.1)"/>
-                <path d="M40 20L25 29V47L40 56L55 47V29L40 20Z" stroke="#60a5fa" stroke-width="1.5" fill="rgba(59,130,246,0.15)"/>
-                <path d="M40 32L34 36V44L40 48L46 44V36L40 32Z" fill="#3b82f6"/>
-                <path d="M40 8V20M12 24L25 29M68 24L55 29M12 56L25 47M68 56L55 47M40 72V56" stroke="#3b82f6" stroke-width="1.5" opacity="0.5"/>
-              </svg>
-              <span class="font-display font-800 text-xl text-white tracking-wider">HARPY TALON</span>
-              <span class="font-body text-xs text-electric-blue tracking-widest uppercase">PDLC Platform</span>
+            <div class="ap-step flex items-start gap-3">
+              <div class="ap-node">2</div>
+              <div>
+                <p class="font-body text-sm text-white">Scored 82% fit — <span class="text-electric-blue font-600">BID</span></p>
+                <p class="font-mono text-xs text-slate-500">NAICS · set-aside · past-performance match</p>
+              </div>
+            </div>
+            <div class="ap-step flex items-start gap-3">
+              <div class="ap-node">3</div>
+              <div>
+                <p class="font-body text-sm text-white">Drafted &amp; compliance-checked</p>
+                <p class="font-mono text-xs text-slate-500">Response assembled · shall/must matrix verified</p>
+              </div>
+            </div>
+            <div class="ap-step flex items-start gap-3">
+              <div class="ap-node">4</div>
+              <div>
+                <p class="font-body text-sm text-white">Emailed you one decision</p>
+                <p class="font-mono text-xs text-slate-500">“Ready for your GO” — one tap, from your phone</p>
+              </div>
+            </div>
+            <div class="ap-step ap-go flex items-start gap-3">
+              <div class="ap-node">✓</div>
+              <div>
+                <p class="font-body text-sm text-white">GO → package ready to file</p>
+                <p class="font-mono text-xs text-slate-500">Submission-ready volumes · you upload to the portal</p>
+              </div>
             </div>
           </div>
 
-          <!-- Corner accent lines -->
-          <div class="absolute top-4 left-4 w-8 h-8 border-t-2 border-l-2 border-electric-blue/40 rounded-tl-lg"></div>
-          <div class="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-electric-blue/40 rounded-tr-lg"></div>
-          <div class="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-l-2 border-electric-blue/40 rounded-bl-lg"></div>
-          <div class="absolute bottom-4 right-4 w-8 h-8 border-b-2 border-r-2 border-electric-blue/40 rounded-br-lg"></div>
+          <!-- punchline -->
+          <div class="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between">
+            <span class="font-mono text-[11px] text-slate-500">Your time on this bid</span>
+            <span class="font-display font-700 text-sm text-electric-blue">one tap</span>
+          </div>
         </div>
       </div>
     </div>
@@ -1275,7 +1297,7 @@
           </div>
           <div class="flex items-start gap-3 p-3 bg-slate-800/40 rounded-lg">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" class="mt-0.5 flex-shrink-0"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-            <p class="font-body text-xs text-slate-400">FAR/DFARS compliance language (42+ clauses in compliance matrix)</p>
+            <p class="font-body text-xs text-slate-400">AI-verified FAR/DFARS compliance matrix — core clauses built in, extended coverage via GovInfo</p>
           </div>
         </div>
       </div>
