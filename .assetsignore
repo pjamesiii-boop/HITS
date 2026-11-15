@@ -13,3 +13,8 @@ tailwind.config.js
 .gitignore
 .assetsignore
 *.zip
+
+# Local-only content authoring tool — never serve publicly.
+# Run it locally: `python3 -m http.server 8080` then open /admin.html.
+# It downloads jobs.json/news.json for you to commit; it writes nothing server-side.
+admin.html
