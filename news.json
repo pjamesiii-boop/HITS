@@ -1,5 +1,17 @@
 [
   {
+    "id": "NEWS-009",
+    "category": "Product Update",
+    "categoryTheme": "blue",
+    "status": "featured",
+    "date": "2026-Q4",
+    "headline": "Raptor, Six Months On: Grounded Answers, Honest Refusals, and Receipts Anyone Can Verify",
+    "subheading": "Since general availability, Raptor has added evidence-grounded responses that cite sources by id and refuse when the evidence can't answer, a public verify-it-yourself proof surface, a System-2 deliberation layer, and auditor-ready assurance snapshots.",
+    "body": "When Harpy I.T. Solutions launched Raptor earlier this year as a deterministic governance layer for AI, the promise was that every response would be classified, policy-checked, and recorded on a tamper-evident audit trail. Six months of development have turned that foundation into something a skeptic can watch work. Raptor now grounds answers in a tenant's own corpus and cites evidence by id: the model is handed verbatim source text and can only cite what it was given, so it cannot invent a source, and when nothing in the evidence supports an answer it refuses rather than guess. Every decision is still sealed into a cryptographic receipt, but that receipt is now publicly verifiable with no login and no server through a new proof surface, where anyone can ask a question, watch the grounding happen, and recompute the hash themselves, tampering breaks it. Under the hood, a System-2 deliberation layer runs a separate critic and confidence-routing pass before an answer is committed, and a new assurance layer produces framework-shaped evidence bundles and self-service verification links for auditors. For teams running Raptor at scale, a governed economic control plane adds per-tenant spend guardrails and alerts. Watch it for yourself at raptor.harpyits.com/proof.",
+    "tags": ["Raptor", "Grounding", "Cite-by-ID", "Verifiable Receipts", "Deliberation", "Governed AI"],
+    "link": "https://raptor.harpyits.com/proof"
+  },
+  {
     "id": "NEWS-008",
     "category": "Thought Leadership",
     "categoryTheme": "blue",
@@ -15,7 +27,7 @@
     "id": "NEWS-007",
     "category": "Product Update",
     "categoryTheme": "blue",
-    "status": "featured",
+    "status": "published",
     "date": "2026-Q2",
     "headline": "Raptor Is Live: Deterministic Governance for AI Applications Now Generally Available",
     "subheading": "Harpy IT Solutions launches Raptor \u2014 a deterministic governance layer that makes AI trustworthy, auditable, and policy-compliant from day one",
