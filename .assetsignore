@@ -4,8 +4,12 @@
 .wrangler/**
 node_modules
 node_modules/**
-wrangler.jsonc
-.assetsignore
-.gitignore
-*.zip
+src
 src/*.test.js
+wrangler.jsonc
+package.json
+package-lock.json
+tailwind.config.js
+.gitignore
+.assetsignore
+*.zip

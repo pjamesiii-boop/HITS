@@ -1,0 +1,14 @@
+{
+  "name": "harpyits-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Harpy I.T. Solutions marketing site (Cloudflare Workers static assets)",
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/input.css -o ./tailwind.css --minify",
+    "watch:css": "tailwindcss -i ./src/input.css -o ./tailwind.css --watch",
+    "deploy": "npm run build:css && wrangler deploy"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0"
+  }
+}
