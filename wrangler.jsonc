@@ -1,0 +1,11 @@
+{
+  // Cloudflare Workers static-assets config for harpyits.com (migrated off A2 Hosting, 2026-11-14)
+  // Deploy: npx wrangler deploy
+  "name": "harpyits",
+  "compatibility_date": "2026-11-14",
+  "assets": {
+    "directory": ".",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}
