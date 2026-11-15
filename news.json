@@ -1,5 +1,17 @@
 [
   {
+    "id": "NEWS-008",
+    "category": "Thought Leadership",
+    "categoryTheme": "blue",
+    "status": "published",
+    "date": "2026-Q4",
+    "headline": "Harpy I.T. Solutions Publishes 'SPACE: Resilience You Can Prove' for DoD Network Modernization",
+    "subheading": "A new whitepaper shows how the move off legacy circuits to IP can turn redundant communications into a single point of failure, and gives acquisition and continuity teams a ten-check audit to prove path independence before legacy circuits are retired.",
+    "body": "Harpy I.T. Solutions Inc. has released SPACE: Resilience You Can Prove, a technical whitepaper for mission owners, acquisition staff, and network reliability engineers managing the Department's migration off legacy time-division circuits onto IP. Its thesis: the migration is not the problem, convergence is. When primary and backup paths that were once physically diverse collapse onto one IP fabric, sharing a control plane, timing, PKI, and often a single leased backbone, one fault can take both down at once. The 13 November 2026 FAA ground stop, where a single update to a shared communications backbone grounded roughly 4,000 flights because the primary and backup rode the same network, is walked as a public case study. SPACE answers with a layered, technology-diverse architecture built on the familiar PACE ladder plus a Sovereign tier engineered to share fate with nothing, governed by one rule: a redundant path is independent, shared, or unverified, and unverified counts as shared until the evidence exists. At its center is a ten-point independence audit, covering operator, software, change window, control plane, physical path, power, shared services, people, geography, and capacity, that produces a ranked, evidence-grade list an authorizing official, inspector general, or continuity reviewer can act on. The audit can be mechanized and re-run on every network change, with findings proposed and ranked for a human to ratify. The full paper is available below.",
+    "tags": ["Whitepaper", "DoD", "Network Resilience", "PACE Ladder", "COOP", "Resilience"],
+    "link": "/whitepapers/space-hits-dod-whitepaper.pdf"
+  },
+  {
     "id": "NEWS-007",
     "category": "Product Update",
     "categoryTheme": "blue",
