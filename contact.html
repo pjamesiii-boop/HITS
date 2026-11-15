@@ -699,7 +699,7 @@
         </div>
       </div>
       <div class="flex flex-col items-center gap-1">
-        <p class="font-body text-slate-600 text-sm">&copy; 2023 Harpy I.T. Solutions INC. All rights reserved.</p>
+        <p class="font-body text-slate-600 text-sm">&copy; 2023–2026 Harpy I.T. Solutions INC. All rights reserved.</p>
         <p class="font-mono text-xs text-slate-700">CAGE: 9M2N1 &nbsp;·&nbsp; UEI: UJ5VCLDTKK87 &nbsp;·&nbsp; DUNS: 129854474</p>
       </div>
       <div class="flex items-center gap-5">
@@ -758,4 +758,20 @@
       document.getElementById('contact-form').style.display    = 'none';
       const success = document.getElementById('form-success');
       document.getElementById('success-type').textContent = `Type: ${type}`;
-      success.classList
+      success.classList.add('visible');
+      success.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // Reveal sections on scroll
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.scroll-reveal').forEach((el) => revealObserver.observe(el));
+  </script>
+</body>
+</html>
